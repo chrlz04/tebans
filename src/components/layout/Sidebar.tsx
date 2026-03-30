@@ -13,6 +13,7 @@ import {
   User,
   Settings,
   LogOut,
+  UserPlus,
 } from 'lucide-react'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/navigation'
@@ -29,6 +30,7 @@ const navItems: Record<Role, NavItem[]> = {
   admin: [
     { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={18} /> },
     { label: 'Manage Accounts', href: '/admin/accounts', icon: <Users size={18} /> },
+    { label: 'Create Staff', href: '/admin/staff/new', icon: <UserPlus size={18} /> },
     { label: 'Settings', href: '/admin/settings', icon: <Settings size={18} /> },
   ],
   consumer: [
@@ -72,9 +74,14 @@ export default function Sidebar({ role }: { role: Role }) {
   return (
     <aside className="flex flex-col w-64 min-h-screen bg-white border-r border-gray-200 px-4 py-6">
       {/* Logo / System Name */}
-      <div className="mb-8 px-2">
-        <h1 className="text-lg font-semibold text-gray-900">TEBANS</h1>
-        <p className="text-xs text-gray-500 mt-0.5">{roleLabels[role]}</p>
+      <div className="mb-8 px-2 flex items-center gap-3">
+        <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center text-white shrink-0">
+          <Zap size={18} />
+        </div>
+        <div>
+          <h1 className="text-base font-semibold text-gray-900 leading-tight">TEBANS</h1>
+          <p className="text-xs text-gray-500">{role === 'admin' ? 'Admin Portal' : roleLabels[role]}</p>
+        </div>
       </div>
 
       {/* Nav Links */}
@@ -106,6 +113,9 @@ export default function Sidebar({ role }: { role: Role }) {
         <LogOut size={18} />
         Logout
       </button>
+
+      {/* Footer */}
+      <p className="text-xs text-gray-400 px-2 mt-4">© 2026 TEBANS System</p>
     </aside>
   )
 }

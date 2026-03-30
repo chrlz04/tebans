@@ -28,8 +28,8 @@ export default function AdminDashboardPage() {
   const columns: Column<User>[] = [
     {
       key: 'userId',
-      label: 'ID',
-      className: 'w-32',
+      label: 'Account ID',
+      className: 'w-40',
     },
     {
       key: 'firstName',
@@ -44,16 +44,6 @@ export default function AdminDashboardPage() {
       key: 'accountStatus',
       label: 'Status',
       render: (row) => <Badge status={row.accountStatus} />,
-    },
-    {
-      key: 'registrationDate',
-      label: 'Date Registered',
-      render: (row) =>
-        new Date(row.registrationDate).toLocaleDateString('en-PH', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        }),
     },
   ]
 
@@ -74,12 +64,14 @@ export default function AdminDashboardPage() {
           label="Total Active Consumers"
           value={isLoading ? '—' : (data?.totalActiveConsumers ?? 0).toLocaleString()}
           icon={<Users size={24} />}
+          subtitle="+12% from last month"
           variant="success"
         />
         <StatCard
           label="Pending Disconnections"
           value={isLoading ? '—' : (data?.pendingDisconnections ?? 0).toLocaleString()}
           icon={<AlertTriangle size={24} />}
+          subtitle="Requires immediate action"
           variant="danger"
         />
       </div>

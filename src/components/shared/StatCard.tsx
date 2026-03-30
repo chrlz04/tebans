@@ -4,48 +4,35 @@ interface StatCardProps {
   label: string
   value: string | number
   icon?: React.ReactNode
+  subtitle?: string
   variant?: 'default' | 'success' | 'warning' | 'danger'
 }
 
-const variantStyles = {
-  default: 'bg-white border-gray-200',
-  success: 'bg-green-50 border-green-200',
-  warning: 'bg-yellow-50 border-yellow-200',
-  danger:  'bg-red-50 border-red-200',
-}
-
-const valueStyles = {
-  default: 'text-gray-900',
-  success: 'text-green-700',
-  warning: 'text-yellow-700',
-  danger:  'text-red-700',
+const iconBgStyles = {
+  default: 'bg-gray-100 text-gray-500',
+  success: 'bg-blue-100 text-blue-600',
+  warning: 'bg-yellow-100 text-yellow-600',
+  danger:  'bg-orange-100 text-orange-600',
 }
 
 export default function StatCard({
   label,
   value,
   icon,
+  subtitle,
   variant = 'default',
 }: StatCardProps) {
   return (
-    <div
-      className={clsx(
-        'rounded-xl border p-5 flex items-center gap-4',
-        variantStyles[variant]
-      )}
-    >
+    <div className="rounded-xl border border-gray-200 bg-white p-5 flex items-start gap-4">
       {icon && (
-        <div className="text-gray-400 shrink-0">
+        <div className={clsx('p-3 rounded-xl shrink-0', iconBgStyles[variant])}>
           {icon}
         </div>
       )}
       <div>
-        <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-          {label}
-        </p>
-        <p className={clsx('text-2xl font-semibold mt-0.5', valueStyles[variant])}>
-          {value}
-        </p>
+        <p className="text-sm text-gray-500">{label}</p>
+        <p className="text-3xl font-bold text-gray-900 mt-0.5">{value}</p>
+        {subtitle && <p className="text-xs text-gray-400 mt-1">{subtitle}</p>}
       </div>
     </div>
   )
