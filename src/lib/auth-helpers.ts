@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 export type Role = 'admin' | 'consumer' | 'meter_reader' | 'cashier'
 
@@ -15,13 +15,11 @@ export function verifyToken(req: NextRequest): JwtPayload | null {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null
     }
-
-    const token = authHeader.split(' ')[1]
+    const token   = authHeader.split(' ')[1]
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET!
     ) as JwtPayload
-
     return decoded
   } catch {
     return null
@@ -32,14 +30,14 @@ export function verifyToken(req: NextRequest): JwtPayload | null {
 export function requireRole(
   req: NextRequest,
   allowedRoles: Role[]
-): { error: Response | null; payload: JwtPayload | null } {
+): { error: NextResponse | null; payload: JwtPayload | null } {
   const payload = verifyToken(req)
 
   if (!payload) {
     return {
-      error: new Response(
-        JSON.stringify({ success: false, message: 'Unauthorized' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      error: NextResponse.json(
+        { success: false, message: 'Unauthorized' },
+        { status: 401 }
       ),
       payload: null,
     }
@@ -47,9 +45,9 @@ export function requireRole(
 
   if (!allowedRoles.includes(payload.role)) {
     return {
-      error: new Response(
-        JSON.stringify({ success: false, message: 'Forbidden' }),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
+      error: NextResponse.json(
+        { success: false, message: 'Forbidden' },
+        { status: 403 }
       ),
       payload: null,
     }
@@ -60,9 +58,9 @@ export function requireRole(
 
 // ─── Standard JSON responses ──────────────────────────────
 export function ok(data: unknown, message = 'Success') {
-  return Response.json({ success: true, message, data })
+  return NextResponse.json({ success: true, message, data })
 }
 
 export function err(message: string, status = 400) {
-  return Response.json({ success: false, message }, { status })
+  return NextResponse.json({ success: false, message }, { status })
 }
