@@ -34,17 +34,17 @@ export default function LoginPage() {
   })
 
   const onSubmit = async (values: LoginFormValues) => {
-    try {
-      setServerError('')
-      const res = await api.post<AuthResponse>('/auth/login', values)
-      login(res.data)
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } }
-      setServerError(
-        error.response?.data?.message || 'Invalid username or password.'
-      )
-    }
+  try {
+    setServerError('')
+    const res = await api.post('/auth/login', values)
+    login(res.data.data)
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { message?: string } } }
+    setServerError(
+      error.response?.data?.message || 'Invalid username or password.'
+    )
   }
+}
 
   return (
     <div className="min-h-screen flex">

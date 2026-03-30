@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server'
-import pool from '@/lib/db'
+import { query } from '@/lib/db-helpers'
+import { RowDataPacket } from 'mysql2'
+
+interface TableRow extends RowDataPacket {
+  Tables_in_tebans_db: string
+}
 
 export async function GET() {
   try {
-    const connection = await pool.getConnection()
-    connection.release()
+    const tables = await query<TableRow>('SHOW TABLES')
     return NextResponse.json({
       success: true,
       message: 'Database connected successfully',
+      tables: tables.map((t) => t.Tables_in_tebans_db),
     })
   } catch (error) {
     return NextResponse.json(
