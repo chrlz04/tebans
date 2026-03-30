@@ -86,7 +86,9 @@ export default function Sidebar({ role }: { role: Role }) {
             className={clsx(
               'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
               pathname === item.href
-                ? 'bg-blue-50 text-blue-700 font-medium'
+                ? role === 'admin'
+                  ? 'bg-primary-50 text-primary-700 font-medium'
+                  : 'bg-blue-50 text-blue-700 font-medium'
                 : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
             )}
           >
