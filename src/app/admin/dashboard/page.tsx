@@ -45,6 +45,14 @@ export default function AdminDashboardPage() {
       label: 'Status',
       render: (row) => <Badge status={row.accountStatus} />,
     },
+     {
+      key: 'registrationDate', // Matches the property name in your User type
+      label: 'Date Registered',
+      render: (row) => (
+        // Access the correct property name here too
+        <span>{new Date(row.registrationDate).toLocaleDateString()}</span>
+      ),
+    },
   ]
 
   return (
@@ -64,7 +72,7 @@ export default function AdminDashboardPage() {
           label="Total Active Consumers"
           value={isLoading ? '—' : (data?.totalActiveConsumers ?? 0).toLocaleString()}
           icon={<Users size={24} />}
-          subtitle="+12% from last month"
+          subtitle={`${data} from last month`}
           variant="success"
         />
         <StatCard
