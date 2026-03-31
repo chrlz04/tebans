@@ -8,7 +8,6 @@ export interface AuthResponse {
   token: string
   role: 'admin' | 'consumer' | 'meter_reader' | 'cashier'
   userId: string
-  name: string
 }
 
 export interface ChangePasswordPayload {

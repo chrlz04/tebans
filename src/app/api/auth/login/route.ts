@@ -12,6 +12,8 @@ interface LoginRow extends RowDataPacket {
   User_ID:        string
   User_Type:      string
   Account_Status: string
+  First_Name:     string
+  Last_Name:      string
 }
 
 export async function POST(req: NextRequest) {
@@ -31,7 +33,9 @@ export async function POST(req: NextRequest) {
         l.Password,
         u.User_ID,
         u.User_Type,
-        u.Account_Status
+        u.Account_Status,
+        u.First_Name,
+        u.Last_Name
       FROM Login l
       JOIN User u ON u.Login_ID = l.Login_ID
       WHERE l.User_name = ?
@@ -47,7 +51,9 @@ export async function POST(req: NextRequest) {
           l.Password,
           c.Consumer_ID AS User_ID,
           'consumer'    AS User_Type,
-          c.Account_Status
+          c.Account_Status,
+          c.First_Name,
+          c.Last_Name
         FROM Login l
         JOIN Consumer c ON c.Login_ID = l.Login_ID
         WHERE l.User_name = ?
@@ -81,10 +87,13 @@ export async function POST(req: NextRequest) {
     { expiresIn: '1d' } as jwt.SignOptions
     )
 
+    const fullName = `${account.First_Name} ${account.Last_Name}`.trim()
+
     return ok({
       token,
       role:   account.User_Type,
       userId: account.User_ID,
+      name:   fullName,
     }, 'Login successful')
 
   } catch (error) {
