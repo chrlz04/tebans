@@ -72,7 +72,7 @@ export interface Bill {
 }
 
 // ─── Payment ─────────────────────────────────────────────
-export type PaymentMethod = 'Cash' | 'Check' | 'Online'
+export type PaymentMethod = 'Cash'
 
 export interface Payment {
   paymentId: string
