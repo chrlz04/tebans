@@ -20,7 +20,7 @@ export default function ProcessPaymentPage() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [selectedBillIds, setSelectedBillIds] = useState<string[]>([])
-  const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Check' | 'Online'>('Cash')
+  const [paymentMethod, setPaymentMethod] = useState<'Cash'>('Cash')
   const [isSuccess, setIsSuccess] = useState(false)
   const [receiptData, setReceiptData] = useState<{
     receiptNumber: string
@@ -288,13 +288,11 @@ export default function ProcessPaymentPage() {
               <select
                 value={paymentMethod}
                 onChange={(e) =>
-                  setPaymentMethod(e.target.value as 'Cash' | 'Check' | 'Online')
+                  setPaymentMethod(e.target.value as 'Cash')
                 }
                 className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="Cash">Cash</option>
-                <option value="Check">Check</option>
-                <option value="Online">Online</option>
               </select>
             </div>
 

@@ -126,15 +126,6 @@ export default function CollectionReportsPage() {
             View and export payment collection records
           </p>
         </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleExport}
-          disabled={!collections || collections.length === 0}
-        >
-          <Download size={16} className="mr-2" />
-          Export CSV
-        </Button>
       </div>
 
       {/* Summary Cards */}
