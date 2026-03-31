@@ -1,0 +1,43 @@
+--- src/lib/auth-context.tsx
++++ src/lib/auth-context.tsx
+@@ -9,6 +9,7 @@
+ interface AuthUser {
+   userId: string
+   role: Role
+   token: string
++  name: string
+ }
+
+ interface AuthContextType {
+@@ -35,10 +36,11 @@
+     const token = Cookies.get('token')
+     const role = Cookies.get('role') as Role | undefined
+     const userId = Cookies.get('userId')
++    const name = Cookies.get('name')
+
+-    if (token && role && userId) {
+-      setUser({ token, role, userId })
++    if (token && role && userId && name) {
++      setUser({ token, role, userId, name })
+     }
+
+     setIsLoading(false)
+@@ -49,10 +51,11 @@
+     Cookies.set('token', data.token, { expires: 1 })
+     Cookies.set('role', data.role, { expires: 1 })
+     Cookies.set('userId', data.userId, { expires: 1 })
++    Cookies.set('name', data.name, { expires: 1 })
+
+-    setUser({ token: data.token, role: data.role, userId: data.userId })
++    setUser({ token: data.token, role: data.role, userId: data.userId, name: data.name })
+
+     // Redirect to role-specific home page
+     router.push(roleHomePages[data.role])
+@@ -62,6 +65,7 @@
+     Cookies.remove('token')
+     Cookies.remove('role')
+     Cookies.remove('userId')
++    Cookies.remove('name')
+     setUser(null)
+     router.push('/login')
+   }
