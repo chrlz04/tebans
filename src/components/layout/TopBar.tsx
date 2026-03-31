@@ -39,7 +39,7 @@ export default function TopBar() {
         >
           <div className="text-right">
             {/* Added a fallback to use user.name if available in your auth context */}
-            <p className="text-sm font-medium text-gray-900">{user?.userId || 'System User'}</p>
+            <p className="text-sm font-medium text-gray-900">{user?.name || 'System User'}</p>
             <p className="text-xs text-gray-500">{roleLabel}</p>
           </div>
           <div className="w-9 h-9 rounded-full bg-primary-500 flex items-center justify-center text-white shrink-0">
