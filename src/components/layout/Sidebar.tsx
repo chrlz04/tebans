@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
@@ -12,8 +13,9 @@ import {
   AlertTriangle,
   User,
   Settings,
-  LogOut,
   UserPlus,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/navigation'
@@ -61,27 +63,37 @@ const roleLabels: Record<Role, string> = {
 }
 
 export default function Sidebar({ role }: { role: Role }) {
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const items = navItems[role]
 
-  const handleLogout = () => {
-    Cookies.remove('token')
-    Cookies.remove('role')
-    router.push('/login')
-  }
-
   return (
-    <aside className="flex flex-col w-64 min-h-screen bg-white border-r border-gray-200 px-4 py-6">
+    <aside 
+      className={clsx(
+        "flex flex-col min-h-screen bg-white border-r border-gray-200 py-6 transition-all duration-300 relative",
+        isCollapsed ? "w-20 px-3" : "w-64 px-4"
+      )}
+    >
+      {/* Toggle Button */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute -right-3 top-7 bg-white border border-gray-200 rounded-full p-1 text-gray-500 hover:text-gray-900 shadow-sm z-10"
+      >
+        {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+      </button>
+
       {/* Logo / System Name */}
-      <div className="mb-8 px-2 flex items-center gap-3">
+      <div className={clsx("mb-8 flex items-center", isCollapsed ? "justify-center" : "px-2 gap-3")}>
         <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center text-white shrink-0">
           <Zap size={18} />
         </div>
-        <div>
-          <h1 className="text-base font-semibold text-gray-900 leading-tight">TEBANS</h1>
-          <p className="text-xs text-gray-500">{role === 'admin' ? 'Admin Portal' : roleLabels[role]}</p>
-        </div>
+        {!isCollapsed && (
+          <div className="whitespace-nowrap overflow-hidden">
+            <h1 className="text-base font-semibold text-gray-900 leading-tight">TEBANS</h1>
+            <p className="text-xs text-gray-500">{role === 'admin' ? 'Admin Portal' : roleLabels[role]}</p>
+          </div>
+        )}
       </div>
 
       {/* Nav Links */}
@@ -90,8 +102,10 @@ export default function Sidebar({ role }: { role: Role }) {
           <Link
             key={item.href}
             href={item.href}
+            title={isCollapsed ? item.label : undefined}
             className={clsx(
-              'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
+              'flex items-center rounded-lg text-sm transition-colors',
+              isCollapsed ? 'justify-center py-2.5 px-0' : 'gap-3 px-3 py-2.5',
               pathname === item.href
                 ? role === 'admin'
                   ? 'bg-primary-50 text-primary-700 font-medium'
@@ -99,23 +113,18 @@ export default function Sidebar({ role }: { role: Role }) {
                 : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
             )}
           >
-            {item.icon}
-            {item.label}
+            <div className="shrink-0">{item.icon}</div>
+            {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
           </Link>
         ))}
       </nav>
 
-      {/* Logout */}
-      <button
-        onClick={handleLogout}
-        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors mt-4"
-      >
-        <LogOut size={18} />
-        Logout
-      </button>
-
       {/* Footer */}
-      <p className="text-xs text-gray-400 px-2 mt-4">© 2026 TEBANS System</p>
+      {!isCollapsed && (
+        <p className="text-xs text-gray-400 px-2 mt-4 whitespace-nowrap overflow-hidden">
+          © 2026 TEBANS System
+        </p>
+      )}
     </aside>
   )
 }

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Lock, ShieldCheck } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import api from '@/lib/api'
 
@@ -67,39 +67,44 @@ export default function ChangePasswordForm({ endpoint }: ChangePasswordFormProps
     }
   }
 
-  // Helper for password fields with show/hide toggle
+  // Helper for password fields with show/hide toggle and lock icon
   const PasswordField = ({
     label,
     fieldName,
+    placeholder,
     show,
     onToggle,
     error,
   }: {
     label: string
     fieldName: keyof ChangePasswordValues
+    placeholder: string
     show: boolean
     onToggle: () => void
     error?: string
   }) => (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-gray-700">
-        {label} <span className="text-red-500">*</span>
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm font-bold text-gray-900">
+        {label}
       </label>
       <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <Lock size={16} />
+        </div>
         <input
           type={show ? 'text' : 'password'}
-          placeholder={`Enter ${label.toLowerCase()}`}
-          className={`w-full px-3 py-2 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10 ${
+          placeholder={placeholder}
+          className={`w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-[#749D47] focus:border-transparent ${
             error
               ? 'border-red-400 bg-red-50 text-red-900'
-              : 'border-gray-300 bg-white text-gray-900'
+              : 'border-gray-200 bg-white text-gray-900 placeholder:text-gray-400'
           }`}
           {...register(fieldName)}
         />
         <button
           type="button"
           onClick={onToggle}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
         >
           {show ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
@@ -109,59 +114,77 @@ export default function ChangePasswordForm({ endpoint }: ChangePasswordFormProps
   )
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-
-      <PasswordField
-        label="Current Password"
-        fieldName="currentPassword"
-        show={showCurrent}
-        onToggle={() => setShowCurrent(!showCurrent)}
-        error={errors.currentPassword?.message}
-      />
-
-      <PasswordField
-        label="New Password"
-        fieldName="newPassword"
-        show={showNew}
-        onToggle={() => setShowNew(!showNew)}
-        error={errors.newPassword?.message}
-      />
-
-      <PasswordField
-        label="Confirm New Password"
-        fieldName="confirmPassword"
-        show={showConfirm}
-        onToggle={() => setShowConfirm(!showConfirm)}
-        error={errors.confirmPassword?.message}
-      />
-
-      {/* Password Requirements Note */}
-      <p className="text-xs text-gray-500">
-        Password must be at least 8 characters and include an uppercase letter, a number, and a symbol.
-      </p>
-
-      {/* Success Message */}
-      {successMessage && (
-        <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg">
-          {successMessage}
+    <div className="w-full max-w-[440px] bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      {/* Header Section */}
+      <div className="bg-[#FAFCF8] p-6 border-b border-gray-200 flex items-center gap-4">
+        <div className="w-12 h-12 bg-[#749D47] rounded-xl flex items-center justify-center text-white shrink-0">
+          <ShieldCheck size={24} strokeWidth={2} />
         </div>
-      )}
-
-      {/* Server Error */}
-      {serverError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
-          {serverError}
+        <div>
+          <h2 className="text-lg font-bold text-gray-900">Account Security</h2>
+          <p className="text-sm text-gray-500">Update your admin password</p>
         </div>
-      )}
+      </div>
 
-      <Button
-        type="submit"
-        variant="primary"
-        isLoading={isSubmitting}
-        className="w-fit"
-      >
-        Update Password
-      </Button>
-    </form>
+      {/* Form Section */}
+      <form onSubmit={handleSubmit(onSubmit)} className="p-6 flex flex-col gap-5">
+        
+        <PasswordField
+          label="Current Password"
+          fieldName="currentPassword"
+          placeholder="Enter current password"
+          show={showCurrent}
+          onToggle={() => setShowCurrent(!showCurrent)}
+          error={errors.currentPassword?.message}
+        />
+
+        <PasswordField
+          label="New Password"
+          fieldName="newPassword"
+          placeholder="Enter new password"
+          show={showNew}
+          onToggle={() => setShowNew(!showNew)}
+          error={errors.newPassword?.message}
+        />
+
+        <PasswordField
+          label="Confirm Password"
+          fieldName="confirmPassword"
+          placeholder="Re-enter new password"
+          show={showConfirm}
+          onToggle={() => setShowConfirm(!showConfirm)}
+          error={errors.confirmPassword?.message}
+        />
+
+        {/* Password Requirements Note */}
+        <p className="text-sm text-gray-500 leading-relaxed mt-1">
+          Password must be at least 8 characters and include uppercase letters, numbers, and symbols for maximum security.
+        </p>
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg">
+            {successMessage}
+          </div>
+        )}
+
+        {/* Server Error */}
+        {serverError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+            {serverError}
+          </div>
+        )}
+
+        {/* Using your Button component, but overriding classes to match the design */}
+        <Button
+          type="submit"
+          isLoading={isSubmitting}
+          className="w-full bg-[#749D47] hover:bg-[#62873B] text-white flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium transition-colors mt-2"
+        >
+          <ShieldCheck size={18} />
+          Update Admin Password
+        </Button>
+      </form>
+    </div>
   )
 }
