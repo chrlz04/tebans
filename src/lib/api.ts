@@ -17,7 +17,14 @@ api.interceptors.request.use((config) => {
 })
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // If the API standard structure uses `{ success: true, data: [...] }`,
+    // unwrap it directly so `res.data` in components returns the actual payload.
+    if (response.data && response.data.success === true && 'data' in response.data) {
+      response.data = response.data.data;
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       Cookies.remove('token')
