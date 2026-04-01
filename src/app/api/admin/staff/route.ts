@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server'
 import bcrypt from 'bcryptjs'
-import { v4 as uuidv4 } from 'uuid'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
 import { query, execute, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
@@ -103,10 +102,37 @@ export async function POST(req: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Generate IDs
-    const loginId = uuidv4()
-    const userId  = uuidv4()
-    const roleId  = uuidv4()
+    // Generate IDs based on userType
+    let loginId = ''
+    let userId = ''
+    let roleId = ''
+    let prefix = ''
+
+    if (userType === 'meter_reader') {
+      prefix = 'mr'
+    } else if (userType === 'cashier') {
+      prefix = 'cashier'
+    }
+
+    // Get highest existing sequence number for this type
+    const highestUser = await queryOne<{ User_ID: string } & RowDataPacket>(
+      `SELECT User_ID FROM User WHERE User_ID LIKE ? ORDER BY LENGTH(User_ID) DESC, User_ID DESC LIMIT 1`,
+      [`user-${prefix}-%`]
+    )
+
+    let nextSeq = 1
+    if (highestUser && highestUser.User_ID) {
+      const match = highestUser.User_ID.match(new RegExp(`^user-${prefix}-(\\d+)$`))
+      if (match && match[1]) {
+        nextSeq = parseInt(match[1], 10) + 1
+      }
+    }
+
+    const seqStr = nextSeq.toString().padStart(3, '0')
+
+    loginId = `login-${prefix}-${seqStr}`
+    userId = `user-${prefix}-${seqStr}`
+    roleId = `${prefix}-${seqStr}`
 
     // Insert Login
     await execute(
