@@ -47,14 +47,37 @@ export default function MyBillPage() {
       label: 'Billing Month',
     },
     {
-      key: 'previousReading',
-      label: 'Previous Reading',
-      render: (row) => row.previousReading ?? '—',
-    },
-    {
       key: 'currentReading',
       label: 'Current Reading',
-      render: (row) => row.currentReading ?? '—',
+      render: (row) => row.currentReading?.toLocaleString() ?? '—',
+    },
+    {
+      key: 'previousReading',
+      label: 'Previous Reading',
+      render: (row) => row.previousReading?.toLocaleString() ?? '—',
+    },
+    {
+      key: 'consumptionKwh',
+      label: 'Actual KWH Used',
+      render: (row) => `${row.consumptionKwh ?? 0} kWh`,
+    },
+    {
+      key: 'proRatedKwhLoss',
+      label: 'Pro Rated KWH Loss',
+      render: (row) => `${row.proRatedKwhLoss ?? 0} kWh`,
+    },
+    {
+      key: 'totalKwh',
+      label: 'Total KWH',
+      render: (row) => `${row.totalKwh ?? 0} kWh`,
+    },
+    {
+      key: 'vatPassThroughTaxes',
+      label: 'VAT & PASS-THROUGH TAXES Amount',
+      render: (row) =>
+        `₱${(row.vatPassThroughTaxes ?? 0).toLocaleString('en-PH', {
+          minimumFractionDigits: 2,
+        })}`,
     },
     {
       key: 'amount',
@@ -65,14 +88,12 @@ export default function MyBillPage() {
         })}`,
     },
     {
-      key: 'dueDate',
-      label: 'Due Date',
+      key: 'amountWithTaxEvat',
+      label: 'Amount with Tax/EVAT',
       render: (row) =>
-        new Date(row.dueDate).toLocaleDateString('en-PH', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        }),
+        <span className="font-semibold">{`₱${(row.amountWithTaxEvat ?? 0).toLocaleString('en-PH', {
+          minimumFractionDigits: 2,
+        })}`}</span>,
     },
     {
       key: 'paymentStatus',
