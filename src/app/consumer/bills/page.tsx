@@ -47,12 +47,12 @@ export default function MyBillPage() {
       label: 'Billing Month',
     },
     {
-      key: 'meterReadingId',
+      key: 'previousReading',
       label: 'Previous Reading',
       render: () => '—',
     },
     {
-      key: 'meterReadingId',
+      key: 'currentReading',
       label: 'Current Reading',
       render: () => '—',
     },
