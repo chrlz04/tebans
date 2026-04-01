@@ -70,6 +70,13 @@ export interface Bill {
   paymentStatus: PaymentStatus
   amount: number
   billingMonth: string
+  previousReading?: number
+  currentReading?: number
+  consumptionKwh?: number
+  proRatedKwhLoss?: number
+  totalKwh?: number
+  vatPassThroughTaxes?: number
+  amountWithTaxEvat?: number
 }
 
 // ─── Payment ─────────────────────────────────────────────

@@ -49,12 +49,12 @@ export default function MyBillPage() {
     {
       key: 'previousReading',
       label: 'Previous Reading',
-      render: () => '—',
+      render: (row) => row.previousReading ?? '—',
     },
     {
       key: 'currentReading',
       label: 'Current Reading',
-      render: () => '—',
+      render: (row) => row.currentReading ?? '—',
     },
     {
       key: 'amount',
