@@ -37,7 +37,7 @@ export default function LoginPage() {
   try {
     setServerError('')
     const res = await api.post('/auth/login', values)
-    login(res.data.data)
+    login(res.data)
   } catch (err: unknown) {
     const error = err as { response?: { data?: { message?: string } } }
     setServerError(
