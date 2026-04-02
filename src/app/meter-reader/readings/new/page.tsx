@@ -107,7 +107,7 @@ function RecordReadingForm() {
             const res = await api.get(
             `/meter-reader/consumers/${selectedConsumer!.consumerId}/previous-reading`
             )
-            return res.data.data
+            return res.data?.data ?? { previousReading: 0 }
         },
     enabled: !!selectedConsumer,
 })
