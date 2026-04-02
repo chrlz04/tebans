@@ -42,7 +42,6 @@ const navItems: Record<Role, NavItem[]> = {
   ],
   meter_reader: [
     { label: 'Consumers', href: '/meter-reader/consumers', icon: <Users size={18} /> },
-    { label: 'Record Reading', href: '/meter-reader/readings/new', icon: <Zap size={18} /> },
     { label: 'Disconnections', href: '/meter-reader/disconnections', icon: <AlertTriangle size={18} /> },
     { label: 'Payment Collection', href: '/meter-reader/payments', icon: <CreditCard size={18} /> },
     { label: 'Settings', href: '/meter-reader/settings', icon: <Settings size={18} /> },
