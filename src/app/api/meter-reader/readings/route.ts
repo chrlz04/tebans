@@ -88,17 +88,17 @@ export async function POST(req: NextRequest) {
 
     // Generate IDs with proper sequential string format
     const highestReading = await queryOne<{ MeterReading_ID: string } & RowDataPacket>(
-      `SELECT MeterReading_ID FROM MeterReading WHERE MeterReading_ID LIKE 'mr-%' ORDER BY LENGTH(MeterReading_ID) DESC, MeterReading_ID DESC LIMIT 1`
+      `SELECT MeterReading_ID FROM MeterReading WHERE MeterReading_ID LIKE 'mr-read-%' ORDER BY LENGTH(MeterReading_ID) DESC, MeterReading_ID DESC LIMIT 1`
     )
 
     let nextMrSeq = 1
     if (highestReading && highestReading.MeterReading_ID) {
-      const match = highestReading.MeterReading_ID.match(/^mr-(\d+)$/)
+      const match = highestReading.MeterReading_ID.match(/^mr-read-(\d+)$/)
       if (match && match[1]) {
         nextMrSeq = parseInt(match[1], 10) + 1
       }
     }
-    const meterReadingId = `mr-${nextMrSeq.toString().padStart(3, '0')}`
+    const meterReadingId = `mr-read-${nextMrSeq.toString().padStart(3, '0')}`
 
     const highestBill = await queryOne<{ Bill_ID: string } & RowDataPacket>(
       `SELECT Bill_ID FROM Bill WHERE Bill_ID LIKE 'bill-%' ORDER BY LENGTH(Bill_ID) DESC, Bill_ID DESC LIMIT 1`
