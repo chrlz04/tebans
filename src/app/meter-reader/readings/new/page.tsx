@@ -112,7 +112,7 @@ function RecordReadingForm() {
     enabled: !!selectedConsumer,
 })
 
-const previousReading = previousReadingData?.previousReading ?? 0
+const previousReading = Number(previousReadingData?.previousReading ?? 0)
 
   if (authLoading) return null
   if (!hasAccess)  return null
