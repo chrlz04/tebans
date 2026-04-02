@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Eye, Edit, UserPlus } from 'lucide-react'
+import { Eye, Edit, UserPlus, Zap } from 'lucide-react'
+import { useRouter } from 'next/navigation' 
 import Link from 'next/link'
 import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
@@ -16,6 +17,7 @@ import type { Consumer } from '@/types'
 import type { Column } from '@/components/shared/DataTable'
 
 export default function MeterReaderConsumersPage() {
+  const router = useRouter()
   const { hasAccess, isLoading: authLoading } = useRoleGuard('meter_reader')
   const [search, setSearch] = useState('')
   const [selectedConsumer, setSelectedConsumer] = useState<Consumer | null>(null)
@@ -37,63 +39,81 @@ export default function MeterReaderConsumersPage() {
   if (!hasAccess) return null
 
   const columns: Column<Consumer>[] = [
-    {
-      key: 'consumerId',
-      label: 'Account No.',
-      render: (row) => (
-        <span className="font-mono text-xs">{row.consumerId}</span>
-      ),
-    },
-    {
-      key: 'firstName',
-      label: 'Full Name',
-      render: (row) => `${row.firstName} ${row.lastName}`,
-    },
-    {
-      key: 'areaName',
-      label: 'Area',
-    },
-    {
-      key: 'meterSerialNo',
-      label: 'Meter Serial No.',
-      render: (row) => (
-        <span className="font-mono text-xs">{row.meterSerialNo}</span>
-      ),
-    },
-    {
-      key: 'accountStatus',
-      label: 'Status',
-      render: (row) => <Badge status={row.accountStatus} />,
-    },
-    {
-      key: 'actions',
-      label: 'Actions',
-      render: (row) => (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              setSelectedConsumer(row)
-              setIsBillModalOpen(true)
-            }}
-            className="p-1.5 text-gray-400 hover:text-primary-600 transition-colors"
-            title="View Bill"
-          >
-            <Eye size={16} />
-          </button>
-          <button
-            onClick={() => {
-              setSelectedConsumer(row)
-              setIsEditModalOpen(true)
-            }}
-            className="p-1.5 text-gray-400 hover:text-primary-600 transition-colors"
-            title="Edit Consumer"
-          >
-            <Edit size={16} />
-          </button>
-        </div>
-      ),
-    },
-  ]
+  {
+    key: 'consumerId',
+    label: 'Account No.',
+    render: (row) => (
+      <span className="font-mono text-xs">{row.consumerId}</span>
+    ),
+  },
+  {
+    key: 'firstName',
+    label: 'Full Name',
+    render: (row) => `${row.firstName} ${row.lastName}`,
+  },
+  {
+    key: 'areaName',
+    label: 'Area',
+  },
+  {
+    key: 'meterSerialNo',
+    label: 'Meter Serial No.',
+    render: (row) => (
+      <span className="font-mono text-xs">{row.meterSerialNo}</span>
+    ),
+  },
+  {
+    key: 'accountStatus',
+    label: 'Status',
+    render: (row) => <Badge status={row.accountStatus} />,
+  },
+  {
+    key: 'actions',
+    label: 'Actions',
+    render: (row) => (
+      <div className="flex items-center gap-2">
+        {/* ── NEW: Record Reading button ── */}
+        <button
+          onClick={() =>
+            router.push(
+              `/meter-reader/readings/new?consumerId=${row.consumerId}` +
+              `&consumerName=${encodeURIComponent(`${row.firstName} ${row.lastName}`)}` +
+              `&meterSerialNo=${encodeURIComponent(row.meterSerialNo)}`
+            )
+          }
+          className="p-1.5 text-gray-400 hover:text-primary-600 transition-colors"
+          title="Record Reading"
+        >
+          <Zap size={16} />
+        </button>
+
+        {/* View Bill */}
+        <button
+          onClick={() => {
+            setSelectedConsumer(row)
+            setIsBillModalOpen(true)
+          }}
+          className="p-1.5 text-gray-400 hover:text-primary-600 transition-colors"
+          title="View Bill"
+        >
+          <Eye size={16} />
+        </button>
+
+        {/* Edit */}
+        <button
+          onClick={() => {
+            setSelectedConsumer(row)
+            setIsEditModalOpen(true)
+          }}
+          className="p-1.5 text-gray-400 hover:text-primary-600 transition-colors"
+          title="Edit Consumer"
+        >
+          <Edit size={16} />
+        </button>
+      </div>
+    ),
+  },
+]
 
   return (
     <div className="flex flex-col gap-6">

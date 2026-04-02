@@ -57,43 +57,12 @@ export default function MyBillPage() {
       render: (row) => row.previousReading?.toLocaleString() ?? '—',
     },
     {
-      key: 'consumptionKwh',
-      label: 'Actual KWH Used',
-      render: (row) => `${row.consumptionKwh ?? 0} kWh`,
-    },
-    {
-      key: 'proRatedKwhLoss',
-      label: 'Pro Rated KWH Loss',
-      render: (row) => `${row.proRatedKwhLoss ?? 0} kWh`,
-    },
-    {
-      key: 'totalKwh',
-      label: 'Total KWH',
-      render: (row) => `${row.totalKwh ?? 0} kWh`,
-    },
-    {
-      key: 'vatPassThroughTaxes',
-      label: 'VAT & PASS-THROUGH TAXES Amount',
-      render: (row) =>
-        `₱${(row.vatPassThroughTaxes ?? 0).toLocaleString('en-PH', {
-          minimumFractionDigits: 2,
-        })}`,
-    },
-    {
       key: 'amount',
-      label: 'Amount',
+      label: 'Amount (Amount with Tax/EVAT)',
       render: (row) =>
         `₱${(row.amount ?? 0).toLocaleString('en-PH', {
           minimumFractionDigits: 2,
         })}`,
-    },
-    {
-      key: 'amountWithTaxEvat',
-      label: 'Amount with Tax/EVAT',
-      render: (row) =>
-        <span className="font-semibold">{`₱${(row.amountWithTaxEvat ?? 0).toLocaleString('en-PH', {
-          minimumFractionDigits: 2,
-        })}`}</span>,
     },
     {
       key: 'paymentStatus',

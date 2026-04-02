@@ -45,18 +45,13 @@ export interface Consumer {
 
 // ─── Meter Reading ───────────────────────────────────────
 export interface MeterReading {
-  meterReadingId: string
-  consumerId: string
-  meterReaderId: string
+  meterReadingId:  string
+  consumerId:      string
+  meterReaderId:   string
   previousReading: number
-  currentReading: number
-  consumptionKwh: number
-  dateRecorded: string
-  amountWithTaxEvat: number
-  vatPassThroughTaxes: number
-  totalKwh: number
-  proRatedKwhLoss: number
-  billingMonth: string
+  currentReading:  number
+  dateRecorded:    string
+  billingMonth:    string
 }
 
 // ─── Bill ────────────────────────────────────────────────
