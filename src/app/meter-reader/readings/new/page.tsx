@@ -50,7 +50,7 @@ function RecordReadingForm() {
       const res = await api.get('/meter-reader/consumers', {
         params: { search },
       })
-      return res.data.data
+      return res.data
     },
     enabled: hasAccess && search.length > 1 && !selectedConsumer,
   })
@@ -90,7 +90,7 @@ function RecordReadingForm() {
   const mutation = useMutation({
     mutationFn: async (values: ReadingFormValues) => {
       const res = await api.post('/meter-reader/readings', values)
-      return res.data.data
+      return res.data
     },
     onSuccess: (data) => {
       setGeneratedBillAmount(data.billAmount)
@@ -107,12 +107,12 @@ function RecordReadingForm() {
             const res = await api.get(
             `/meter-reader/consumers/${selectedConsumer!.consumerId}/previous-reading`
             )
-            return res.data.data
+            return res.data
         },
     enabled: !!selectedConsumer,
 })
 
-const previousReading = previousReadingData?.previousReading ?? 0
+const previousReading = Number(previousReadingData?.previousReading ?? 0)
 
   if (authLoading) return null
   if (!hasAccess)  return null
