@@ -62,7 +62,7 @@ export async function GET(
         b.Billing_Month,
         m.Previous_Reading,
         m.Current_Reading,
-        m.Consumption_kWh
+        (m.Current_Reading - m.Previous_Reading) AS Consumption_kWh
        FROM Bill b
        LEFT JOIN MeterReading m ON b.MeterReading_ID = m.MeterReading_ID
        WHERE b.Consumer_ID = ?
