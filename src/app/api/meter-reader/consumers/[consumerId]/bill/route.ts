@@ -21,7 +21,6 @@ interface BillRow extends RowDataPacket {
   Billing_Month:    string
   Previous_Reading: string
   Current_Reading:  string
-  Consumption_kWh:  string
 }
 
 // ── GET /api/meter-reader/consumers/[consumerId]/bill ─────
@@ -61,8 +60,7 @@ export async function GET(
         b.Payment_Status,
         b.Billing_Month,
         m.Previous_Reading,
-        m.Current_Reading,
-        m.Consumption_kWh
+        m.Current_Reading
        FROM Bill b
        LEFT JOIN MeterReading m ON b.MeterReading_ID = m.MeterReading_ID
        WHERE b.Consumer_ID = ?
@@ -88,7 +86,7 @@ export async function GET(
         billingMonth:    b.Billing_Month,
         previousReading: Number(b.Previous_Reading || 0),
         currentReading:  Number(b.Current_Reading || 0),
-        consumption:     Number(b.Consumption_kWh || 0),
+        consumption:     Number(b.Current_Reading || 0) - Number(b.Previous_Reading || 0),
       })),
     })
 
