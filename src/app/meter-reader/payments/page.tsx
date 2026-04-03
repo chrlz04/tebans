@@ -16,7 +16,7 @@ interface PaymentCollection {
   billingMonth:  string
   amountDue:     number
   amountPaid:    number
-  paymentStatus: 'Paid' | 'Unpaid' | 'Partial'
+  paymentStatus: 'Paid' | 'Unpaid'
 }
 
 export default function MeterReaderPaymentsPage() {

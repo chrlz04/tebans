@@ -3,19 +3,19 @@ USE tebans_db;
 
 -- ─── Login ────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS Login (
-  Login_ID   VARCHAR(36)  PRIMARY KEY DEFAULT (UUID()),
+  Login_ID   VARCHAR(36)  PRIMARY KEY,
   User_name  VARCHAR(100) NOT NULL UNIQUE,
   Password   VARCHAR(255) NOT NULL
 );
 
 -- ─── User ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS User (
-  User_ID        VARCHAR(36)  PRIMARY KEY DEFAULT (UUID()),
+  User_ID        VARCHAR(36)  PRIMARY KEY,
   First_Name     VARCHAR(100) NOT NULL,
   Last_Name      VARCHAR(100) NOT NULL,
   Contact_No     VARCHAR(20)  NOT NULL,
   User_Type      ENUM('admin','meter_reader','cashier') NOT NULL,
-  Account_Status ENUM('Active','Inactive','Pending') NOT NULL DEFAULT 'Pending',
+  Account_Status ENUM('Active','Inactive') NOT NULL DEFAULT 'Active',
   Registration_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   Login_ID       VARCHAR(36)  NOT NULL UNIQUE,
   FOREIGN KEY (Login_ID) REFERENCES Login(Login_ID)
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS User (
 
 -- ─── Admin ────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS Admin (
-  Admin_ID        VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  Admin_ID        VARCHAR(36) PRIMARY KEY,
   Clearance_Level INT         NOT NULL DEFAULT 1,
   Login_ID        VARCHAR(36) NOT NULL UNIQUE,
   User_ID         VARCHAR(36) NOT NULL UNIQUE,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS Admin (
 
 -- ─── MeterReader ──────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS MeterReader (
-  MeterReader_ID VARCHAR(36)  PRIMARY KEY DEFAULT (UUID()),
+  MeterReader_ID VARCHAR(36)  PRIMARY KEY,
   Assigned_Area  VARCHAR(100) NOT NULL,
   User_ID        VARCHAR(36)  NOT NULL UNIQUE,
   FOREIGN KEY (User_ID) REFERENCES User(User_ID)
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS MeterReader (
 
 -- ─── Cashier ──────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS Cashier (
-  Cashier_ID    VARCHAR(36)  PRIMARY KEY DEFAULT (UUID()),
+  Cashier_ID    VARCHAR(36)  PRIMARY KEY,
   Assigned_Area VARCHAR(100) NOT NULL,
   User_ID       VARCHAR(36)  NOT NULL UNIQUE,
   FOREIGN KEY (User_ID) REFERENCES User(User_ID)
@@ -49,14 +49,14 @@ CREATE TABLE IF NOT EXISTS Cashier (
 
 -- ─── Consumer ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS Consumer (
-  Consumer_ID    VARCHAR(36)  PRIMARY KEY DEFAULT (UUID()),
+  Consumer_ID    VARCHAR(36)  PRIMARY KEY,
   First_Name     VARCHAR(100) NOT NULL,
   Last_Name      VARCHAR(100) NOT NULL,
   Address        TEXT         NOT NULL,
   Meter_Serial_No VARCHAR(100) NOT NULL UNIQUE,
   Area_Name      VARCHAR(100) NOT NULL,
   Contact_No     VARCHAR(20)  NOT NULL,
-  Account_Status ENUM('Active','Inactive','Pending') NOT NULL DEFAULT 'Pending',
+  Account_Status ENUM('Active','Inactive') NOT NULL DEFAULT 'Active',
   Registration_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   Login_ID       VARCHAR(36)  UNIQUE,
   FOREIGN KEY (Login_ID) REFERENCES Login(Login_ID)
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS Consumer (
 
 -- ─── MeterReading ─────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS MeterReading (
-  MeterReading_ID      VARCHAR(36)    PRIMARY KEY DEFAULT (UUID()),
+  MeterReading_ID      VARCHAR(36)    PRIMARY KEY,
   Consumer_ID          VARCHAR(36)    NOT NULL,
   MeterReader_ID       VARCHAR(36)    NOT NULL,
   Previous_Reading     DECIMAL(10,2)  NOT NULL DEFAULT 0,
@@ -77,12 +77,12 @@ CREATE TABLE IF NOT EXISTS MeterReading (
 
 -- ─── Bill ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS Bill (
-  Bill_ID          VARCHAR(36)   PRIMARY KEY DEFAULT (UUID()),
+  Bill_ID          VARCHAR(36)   PRIMARY KEY,
   Consumer_ID      VARCHAR(36)   NOT NULL,
   MeterReading_ID  VARCHAR(36)   NOT NULL UNIQUE,
   Amount           DECIMAL(10,2) NOT NULL,
   Due_Date         DATE          NOT NULL,
-  Payment_Status   ENUM('Paid','Unpaid','Partial') NOT NULL DEFAULT 'Unpaid',
+  Payment_Status   ENUM('Paid','Unpaid') NOT NULL DEFAULT 'Unpaid',
   Billing_Month    VARCHAR(20)   NOT NULL,
   FOREIGN KEY (Consumer_ID)     REFERENCES Consumer(Consumer_ID),
   FOREIGN KEY (MeterReading_ID) REFERENCES MeterReading(MeterReading_ID)
@@ -90,13 +90,13 @@ CREATE TABLE IF NOT EXISTS Bill (
 
 -- ─── Payment ──────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS Payment (
-  Payment_ID     VARCHAR(36)   PRIMARY KEY DEFAULT (UUID()),
+  Payment_ID     VARCHAR(36)   PRIMARY KEY,
   Bill_ID        VARCHAR(36)   NOT NULL,
   Cashier_ID     VARCHAR(36)   NOT NULL,
   Consumer_ID    VARCHAR(36)   NOT NULL,
   Amount_Paid    DECIMAL(10,2) NOT NULL,
   Date_Paid      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  Payment_Method ENUM('Cash','Check','Online') NOT NULL,
+  Payment_Method ENUM('Cash') NOT NULL,
   Receipt_Number VARCHAR(50)   NOT NULL UNIQUE,
   FOREIGN KEY (Bill_ID)     REFERENCES Bill(Bill_ID),
   FOREIGN KEY (Cashier_ID)  REFERENCES Cashier(Cashier_ID),
@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS Payment (
 
 -- ─── DisconnectionRequest ─────────────────────────────────
 CREATE TABLE IF NOT EXISTS DisconnectionRequest (
-  DisconnectionRequest_ID VARCHAR(36)  PRIMARY KEY DEFAULT (UUID()),
+  DisconnectionRequest_ID VARCHAR(36)  PRIMARY KEY,
   Consumer_ID             VARCHAR(36)  NOT NULL,
   MeterReader_ID          VARCHAR(36)  NOT NULL,
   Reason_for_Disconnection TEXT        NOT NULL,
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS DisconnectionRequest (
 
 -- ─── Notification ─────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS Notification (
-  Notification_ID         VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  Notification_ID         VARCHAR(36) PRIMARY KEY,
   Consumer_ID             VARCHAR(36) NOT NULL,
   MeterReading_ID         VARCHAR(36),
   DisconnectionRequest_ID VARCHAR(36),
