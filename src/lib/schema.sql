@@ -69,12 +69,7 @@ CREATE TABLE IF NOT EXISTS MeterReading (
   MeterReader_ID       VARCHAR(36)    NOT NULL,
   Previous_Reading     DECIMAL(10,2)  NOT NULL DEFAULT 0,
   Current_Reading      DECIMAL(10,2)  NOT NULL,
-  Consumption_kWh      DECIMAL(10,2)  NOT NULL,
   Date_Recorded        DATE           NOT NULL,
-  Amount_with_Tax_EVAT DECIMAL(10,2)  NOT NULL DEFAULT 0,
-  VAT_PassThrough_Taxes DECIMAL(10,2) NOT NULL DEFAULT 0,
-  Total_KWH            DECIMAL(10,2)  NOT NULL DEFAULT 0,
-  Pro_Rated_KWH_Loss   DECIMAL(10,2)  NOT NULL DEFAULT 0,
   Billing_Month        VARCHAR(20)    NOT NULL,
   FOREIGN KEY (Consumer_ID)    REFERENCES Consumer(Consumer_ID),
   FOREIGN KEY (MeterReader_ID) REFERENCES MeterReader(MeterReader_ID)
