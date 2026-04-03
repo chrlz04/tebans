@@ -36,15 +36,16 @@ export async function GET(
 
     const consumer = await queryOne<ConsumerRow>(
       `SELECT
-         Consumer_ID,
-         First_Name,
-         Last_Name,
-         Address,
-         Meter_Serial_No,
-         Contact_No,
-         Account_Status
-       FROM Consumer
-       WHERE Consumer_ID = ?`,
+         c.Consumer_ID,
+         u.First_Name,
+         u.Last_Name,
+         c.Address,
+         c.Meter_Serial_No,
+         u.Contact_No,
+         u.Account_Status
+       FROM Consumer c
+       JOIN User u ON u.User_ID = c.User_ID
+       WHERE c.Consumer_ID = ?`,
       [consumerId]
     )
 

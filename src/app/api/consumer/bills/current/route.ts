@@ -22,14 +22,15 @@ export async function GET(req: NextRequest) {
     // Get latest unpaid bill
     const currentBill = await queryOne<CurrentBillRow>(
       `SELECT
-        Bill_ID,
-        Amount,
-        Due_Date,
-        Payment_Status
-       FROM Bill
-       WHERE Consumer_ID = ?
-         AND Payment_Status != 'Paid'
-       ORDER BY Due_Date ASC
+        b.Bill_ID,
+        b.Amount,
+        b.Due_Date,
+        b.Payment_Status
+       FROM Bill b
+       JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
+       WHERE c.User_ID = ?
+         AND b.Payment_Status != 'Paid'
+       ORDER BY b.Due_Date ASC
        LIMIT 1`,
       [payload!.userId]
     )
@@ -37,9 +38,10 @@ export async function GET(req: NextRequest) {
     // Check if consumer has a pending disconnection request
     const disconnection = await queryOne<DisconnectionRow>(
       `SELECT COUNT(*) as count
-       FROM DisconnectionRequest
-       WHERE Consumer_ID = ?
-         AND Request_Status = 'Pending'`,
+       FROM DisconnectionRequest dr
+       JOIN Consumer c ON c.Consumer_ID = dr.Consumer_ID
+       WHERE c.User_ID = ?
+         AND dr.Request_Status = 'Pending'`,
       [payload!.userId]
     )
 

@@ -14,10 +14,10 @@ CREATE TABLE IF NOT EXISTS User (
   First_Name     VARCHAR(100) NOT NULL,
   Last_Name      VARCHAR(100) NOT NULL,
   Contact_No     VARCHAR(20)  NOT NULL,
-  User_Type      ENUM('admin','meter_reader','cashier') NOT NULL,
+  User_Type      ENUM('admin','meter_reader','cashier','consumer') NOT NULL,
   Account_Status ENUM('Active','Inactive') NOT NULL DEFAULT 'Active',
   Registration_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  Login_ID       VARCHAR(36)  NOT NULL UNIQUE,
+  Login_ID       VARCHAR(36)  UNIQUE,
   FOREIGN KEY (Login_ID) REFERENCES Login(Login_ID)
 );
 
@@ -50,16 +50,11 @@ CREATE TABLE IF NOT EXISTS Cashier (
 -- ─── Consumer ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS Consumer (
   Consumer_ID    VARCHAR(36)  PRIMARY KEY,
-  First_Name     VARCHAR(100) NOT NULL,
-  Last_Name      VARCHAR(100) NOT NULL,
   Address        TEXT         NOT NULL,
   Meter_Serial_No VARCHAR(100) NOT NULL UNIQUE,
   Area_Name      VARCHAR(100) NOT NULL,
-  Contact_No     VARCHAR(20)  NOT NULL,
-  Account_Status ENUM('Active','Inactive') NOT NULL DEFAULT 'Active',
-  Registration_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  Login_ID       VARCHAR(36)  UNIQUE,
-  FOREIGN KEY (Login_ID) REFERENCES Login(Login_ID)
+  User_ID        VARCHAR(36)  NOT NULL UNIQUE,
+  FOREIGN KEY (User_ID) REFERENCES User(User_ID)
 );
 
 -- ─── MeterReading ─────────────────────────────────────────

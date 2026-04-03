@@ -24,12 +24,12 @@ export async function PUT(req: NextRequest) {
       return err('Password must be at least 8 characters', 400)
     }
 
-    // Get login record via Consumer
+    // Get login record via User
     const loginRow = await queryOne<LoginRow>(
       `SELECT l.Login_ID, l.Password
        FROM Login l
-       JOIN Consumer c ON c.Login_ID = l.Login_ID
-       WHERE c.Consumer_ID = ?`,
+       JOIN User u ON u.Login_ID = l.Login_ID
+       WHERE u.User_ID = ?`,
       [payload!.userId]
     )
 

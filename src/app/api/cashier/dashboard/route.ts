@@ -53,12 +53,13 @@ export async function GET(req: NextRequest) {
       `SELECT
         p.Payment_ID,
         p.Consumer_ID,
-        c.First_Name,
-        c.Last_Name,
+        u.First_Name,
+        u.Last_Name,
         p.Amount_Paid,
         p.Date_Paid
        FROM Payment p
        JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
+       JOIN User u ON u.User_ID = c.User_ID
        WHERE DATE(p.Date_Paid) = ?
        ORDER BY p.Date_Paid DESC
        LIMIT 10`,
