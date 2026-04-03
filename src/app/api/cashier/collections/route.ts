@@ -24,14 +24,15 @@ export async function GET(req: NextRequest) {
     let sql = `
       SELECT
         p.Payment_ID,
-        c.First_Name,
-        c.Last_Name,
+        u.First_Name,
+        u.Last_Name,
         p.Amount_Paid,
         p.Date_Paid,
         p.Payment_Method,
         p.Receipt_Number
        FROM Payment p
        JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
+       JOIN User u ON u.User_ID = c.User_ID
        WHERE 1=1`
 
     const queryParams: any[] = []

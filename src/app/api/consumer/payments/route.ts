@@ -32,7 +32,8 @@ export async function GET(req: NextRequest) {
         b.Billing_Month
        FROM Payment p
        JOIN Bill b ON b.Bill_ID = p.Bill_ID
-       WHERE p.Consumer_ID = ?`
+       JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
+       WHERE c.User_ID = ?`
 
     const queryParams: any[] = [payload!.userId]
 

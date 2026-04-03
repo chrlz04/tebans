@@ -26,18 +26,19 @@ export async function GET(req: NextRequest) {
       `SELECT
         b.Bill_ID,
         b.Consumer_ID,
-        c.First_Name,
-        c.Last_Name,
+        u.First_Name,
+        u.Last_Name,
         b.Amount,
         b.Due_Date,
         b.Payment_Status,
         b.Billing_Month
        FROM Bill b
        JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
+       JOIN User u ON u.User_ID = c.User_ID
        WHERE b.Payment_Status != 'Paid'
          AND (
-           c.First_Name  LIKE ? OR
-           c.Last_Name   LIKE ? OR
+           u.First_Name  LIKE ? OR
+           u.Last_Name   LIKE ? OR
            b.Bill_ID     LIKE ?
          )
        ORDER BY b.Due_Date ASC`,

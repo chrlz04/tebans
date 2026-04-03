@@ -19,18 +19,24 @@ export async function GET(req: NextRequest) {
     const { error, payload } = requireRole(req, ['consumer'])
     if (error) return error
 
+    // payload!.userId is now the User_ID for consumer, so we join using that.
+    // However, maybe consumer endpoint expects Consumer_ID as the payload user ID?
+    // In auth/login, we use `user.User_ID` which is the User's ID. Wait, let's look at what payload.userId contains.
+    // In login route: account.User_ID. For consumers it used to be c.Consumer_ID AS User_ID.
+    // But now we use `u.User_ID` directly. Let's make sure we query by User_ID.
     const profile = await queryOne<ConsumerProfileRow>(
       `SELECT
-        Consumer_ID,
-        First_Name,
-        Last_Name,
-        Address,
-        Meter_Serial_No,
-        Area_Name,
-        Contact_No,
-        Account_Status
-       FROM Consumer
-       WHERE Consumer_ID = ?`,
+        c.Consumer_ID,
+        u.First_Name,
+        u.Last_Name,
+        c.Address,
+        c.Meter_Serial_No,
+        c.Area_Name,
+        u.Contact_No,
+        u.Account_Status
+       FROM Consumer c
+       JOIN User u ON u.User_ID = c.User_ID
+       WHERE c.User_ID = ?`,
       [payload!.userId]
     )
 

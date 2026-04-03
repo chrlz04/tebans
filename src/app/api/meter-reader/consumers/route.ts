@@ -25,21 +25,22 @@ export async function GET(req: NextRequest) {
 
     const consumers = await query<ConsumerRow>(
       `SELECT
-        Consumer_ID,
-        First_Name,
-        Last_Name,
-        Address,
-        Meter_Serial_No,
-        Area_Name,
-        Contact_No,
-        Account_Status
-       FROM Consumer
+        c.Consumer_ID,
+        u.First_Name,
+        u.Last_Name,
+        c.Address,
+        c.Meter_Serial_No,
+        c.Area_Name,
+        u.Contact_No,
+        u.Account_Status
+       FROM Consumer c
+       JOIN User u ON u.User_ID = c.User_ID
        WHERE
-         First_Name   LIKE ? OR
-         Last_Name    LIKE ? OR
-         Consumer_ID  LIKE ? OR
-         Area_Name    LIKE ?
-       ORDER BY First_Name ASC`,
+         u.First_Name   LIKE ? OR
+         u.Last_Name    LIKE ? OR
+         c.Consumer_ID  LIKE ? OR
+         c.Area_Name    LIKE ?
+       ORDER BY u.First_Name ASC`,
       [searchParam, searchParam, searchParam, searchParam]
     )
 
@@ -88,6 +89,25 @@ export async function POST(req: NextRequest) {
       return err('Meter serial number already exists', 409)
     }
 
+    const highestUser = await queryOne<{ User_ID: string } & RowDataPacket>(
+      `SELECT User_ID FROM User WHERE User_ID LIKE 'user-con-%' ORDER BY LENGTH(User_ID) DESC, User_ID DESC LIMIT 1`
+    )
+
+    let nextUserSeq = 1
+    if (highestUser && highestUser.User_ID) {
+      const match = highestUser.User_ID.match(/^user-con-(\d+)$/)
+      if (match && match[1]) {
+        nextUserSeq = parseInt(match[1], 10) + 1
+      }
+    }
+    const userId = `user-con-${nextUserSeq.toString().padStart(3, '0')}`
+
+    await execute(
+      `INSERT INTO User (User_ID, First_Name, Last_Name, Contact_No, User_Type, Account_Status)
+       VALUES (?, ?, ?, ?, 'consumer', 'Active')`,
+      [userId, firstName, lastName, contactNo]
+    )
+
     const highestConsumer = await queryOne<{ Consumer_ID: string } & RowDataPacket>(
       `SELECT Consumer_ID FROM Consumer WHERE Consumer_ID LIKE 'con-%' ORDER BY LENGTH(Consumer_ID) DESC, Consumer_ID DESC LIMIT 1`
     )
@@ -104,11 +124,9 @@ export async function POST(req: NextRequest) {
 
     await execute(
       `INSERT INTO Consumer (
-        Consumer_ID, First_Name, Last_Name,
-        Address, Meter_Serial_No, Area_Name,
-        Contact_No, Account_Status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'Active')`,
-      [consumerId, firstName, lastName, address, meterSerialNo, areaName, contactNo]
+        Consumer_ID, Address, Meter_Serial_No, Area_Name, User_ID
+      ) VALUES (?, ?, ?, ?, ?)`,
+      [consumerId, address, meterSerialNo, areaName, userId]
     )
 
     return ok({ consumerId }, 'Consumer account created successfully')

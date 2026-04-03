@@ -34,7 +34,8 @@ export async function GET(req: NextRequest) {
         b.Billing_Month,
         b.MeterReading_ID
        FROM Bill b
-       WHERE b.Consumer_ID = ?
+       JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
+       WHERE c.User_ID = ?
        ORDER BY b.Due_Date DESC`,
       [payload!.userId]
     )
