@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronRight, ArrowLeft } from 'lucide-react'
+import { ChevronRight, ArrowLeft, Plus } from 'lucide-react'
 import api from '@/lib/api'
 import Modal from '@/components/ui/Modal'
 import Badge from '@/components/ui/Badge'
@@ -48,23 +48,31 @@ export default function ConsumerBillModal({
   consumerName,
 }: ConsumerBillModalProps) {
   const [selectedBill, setSelectedBill] = useState<BillDetail | null>(null)
+  const [visibleCount, setVisibleCount] = useState(10) // show first 10 bills
 
   const { data, isLoading } = useQuery<BillResponse>({
     queryKey: ['consumer-bill', consumerId],
     queryFn: async () => {
-      const res = await api.get(
-        `/meter-reader/consumers/${consumerId}/bill`
-      )
+      const res = await api.get(`/meter-reader/consumers/${consumerId}/bill`)
       return res.data ?? { consumer: null, bills: [] }
     },
     enabled: isOpen && !!consumerId,
   })
 
-  const bills    = data?.bills    ?? []
+  const allBills = data?.bills ?? []
   const consumer = data?.consumer ?? null
+
+  // Sort bills by due date (newest first) to show most recent first
+  const sortedBills = [...allBills].sort(
+    (a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()
+  )
+
+  const visibleBills = sortedBills.slice(0, visibleCount)
+  const hasMore = visibleCount < sortedBills.length
 
   function handleClose() {
     setSelectedBill(null)
+    setVisibleCount(10) // reset on close
     onClose()
   }
 
@@ -92,8 +100,7 @@ export default function ConsumerBillModal({
         title="Bill Details"
         size="lg"
       >
-        <div className="flex flex-col gap-4">
-
+        <div className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto pr-1">
           {/* Back button */}
           <button
             onClick={() => setSelectedBill(null)}
@@ -224,7 +231,6 @@ export default function ConsumerBillModal({
               ₱{peso(selectedBill.amount)}
             </span>
           </div>
-
         </div>
       </Modal>
     )
@@ -238,58 +244,70 @@ export default function ConsumerBillModal({
       title="Consumer Bills"
       size="lg"
     >
-      {isLoading ? (
-        <div className="flex flex-col gap-3 animate-pulse">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-16 bg-gray-100 rounded-lg" />
-          ))}
-        </div>
-
-      ) : bills.length > 0 ? (
-        <div className="flex flex-col">
-          <p className="text-sm text-gray-500 mb-4">
-            {consumerName} · {bills.length} record{bills.length !== 1 ? 's' : ''}
-          </p>
-          <div className="divide-y divide-gray-100 border border-gray-100
-            rounded-xl overflow-hidden">
-            {bills.map((bill) => (
-              <button
-                key={bill.billId}
-                onClick={() => setSelectedBill(bill)}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left
-                  hover:bg-gray-50 transition-colors group"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900">
-                    {bill.billingMonth}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Due {fmtDate(bill.dueDate)}
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-sm font-semibold text-gray-900">
-                    ₱{peso(bill.amount)}
-                  </p>
-                  <div className="mt-0.5">
-                    <Badge status={bill.paymentStatus} />
-                  </div>
-                </div>
-                <ChevronRight
-                  size={16}
-                  className="text-gray-300 group-hover:text-gray-500
-                    transition-colors shrink-0"
-                />
-              </button>
+      <div className="max-h-[70vh] overflow-y-auto pr-1">
+        {isLoading ? (
+          <div className="flex flex-col gap-3 animate-pulse">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 bg-gray-100 rounded-lg" />
             ))}
           </div>
-        </div>
+        ) : sortedBills.length > 0 ? (
+          <div className="flex flex-col">
+            <p className="text-sm text-gray-500 mb-4">
+              {consumerName} · {sortedBills.length} record{sortedBills.length !== 1 ? 's' : ''}
+              {sortedBills.length > visibleCount && ` (showing ${visibleCount} most recent)`}
+            </p>
+            <div className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden">
+              {visibleBills.map((bill) => (
+                <button
+                  key={bill.billId}
+                  onClick={() => setSelectedBill(bill)}
+                  className="w-full flex items-center gap-4 px-5 py-4 text-left
+                    hover:bg-gray-50 transition-colors group"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900">
+                      {bill.billingMonth}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Due {fmtDate(bill.dueDate)}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-semibold text-gray-900">
+                      ₱{peso(bill.amount)}
+                    </p>
+                    <div className="mt-0.5">
+                      <Badge status={bill.paymentStatus} />
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={16}
+                    className="text-gray-300 group-hover:text-gray-500
+                      transition-colors shrink-0"
+                  />
+                </button>
+              ))}
+            </div>
 
-      ) : (
-        <div className="py-16 text-center text-sm text-gray-400">
-          No billing records found for this consumer.
-        </div>
-      )}
+            {hasMore && (
+              <button
+                onClick={() => setVisibleCount((prev) => prev + 10)}
+                className="mt-4 flex items-center justify-center gap-2 py-2.5
+                  text-sm font-medium text-primary-600 border border-primary-200
+                  rounded-xl hover:bg-primary-50 transition-colors"
+              >
+                <Plus size={16} />
+                Show more bills ({sortedBills.length - visibleCount} remaining)
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="py-16 text-center text-sm text-gray-400">
+            No billing records found for this consumer.
+          </div>
+        )}
+      </div>
     </Modal>
   )
 }
