@@ -38,13 +38,14 @@ export async function POST(req: NextRequest) {
     // Get consumer details
     const consumer = await queryOne<ConsumerRow>(
       `SELECT
-        Consumer_ID,
-        First_Name,
-        Last_Name,
-        Contact_No,
-        Meter_Serial_No
-       FROM Consumer
-       WHERE Consumer_ID = ?`,
+        c.Consumer_ID,
+        u.First_Name,
+        u.Last_Name,
+        u.Contact_No,
+        c.Meter_Serial_No
+       FROM Consumer c
+       JOIN User u ON u.User_ID = c.User_ID
+       WHERE c.Consumer_ID = ?`,
       [consumerId]
     )
 

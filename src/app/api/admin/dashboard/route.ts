@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
     // Total active consumers
     const activeConsumers = await queryOne<CountRow>(
       `SELECT COUNT(*) as count
-       FROM Consumer
-       WHERE Account_Status = 'Active'`
+       FROM User
+       WHERE User_Type = 'consumer' AND Account_Status = 'Active'`
     )
 
     // Pending disconnections

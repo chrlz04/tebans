@@ -41,26 +41,7 @@ export async function POST(req: NextRequest) {
       WHERE l.User_name = ?
     `, [username])
 
-    // ── Also check if consumer ──
-    let consumerUser = null
-    if (!user) {
-      consumerUser = await queryOne<LoginRow>(`
-        SELECT
-          l.Login_ID,
-          l.User_name,
-          l.Password,
-          c.Consumer_ID AS User_ID,
-          'consumer'    AS User_Type,
-          c.Account_Status,
-          c.First_Name,
-          c.Last_Name
-        FROM Login l
-        JOIN Consumer c ON c.Login_ID = l.Login_ID
-        WHERE l.User_name = ?
-      `, [username])
-    }
-
-    const account = user || consumerUser
+    const account = user
 
     if (!account) {
       return err('Invalid username or password', 401)

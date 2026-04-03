@@ -24,14 +24,15 @@ export async function GET(req: NextRequest) {
     const overdueAccounts = await query<OverdueRow>(
       `SELECT
         c.Consumer_ID,
-        c.First_Name,
-        c.Last_Name,
-        c.Contact_No,
+        u.First_Name,
+        u.Last_Name,
+        u.Contact_No,
         SUM(b.Amount) AS Amount,
         MIN(b.Due_Date) AS Due_Date,
         dr.Request_Status,
         dr.Scheduled_Date
        FROM Consumer c
+       JOIN User u ON u.User_ID = c.User_ID
        JOIN Bill b ON b.Consumer_ID = c.Consumer_ID
        LEFT JOIN DisconnectionRequest dr
          ON dr.Consumer_ID = c.Consumer_ID
@@ -41,9 +42,9 @@ export async function GET(req: NextRequest) {
          AND b.Due_Date < ?
        GROUP BY
          c.Consumer_ID,
-         c.First_Name,
-         c.Last_Name,
-         c.Contact_No,
+         u.First_Name,
+         u.Last_Name,
+         u.Contact_No,
          dr.Request_Status,
          dr.Scheduled_Date
        ORDER BY Due_Date ASC`,
