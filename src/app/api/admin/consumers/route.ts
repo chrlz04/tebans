@@ -25,22 +25,23 @@ export async function GET(req: NextRequest) {
 
     const consumers = await query<ConsumerRow>(
       `SELECT
-        Consumer_ID,
-        First_Name,
-        Last_Name,
-        Address,
-        Meter_Serial_No,
-        Area_Name,
-        Contact_No,
-        Account_Status,
-        Registration_Date
-       FROM Consumer
+        c.Consumer_ID,
+        u.First_Name,
+        u.Last_Name,
+        c.Address,
+        c.Meter_Serial_No,
+        c.Area_Name,
+        u.Contact_No,
+        u.Account_Status,
+        u.Registration_Date
+       FROM Consumer c
+       JOIN User u ON u.User_ID = c.User_ID
        WHERE
-         First_Name  LIKE ? OR
-         Last_Name   LIKE ? OR
-         Consumer_ID LIKE ? OR
-         Area_Name   LIKE ?
-       ORDER BY Registration_Date DESC`,
+         u.First_Name  LIKE ? OR
+         u.Last_Name   LIKE ? OR
+         c.Consumer_ID LIKE ? OR
+         c.Area_Name   LIKE ?
+       ORDER BY u.Registration_Date DESC`,
       [searchParam, searchParam, searchParam, searchParam]
     )
 

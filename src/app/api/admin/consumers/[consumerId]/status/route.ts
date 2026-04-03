@@ -19,7 +19,10 @@ export async function PATCH(
     }
 
     await execute(
-      'UPDATE Consumer SET Account_Status = ? WHERE Consumer_ID = ?',
+      `UPDATE User u
+       JOIN Consumer c ON c.User_ID = u.User_ID
+       SET u.Account_Status = ?
+       WHERE c.Consumer_ID = ?`,
       [status, consumerId]
     )
 

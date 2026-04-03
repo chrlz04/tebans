@@ -33,21 +33,12 @@ export async function PUT(req: NextRequest) {
     // ── Get current password from DB ──
     let loginRow: LoginRow | null = null
 
-    if (payload!.role === 'consumer') {
-      loginRow = await queryOne<LoginRow>(`
-        SELECT l.Login_ID, l.Password
-        FROM Login l
-        JOIN Consumer c ON c.Login_ID = l.Login_ID
-        WHERE c.Consumer_ID = ?
-      `, [payload!.userId])
-    } else {
-      loginRow = await queryOne<LoginRow>(`
-        SELECT l.Login_ID, l.Password
-        FROM Login l
-        JOIN User u ON u.Login_ID = l.Login_ID
-        WHERE u.User_ID = ?
-      `, [payload!.userId])
-    }
+    loginRow = await queryOne<LoginRow>(`
+      SELECT l.Login_ID, l.Password
+      FROM Login l
+      JOIN User u ON u.Login_ID = l.Login_ID
+      WHERE u.User_ID = ?
+    `, [payload!.userId])
 
     if (!loginRow) {
       return err('User not found', 404)

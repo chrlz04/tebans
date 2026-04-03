@@ -18,15 +18,17 @@ export async function PUT(
       return err('All fields are required', 400)
     }
 
-    await execute(
-      `UPDATE Consumer
-       SET
-         First_Name = ?,
-         Last_Name  = ?,
-         Address    = ?,
-         Contact_No = ?,
-         Area_Name  = ?
-       WHERE Consumer_ID = ?`,
+    // Need to get User_ID first to update User table
+    const result = await execute(`
+      UPDATE User u
+      JOIN Consumer c ON c.User_ID = u.User_ID
+      SET
+         u.First_Name = ?,
+         u.Last_Name  = ?,
+         c.Address    = ?,
+         u.Contact_No = ?,
+         c.Area_Name  = ?
+       WHERE c.Consumer_ID = ?`,
       [firstName, lastName, address, contactNo, areaName, consumerId]
     )
 
