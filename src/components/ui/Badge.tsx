@@ -6,7 +6,6 @@ type BadgeVariant =
   | 'Pending'
   | 'Paid'
   | 'Unpaid'
-  | 'Partial'
   | 'Overdue'
   | 'Executed'
   | 'Cancelled'
@@ -22,7 +21,6 @@ const badgeStyles: Record<BadgeVariant, string> = {
   Pending:   'bg-yellow-100 text-yellow-800',
   Paid:      'bg-green-100 text-green-800',
   Unpaid:    'bg-red-100 text-red-800',
-  Partial:   'bg-orange-100 text-orange-800',
   Overdue:   'bg-red-100 text-red-800',
   Executed:  'bg-blue-100 text-blue-800',
   Cancelled: 'bg-gray-100 text-gray-700',

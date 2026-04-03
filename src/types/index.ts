@@ -19,7 +19,7 @@ export interface ChangePasswordPayload {
 
 // ─── User ────────────────────────────────────────────────
 export type UserRole = 'admin' | 'meter_reader' | 'cashier'
-export type AccountStatus = 'Active' | 'Inactive' | 'Pending'
+export type AccountStatus = 'Active' | 'Inactive'
 
 export interface User {
   userId: string
@@ -55,7 +55,7 @@ export interface MeterReading {
 }
 
 // ─── Bill ────────────────────────────────────────────────
-export type PaymentStatus = 'Paid' | 'Unpaid' | 'Partial'
+export type PaymentStatus = 'Paid' | 'Unpaid'
 
 export interface Bill {
   billId: string
