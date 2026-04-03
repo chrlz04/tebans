@@ -55,7 +55,7 @@ export default function ConsumerBillModal({
       const res = await api.get(
         `/meter-reader/consumers/${consumerId}/bill`
       )
-      return res.data.data ?? { consumer: null, bills: [] }
+      return res.data ?? { consumer: null, bills: [] }
     },
     enabled: isOpen && !!consumerId,
   })
