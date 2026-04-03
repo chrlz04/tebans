@@ -36,7 +36,11 @@ export async function GET(
     const { consumerId } = await params
 
     const consumer = await queryOne<ConsumerRow>(
+<<<<<<< Updated upstream
       `SELECT
+=======
+      `SELECT 
+>>>>>>> Stashed changes
          Consumer_ID,
          First_Name,
          Last_Name,
