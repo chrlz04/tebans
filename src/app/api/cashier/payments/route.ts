@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
 import { query, execute, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
-import { v4 as uuidv4 } from 'uuid'
 
 interface BillRow extends RowDataPacket {
   Bill_ID:        string
@@ -26,7 +25,7 @@ export async function POST(req: NextRequest) {
       return err('At least one bill must be selected', 400)
     }
 
-    if (!['Cash', 'Check', 'Online'].includes(paymentMethod)) {
+    if (!['Cash'].includes(paymentMethod)) {
       return err('Invalid payment method', 400)
     }
 
@@ -54,13 +53,26 @@ export async function POST(req: NextRequest) {
       return err('No valid unpaid bills found', 400)
     }
 
+    const highestPayment = await queryOne<{ Payment_ID: string } & RowDataPacket>(
+      `SELECT Payment_ID FROM Payment WHERE Payment_ID LIKE 'pay-%' ORDER BY LENGTH(Payment_ID) DESC, Payment_ID DESC LIMIT 1`
+    )
+
+    let nextSeq = 1
+    if (highestPayment && highestPayment.Payment_ID) {
+      const match = highestPayment.Payment_ID.match(/^pay-(\d+)$/)
+      if (match && match[1]) {
+        nextSeq = parseInt(match[1], 10) + 1
+      }
+    }
+
     // Generate receipt number
     const receiptNumber = `RCP-${Date.now()}`
     const paymentIds: string[] = []
 
     // Record payment for each bill
     for (const bill of bills) {
-      const paymentId = uuidv4()
+      const paymentId = `pay-${nextSeq.toString().padStart(3, '0')}`
+      nextSeq++
       paymentIds.push(paymentId)
 
       await execute(
