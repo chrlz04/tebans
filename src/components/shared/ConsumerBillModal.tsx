@@ -22,7 +22,7 @@ interface BillDetail {
   billId:          string
   amount:          number
   dueDate:         string
-  paymentStatus:   'Paid' | 'Unpaid' | 'Partial'
+  paymentStatus:   'Paid' | 'Unpaid'
   billingMonth:    string
   previousReading: number
   currentReading:  number
