@@ -10,7 +10,7 @@ import { ArrowLeft, CheckCircle, Zap } from 'lucide-react'
 import Link from 'next/link'
 import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
-import { getManilaDateStr, getDueDateStr } from '@/lib/date-utils'
+import { getManilaDateStr, getFixedDueDateStr } from '@/lib/date-utils'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import SearchBar from '@/components/shared/SearchBar'
@@ -68,7 +68,7 @@ function RecordReadingForm() {
     defaultValues: {
       consumerId:  prefilledConsumerId,
       readingDate: getManilaDateStr(),
-      dueDate:     getDueDateStr(7),
+      dueDate:     getFixedDueDateStr(27),
     },
   })
 

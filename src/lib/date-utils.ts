@@ -31,3 +31,8 @@ export function getDueDateStr(daysToAdd: number) {
   }
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
+
+export function getFixedDueDateStr(targetDay: number) {
+  const { year, month } = getManilaDateParts();
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(targetDay).padStart(2, '0')}`;
+}
