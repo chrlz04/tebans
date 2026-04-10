@@ -19,22 +19,27 @@ export default function SearchBar({
   return (
     <div className={clsx('relative', className)}>
       <Search
-        size={16}
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+        size={18}
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" 
       />
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full pl-9 pr-9 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+        className={clsx(
+          "w-full pl-10 pr-10 py-2 text-sm rounded-lg bg-white outline-none transition-all",
+          "border border-gray-300 text-gray-800 placeholder:text-gray-400",
+          "shadow-sm ring-1 ring-black/5",
+          "focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20"
+        )}
       />
       {value && (
         <button
           onClick={() => onChange('')}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
         >
-          <X size={16} />
+          <X size={18} />
         </button>
       )}
     </div>

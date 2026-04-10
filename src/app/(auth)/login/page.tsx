@@ -7,7 +7,6 @@ import { z } from 'zod'
 import { Eye, EyeOff, Zap } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import api from '@/lib/api'
-import type { AuthResponse } from '@/types'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 
@@ -34,59 +33,54 @@ export default function LoginPage() {
   })
 
   const onSubmit = async (values: LoginFormValues) => {
-  try {
-    setServerError('')
-    const res = await api.post('/auth/login', values)
-    login(res.data)
-  } catch (err: unknown) {
-    const error = err as { response?: { data?: { message?: string } } }
-    setServerError(
-      error.response?.data?.message || 'Invalid username or password.'
-    )
+    try {
+      setServerError('')
+      const res = await api.post('/auth/login', values)
+      login(res.data)
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } }
+      setServerError(
+        error.response?.data?.message || 'Invalid username or password.'
+      )
+    }
   }
-}
 
   return (
     <div className="min-h-screen flex">
 
-      {/* ── Left Panel — Branding ── */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-primary-500 px-12 py-10 text-white">
-        <div className="flex items-center gap-3">
-          <div className="bg-white/20 p-2 rounded-lg">
-            <Zap size={24} className="text-white" />
+      {/* ── Left Panel — Branding (Desktop) ── */}
+      <div className="hidden lg:flex flex-col justify-center items-center w-1/2 bg-primary-500 px-12 py-10 text-white text-center">
+        
+        <div className="flex flex-col items-center gap-10 w-full max-w-xl">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center justify-center">
+              <Zap size={70} className="text-white" /> 
+            </div>
+            <span className="text-4xl font-semibold tracking-tight">TEBANS</span>
           </div>
-          <span className="text-xl font-semibold">TEBANS</span>
-        </div>
 
-        <div>
-          <h1 className="text-4xl font-bold leading-tight">
-            Tubod Electricity Billing Alert and Notification System
-          </h1>
-          <p className="mt-4 text-primary-100 text-lg">
-            Manage billing, payments, and notifications for Tubod Electric Cooperative consumers.
-          </p>
-        </div>
-
-        <div className="flex gap-6 text-sm text-primary-100">
-          <span>Tubod Electric Cooperative</span>
-          <span>Clarin, Bohol</span>
+          {/* Full System Name */}
+          <div className="w-full">
+            <h1 className="text-3xl font-bold leading-tight">
+              Tubod Electricity Billing Alert and Notification System
+            </h1>
+          </div>
         </div>
       </div>
 
       {/* ── Right Panel — Login Form ── */}
       <div className="flex flex-col justify-center w-full lg:w-1/2 px-6 sm:px-12 lg:px-16 bg-white">
-        <div className="w-full max-w-md mx-auto">
+        <div className="w-full max-w-md mx-auto flex flex-col items-center">
 
-          {/* Mobile Logo */}
-          <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <div className="bg-primary-500 p-1.5 rounded-lg">
-              <Zap size={18} className="text-white" />
+          {/* Logo and Brand Name */}
+          <div className="flex flex-col items-center gap-3 mb-8">
+            <div className="bg-primary-500 p-4 rounded-full shadow-lg shadow-primary-500/20 flex items-center justify-center aspect-square">
+              <Zap size={32} className="text-white" />
             </div>
-            <span className="text-lg font-semibold text-gray-900">TEBANS</span>
           </div>
 
-          {/* Heading */}
-          <div className="mb-8">
+          {/* Centered Heading */}
+          <div className="mb-8 text-center">
             <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
             <p className="text-sm text-gray-500 mt-1">
               Sign in to your account to continue
@@ -94,7 +88,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 w-full">
 
             {/* Username */}
             <Input
@@ -154,8 +148,8 @@ export default function LoginPage() {
           </form>
 
           {/* Footer */}
-          <p className="text-xs text-gray-400 text-center mt-8">
-            © 2026 Tubod Electric Cooperative. All rights reserved.
+          <p className="text-xs text-gray-400 text-center mt-12">
+            © 2026 TEBANS. All rights reserved.
           </p>
         </div>
       </div>
