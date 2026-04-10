@@ -5,12 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
+import ConsumerTabs from '../../components/ConsumerTabs'
 
 const consumerSchema = z.object({
   firstName:     z.string().min(1, 'First name is required'),
@@ -50,22 +50,16 @@ export default function RegisterConsumerPage() {
   return (
     <div className="max-w-2xl">
 
+      <ConsumerTabs />
+
       {/* Page Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Link
-          href="/meter-reader/consumers"
-          className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
-        >
-          <ArrowLeft size={20} />
-        </Link>
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">
-            Register New Consumer
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Create a new consumer account in the system
-          </p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Register New Consumer
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Create a new consumer account in the system
+        </p>
       </div>
 
       {/* Form Card */}
