@@ -274,7 +274,7 @@ export default function DisconnectionsPage() {
                   value={smsMessage}
                   onChange={(e) => setSmsMessage(e.target.value)}
                   rows={6}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                  className="w-full px-3 py-2 text-sm text-gray-900 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
                 />
                 <p className="text-xs text-gray-400 text-right">
                   {smsMessage.length} characters
