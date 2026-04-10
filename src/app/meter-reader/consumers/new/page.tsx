@@ -112,7 +112,7 @@ export default function RegisterConsumerPage() {
                 Area Name <span className="text-red-500">*</span>
               </label>
               <select
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 {...register('areaName')}
               >
                 <option value="">Select Area</option>

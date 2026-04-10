@@ -97,7 +97,7 @@ export default function PaymentHistoryPage() {
           <select
             value={year}
             onChange={(e) => setYear(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             {yearOptions.map((y) => (
               <option key={y} value={String(y)}>
