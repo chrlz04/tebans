@@ -29,6 +29,7 @@ export interface User {
   userType: UserRole
   accountStatus: AccountStatus
   registrationDate: string
+  assignedArea?: string
 }
 
 // ─── Consumer ────────────────────────────────────────────

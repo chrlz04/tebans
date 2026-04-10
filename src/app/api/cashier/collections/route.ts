@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
-import { query } from '@/lib/db-helpers'
+import { query, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 
 interface CollectionRow extends RowDataPacket {
@@ -15,8 +15,20 @@ interface CollectionRow extends RowDataPacket {
 
 export async function GET(req: NextRequest) {
   try {
-    const { error } = requireRole(req, ['cashier'])
+    const { error, payload } = requireRole(req, ['cashier'])
     if (error) return error
+
+    // Fetch the cashier's assigned area
+    const cashier = await queryOne<{ Assigned_Area: string } & RowDataPacket>(
+      `SELECT Assigned_Area FROM Cashier WHERE User_ID = ?`,
+      [payload!.userId]
+    )
+
+    if (!cashier) {
+      return err('Cashier profile not found', 404)
+    }
+
+    const assignedArea = cashier.Assigned_Area
 
     const startDate = req.nextUrl.searchParams.get('startDate') || ''
     const endDate   = req.nextUrl.searchParams.get('endDate')   || ''
@@ -33,9 +45,9 @@ export async function GET(req: NextRequest) {
        FROM Payment p
        JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
        JOIN User u ON u.User_ID = c.User_ID
-       WHERE 1=1`
+       WHERE c.Area_Name = ?`
 
-    const queryParams: any[] = []
+    const queryParams: any[] = [assignedArea]
 
     if (startDate) {
       sql += ` AND DATE(p.Date_Paid) >= ?`
