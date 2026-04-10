@@ -17,6 +17,7 @@ interface OverdueAccount {
   scheduledDate:       string
   contactNo:           string
   requestStatus:       'Pending' | 'Executed' | 'Cancelled'
+  isInactive?:         boolean
 }
 
 export default function DisconnectionsPage() {
@@ -30,6 +31,15 @@ export default function DisconnectionsPage() {
     queryKey: ['overdue-accounts'],
     queryFn: async () => {
       const res = await api.get('/meter-reader/disconnections/overdue')
+      return res.data
+    },
+    enabled: hasAccess,
+  })
+
+  const { data: inactiveAccounts, isLoading: inactiveLoading } = useQuery<OverdueAccount[]>({
+    queryKey: ['inactive-accounts'],
+    queryFn: async () => {
+      const res = await api.get('/meter-reader/disconnections/inactive')
       return res.data
     },
     enabled: hasAccess,
@@ -50,6 +60,7 @@ export default function DisconnectionsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['overdue-accounts'] })
+      queryClient.invalidateQueries({ queryKey: ['inactive-accounts'] })
       setSmsSent(true)
       setTimeout(() => {
         setSmsSent(false)
@@ -62,9 +73,15 @@ export default function DisconnectionsPage() {
   const handleSelectConsumer = (consumer: OverdueAccount) => {
     setSelectedConsumer(consumer)
     setSmsSent(false)
-    setSmsMessage(
-      `Dear ${consumer.firstName} ${consumer.lastName}, your electricity service is scheduled for disconnection on ${new Date(consumer.scheduledDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })} due to unpaid balance of ₱${consumer.amountDue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}. Please settle your account immediately. - Tubod Electric Cooperative`
-    )
+    if (consumer.isInactive) {
+      setSmsMessage(
+        `Dear ${consumer.firstName} ${consumer.lastName}, your electricity service is scheduled for disconnection on ${new Date(consumer.scheduledDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })} because there has been no billing history recorded for your account for a month. Please contact our office if this is an error. - Tubod Electric Cooperative`
+      )
+    } else {
+      setSmsMessage(
+        `Dear ${consumer.firstName} ${consumer.lastName}, your electricity service is scheduled for disconnection on ${new Date(consumer.scheduledDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })} due to unpaid balance of ₱${consumer.amountDue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}. Please settle your account immediately. - Tubod Electric Cooperative`
+      )
+    }
   }
 
   if (authLoading) return null
@@ -83,8 +100,11 @@ export default function DisconnectionsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Overdue Accounts List */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        {/* Lists Column */}
+        <div className="flex flex-col gap-6">
+
+          {/* Overdue Accounts List */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center gap-2 mb-4">
             <AlertTriangle size={18} className="text-red-500" />
             <h2 className="text-base font-semibold text-gray-900">
@@ -144,14 +164,81 @@ export default function DisconnectionsPage() {
               ))}
             </div>
           ) : (
-            <div className="py-10 text-center text-sm text-gray-400">
-              No overdue accounts found.
+              <div className="py-10 text-center text-sm text-gray-400">
+                No overdue accounts found.
+              </div>
+            )}
+          </div>
+
+          {/* Inactive Accounts List */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle size={18} className="text-yellow-500" />
+              <h2 className="text-base font-semibold text-gray-900">
+                Inactive Accounts (No Billing History)
+              </h2>
             </div>
-          )}
+
+            {inactiveLoading ? (
+              <div className="flex flex-col gap-3 animate-pulse">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="h-24 bg-gray-100 rounded-lg" />
+                ))}
+              </div>
+            ) : inactiveAccounts && inactiveAccounts.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                {inactiveAccounts.map((account) => (
+                  <button
+                    key={account.consumerId}
+                    type="button"
+                    onClick={() => handleSelectConsumer(account)}
+                    className={`w-full text-left p-4 rounded-lg border transition-colors ${
+                      selectedConsumer?.consumerId === account.consumerId
+                        ? 'border-primary-400 bg-primary-50'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {account.firstName} {account.lastName}
+                        </p>
+                        <p className="text-xs font-mono text-gray-500 mt-0.5">
+                          {account.consumerId}
+                        </p>
+                        <p className="text-xs text-yellow-600 mt-1 font-medium">
+                          No billing history for 1 month
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-sm font-bold text-gray-900">
+                          ₱0.00
+                        </span>
+                        <Badge status={account.requestStatus} />
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Scheduled:{' '}
+                      {new Date(account.scheduledDate).toLocaleDateString('en-PH', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="py-10 text-center text-sm text-gray-400">
+                No inactive accounts found.
+              </div>
+            )}
+          </div>
+
         </div>
 
         {/* SMS Action Panel */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 h-fit sticky top-6">
           <div className="flex items-center gap-2 mb-4">
             <Send size={18} className="text-primary-500" />
             <h2 className="text-base font-semibold text-gray-900">
