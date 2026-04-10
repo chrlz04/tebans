@@ -11,13 +11,16 @@ import { useRoleGuard } from '@/lib/use-role-guard'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import ConsumerTabs from '../../components/ConsumerTabs'
+import { PUROK_OPTIONS } from '@/lib/constants'
 
 const consumerSchema = z.object({
   firstName:     z.string().min(1, 'First name is required'),
   lastName:      z.string().min(1, 'Last name is required'),
   address:       z.string().min(1, 'Address is required'),
   meterSerialNo: z.string().min(1, 'Meter serial number is required'),
-  areaName:      z.string().min(1, 'Area name is required'),
+  areaName:      z.enum(PUROK_OPTIONS, {
+    errorMap: () => ({ message: 'Please select an area name' }),
+  } as any),
   contactNo:     z.string().min(1, 'Contact number is required'),
 })
 
@@ -104,13 +107,25 @@ export default function RegisterConsumerPage() {
               required
               {...register('meterSerialNo')}
             />
-            <Input
-              label="Area Name"
-              placeholder="e.g. Tubod, Clarin"
-              error={errors.areaName?.message}
-              required
-              {...register('areaName')}
-            />
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">
+                Area Name <span className="text-red-500">*</span>
+              </label>
+              <select
+                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                {...register('areaName')}
+              >
+                <option value="">Select Area</option>
+                {PUROK_OPTIONS.map((area) => (
+                  <option key={area} value={area}>
+                    {area}
+                  </option>
+                ))}
+              </select>
+              {errors.areaName && (
+                <p className="text-xs text-red-600">{errors.areaName.message}</p>
+              )}
+            </div>
           </div>
 
           {/* Contact */}

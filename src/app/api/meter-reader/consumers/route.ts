@@ -17,8 +17,20 @@ interface ConsumerRow extends RowDataPacket {
 // ── GET /api/meter-reader/consumers ──────────────────────
 export async function GET(req: NextRequest) {
   try {
-    const { error } = requireRole(req, ['meter_reader'])
+    const { error, payload } = requireRole(req, ['meter_reader'])
     if (error) return error
+
+    // Fetch the meter reader's assigned area
+    const meterReader = await queryOne<{ Assigned_Area: string } & RowDataPacket>(
+      `SELECT Assigned_Area FROM MeterReader WHERE User_ID = ?`,
+      [payload!.userId]
+    )
+
+    if (!meterReader) {
+      return err('Meter reader profile not found', 404)
+    }
+
+    const assignedArea = meterReader.Assigned_Area
 
     const search      = req.nextUrl.searchParams.get('search') || ''
     const searchParam = `%${search}%`
@@ -35,13 +47,15 @@ export async function GET(req: NextRequest) {
         u.Account_Status
        FROM Consumer c
        JOIN User u ON u.User_ID = c.User_ID
-       WHERE
-         u.First_Name   LIKE ? OR
-         u.Last_Name    LIKE ? OR
-         c.Consumer_ID  LIKE ? OR
-         c.Area_Name    LIKE ?
+       WHERE c.Area_Name = ?
+         AND (
+           u.First_Name   LIKE ? OR
+           u.Last_Name    LIKE ? OR
+           c.Consumer_ID  LIKE ? OR
+           c.Area_Name    LIKE ?
+         )
        ORDER BY u.First_Name ASC`,
-      [searchParam, searchParam, searchParam, searchParam]
+      [assignedArea, searchParam, searchParam, searchParam, searchParam]
     )
 
     return ok(consumers.map((c) => ({

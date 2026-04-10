@@ -18,7 +18,7 @@ export async function PUT(
     if (error) return error
 
     const { userId }  = await params
-    const { firstName, lastName, contactNo, userType } = await req.json()
+    const { firstName, lastName, contactNo, userType, assignedArea } = await req.json()
 
     if (!firstName || !lastName || !contactNo) {
       return err('All fields are required', 400)
@@ -30,6 +30,18 @@ export async function PUT(
        WHERE User_ID = ?`,
       [firstName, lastName, contactNo, userType, userId]
     )
+
+    if (userType === 'meter_reader' && assignedArea) {
+      await execute(
+        `UPDATE MeterReader SET Assigned_Area = ? WHERE User_ID = ?`,
+        [assignedArea, userId]
+      )
+    } else if (userType === 'cashier' && assignedArea) {
+      await execute(
+        `UPDATE Cashier SET Assigned_Area = ? WHERE User_ID = ?`,
+        [assignedArea, userId]
+      )
+    }
 
     return ok(null, 'Staff account updated successfully')
 
