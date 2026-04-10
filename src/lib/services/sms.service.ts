@@ -76,6 +76,27 @@ export function buildBillingAlertMessage({
   )
 }
 
+// ── Build payment receipt message ──────────────────────────
+export function buildPaymentReceiptMessage({
+  consumerName,
+  amountPaid,
+  receiptNumber,
+}: {
+  consumerName:  string
+  amountPaid:    number
+  receiptNumber: string
+}): string {
+  const formattedAmount = amountPaid.toLocaleString('en-PH', {
+    minimumFractionDigits: 2,
+  })
+
+  return (
+    `Dear ${consumerName}, your payment of ₱${formattedAmount} has been received. ` +
+    `Receipt No: ${receiptNumber}. ` +
+    `- Tubod Electric Cooperative`
+  )
+}
+
 // ── Build disconnection alert message ────────────────────
 export function buildDisconnectionMessage({
   consumerName,
