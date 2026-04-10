@@ -1,7 +1,10 @@
 import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
-import { query, execute, queryOne } from '@/lib/db-helpers'
+import { query, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
+import { generateSequentialId } from '@/lib/services/billing.service'
+import { generateReceiptNumber, recordPayment, updateBillStatus } from '@/lib/services/payment.service'
+import { sendSms, buildPaymentReceiptMessage } from '@/lib/services/sms.service'
 
 interface BillRow extends RowDataPacket {
   Bill_ID:        string
@@ -12,6 +15,12 @@ interface BillRow extends RowDataPacket {
 
 interface CashierRow extends RowDataPacket {
   Cashier_ID: string
+}
+
+interface ConsumerRow extends RowDataPacket {
+  First_Name: string
+  Last_Name:  string
+  Contact_No: string
 }
 
 export async function POST(req: NextRequest) {
@@ -53,63 +62,63 @@ export async function POST(req: NextRequest) {
       return err('No valid unpaid bills found', 400)
     }
 
-    const highestPayment = await queryOne<{ Payment_ID: string } & RowDataPacket>(
-      `SELECT Payment_ID FROM Payment WHERE Payment_ID LIKE 'pay-%' ORDER BY LENGTH(Payment_ID) DESC, Payment_ID DESC LIMIT 1`
-    )
-
-    let nextSeq = 1
-    if (highestPayment && highestPayment.Payment_ID) {
-      const match = highestPayment.Payment_ID.match(/^pay-(\d+)$/)
-      if (match && match[1]) {
-        nextSeq = parseInt(match[1], 10) + 1
-      }
-    }
-
     // Generate receipt number
-    const receiptNumber = `RCP-${Date.now()}`
+    const receiptNumber = await generateReceiptNumber()
     const paymentIds: string[] = []
 
     // Record payment for each bill
     for (const bill of bills) {
-      const paymentId = `pay-${nextSeq.toString().padStart(3, '0')}`
-      nextSeq++
+      const paymentId = await generateSequentialId('Payment', 'Payment_ID', 'pay')
       paymentIds.push(paymentId)
 
-      await execute(
-        `INSERT INTO Payment (
-          Payment_ID,
-          Bill_ID,
-          Cashier_ID,
-          Consumer_ID,
-          Amount_Paid,
-          Payment_Method,
-          Receipt_Number
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          paymentId,
-          bill.Bill_ID,
-          cashier.Cashier_ID,
-          bill.Consumer_ID,
-          bill.Amount,
-          paymentMethod,
-          receiptNumber,
-        ]
+      await recordPayment({
+        paymentId,
+        billId:        bill.Bill_ID,
+        cashierId:     cashier.Cashier_ID,
+        consumerId:    bill.Consumer_ID,
+        amountPaid:    bill.Amount,
+        paymentMethod,
+        receiptNumber,
+      })
+
+      // Update bill status
+      await updateBillStatus(bill.Bill_ID, bill.Amount)
+    }
+
+    const totalAmount = bills.reduce((sum, b) => sum + b.Amount, 0)
+
+    // Group consumers to send SMS (usually, one payment is for one consumer's bills,
+    // but just in case multiple consumers' bills are paid in one request)
+    const consumerIds = [...new Set(bills.map(b => b.Consumer_ID))]
+    for (const cid of consumerIds) {
+      const consumerAmount = bills.filter(b => b.Consumer_ID === cid).reduce((sum, b) => sum + b.Amount, 0)
+      const consumer = await queryOne<ConsumerRow>(
+        `SELECT u.First_Name, u.Last_Name, u.Contact_No
+         FROM Consumer c
+         JOIN User u ON c.User_ID = u.User_ID
+         WHERE c.Consumer_ID = ?`,
+        [cid]
       )
 
-      // Update bill status to Paid
-      await execute(
-        `UPDATE Bill
-         SET Payment_Status = 'Paid'
-         WHERE Bill_ID = ?`,
-        [bill.Bill_ID]
-      )
+      if (consumer?.Contact_No) {
+        const smsContent = buildPaymentReceiptMessage({
+          consumerName:  `${consumer.First_Name} ${consumer.Last_Name}`,
+          amountPaid:    consumerAmount,
+          receiptNumber: receiptNumber,
+        })
+
+        await sendSms({
+          to:      consumer.Contact_No,
+          content: smsContent,
+        })
+      }
     }
 
     return ok({
       receiptNumber,
       paymentIds,
       totalBills: bills.length,
-      totalAmount: bills.reduce((sum, b) => sum + b.Amount, 0),
+      totalAmount,
     }, 'Payment recorded successfully')
 
   } catch (error) {
