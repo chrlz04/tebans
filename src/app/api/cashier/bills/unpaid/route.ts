@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
-import { query } from '@/lib/db-helpers'
+import { query, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 
 interface UnpaidBillRow extends RowDataPacket {
@@ -16,8 +16,20 @@ interface UnpaidBillRow extends RowDataPacket {
 
 export async function GET(req: NextRequest) {
   try {
-    const { error } = requireRole(req, ['cashier'])
+    const { error, payload } = requireRole(req, ['cashier'])
     if (error) return error
+
+    // Fetch the cashier's assigned area
+    const cashier = await queryOne<{ Assigned_Area: string } & RowDataPacket>(
+      `SELECT Assigned_Area FROM Cashier WHERE User_ID = ?`,
+      [payload!.userId]
+    )
+
+    if (!cashier) {
+      return err('Cashier profile not found', 404)
+    }
+
+    const assignedArea = cashier.Assigned_Area
 
     const search      = req.nextUrl.searchParams.get('search') || ''
     const searchParam = `%${search}%`
@@ -36,13 +48,14 @@ export async function GET(req: NextRequest) {
        JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
        JOIN User u ON u.User_ID = c.User_ID
        WHERE b.Payment_Status != 'Paid'
+         AND c.Area_Name = ?
          AND (
            u.First_Name  LIKE ? OR
            u.Last_Name   LIKE ? OR
            b.Bill_ID     LIKE ?
          )
        ORDER BY b.Due_Date ASC`,
-      [searchParam, searchParam, searchParam]
+      [assignedArea, searchParam, searchParam, searchParam]
     )
 
     return ok(bills.map((b) => ({
