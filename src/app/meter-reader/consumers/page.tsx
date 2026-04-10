@@ -126,12 +126,20 @@ export default function MeterReaderConsumersPage() {
             View and manage assigned consumer accounts
           </p>
         </div>
-        <Link href="/meter-reader/consumers/new">
-          <Button variant="primary" size="sm">
-            <UserPlus size={16} className="mr-2" />
-            Register Consumer
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/meter-reader/readings/batch">
+            <Button variant="secondary" size="sm">
+              <Zap size={16} className="mr-2" />
+              Batch Input
+            </Button>
+          </Link>
+          <Link href="/meter-reader/consumers/new">
+            <Button variant="primary" size="sm">
+              <UserPlus size={16} className="mr-2" />
+              Register Consumer
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Main Card */}
