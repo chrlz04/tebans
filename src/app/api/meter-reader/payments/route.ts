@@ -26,8 +26,8 @@ export async function GET(req: NextRequest) {
       SELECT
         p.Payment_ID,
         c.Consumer_ID,
-        c.First_Name,
-        c.Last_Name,
+        u.First_Name,
+        u.Last_Name,
         b.Billing_Month,
         b.Amount,
         p.Amount_Paid,
@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
        FROM Payment p
        JOIN Bill b     ON b.Bill_ID      = p.Bill_ID
        JOIN Consumer c ON c.Consumer_ID  = p.Consumer_ID
+       JOIN User u     ON u.User_ID      = c.User_ID
        WHERE 1=1`
 
     const queryParams: any[] = []
