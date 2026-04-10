@@ -2,9 +2,17 @@ import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
 import { execute, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
+import { generateSequentialId } from '@/lib/services/billing.service'
+import { sendSms, buildDisconnectionMessage } from '@/lib/services/sms.service'
 
 interface MeterReaderRow extends RowDataPacket {
   MeterReader_ID: string
+}
+
+interface ConsumerRow extends RowDataPacket {
+  First_Name: string
+  Last_Name:  string
+  Contact_No: string
 }
 
 // ── POST /api/meter-reader/disconnections ─────────────────
@@ -29,23 +37,18 @@ export async function POST(req: NextRequest) {
       return err('Meter reader record not found', 404)
     }
 
-    const highestDisc = await queryOne<{ DisconnectionRequest_ID: string } & RowDataPacket>(
-      `SELECT DisconnectionRequest_ID FROM DisconnectionRequest WHERE DisconnectionRequest_ID LIKE 'disc-%' ORDER BY LENGTH(DisconnectionRequest_ID) DESC, DisconnectionRequest_ID DESC LIMIT 1`
+    const disconnectionId = await generateSequentialId(
+      'DisconnectionRequest',
+      'DisconnectionRequest_ID',
+      'disc'
     )
-
-    let nextSeq = 1
-    if (highestDisc && highestDisc.DisconnectionRequest_ID) {
-      const match = highestDisc.DisconnectionRequest_ID.match(/^disc-(\d+)$/)
-      if (match && match[1]) {
-        nextSeq = parseInt(match[1], 10) + 1
-      }
-    }
-    const disconnectionId = `disc-${nextSeq.toString().padStart(3, '0')}`
 
     // Scheduled date = 7 days from now
     const scheduledDate = new Date()
     scheduledDate.setDate(scheduledDate.getDate() + 7)
     const scheduledDateStr = scheduledDate.toISOString().split('T')[0]
+
+    const reason = smsMessage || 'Unpaid electricity bill'
 
     // Insert disconnection request
     await execute(
@@ -61,10 +64,32 @@ export async function POST(req: NextRequest) {
         disconnectionId,
         consumerId,
         meterReader.MeterReader_ID,
-        smsMessage || 'Unpaid electricity bill',
+        reason,
         scheduledDateStr,
       ]
     )
+
+    // Send SMS Notification
+    const consumer = await queryOne<ConsumerRow>(
+      `SELECT u.First_Name, u.Last_Name, u.Contact_No
+       FROM Consumer c
+       JOIN User u ON c.User_ID = u.User_ID
+       WHERE c.Consumer_ID = ?`,
+      [consumerId]
+    )
+
+    if (consumer?.Contact_No) {
+      const smsContent = buildDisconnectionMessage({
+        consumerName:  `${consumer.First_Name} ${consumer.Last_Name}`,
+        scheduledDate: scheduledDateStr,
+        reason:        reason,
+      })
+
+      await sendSms({
+        to:      consumer.Contact_No,
+        content: smsContent,
+      })
+    }
 
     return ok({
       disconnectionId,
