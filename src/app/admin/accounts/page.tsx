@@ -151,12 +151,6 @@ export default function ManageAccountsPage() {
       render: (row) => (
         <div className="flex items-center gap-2">
           <button
-            className="p-1.5 text-gray-400 hover:text-primary-600 transition-colors"
-            title="View"
-          >
-            <Eye size={16} />
-          </button>
-          <button
             onClick={() =>
               toggleStatus.mutate({
                 id: row.consumerId,
@@ -193,12 +187,6 @@ export default function ManageAccountsPage() {
             View and manage staff and consumer accounts
           </p>
         </div>
-        <Link href="/admin/staff/new">
-          <Button variant="primary" size="sm">
-            <UserPlus size={16} className="mr-2" />
-            Register Staff
-          </Button>
-        </Link>
       </div>
 
       {/* Main Card */}
