@@ -15,7 +15,7 @@ export async function generateReceiptNumber(): Promise<string> {
   const last = await queryOne<RowDataPacket & { id: string }>(
     `SELECT Receipt_Number as id
      FROM Payment
-     ORDER BY Receipt_Number DESC
+     ORDER BY LENGTH(Receipt_Number) DESC, Receipt_Number DESC
      LIMIT 1`
   )
 
@@ -87,8 +87,6 @@ export async function updateBillStatus(
 
   if (amountPaid >= bill.Amount) {
     newStatus = 'Paid'
-  } else if (amountPaid > 0) {
-    newStatus = 'Partial'
   } else {
     newStatus = 'Unpaid'
   }
