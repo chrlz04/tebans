@@ -100,7 +100,7 @@ export default function EditStaffModal({
               User Type <span className="text-red-500">*</span>
             </label>
             <select
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
               {...register('userType')}
             >
               <option value="admin">Admin</option>
@@ -117,7 +117,7 @@ export default function EditStaffModal({
               Assigned Area
             </label>
             <select
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
               {...register('assignedArea')}
               disabled={staff.userType === 'admin'}
             >
