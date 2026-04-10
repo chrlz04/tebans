@@ -29,9 +29,10 @@ export async function POST(req: NextRequest) {
       currentReading,
       readingDate,
       amountWithTaxEvat,
+      dueDate,
     } = await req.json()
 
-    if (!consumerId || currentReading === undefined || !readingDate || !amountWithTaxEvat) {
+    if (!consumerId || currentReading === undefined || !readingDate || !amountWithTaxEvat || !dueDate) {
       return err('All fields are required', 400)
     }
 
@@ -82,10 +83,8 @@ export async function POST(req: NextRequest) {
       month: 'long',
     })
 
-    // Due date = 30 days from reading date
-    const dueDate = new Date(date)
-    dueDate.setDate(dueDate.getDate() + 30)
-    const dueDateStr = dueDate.toISOString().split('T')[0]
+    // Use the user-provided due date
+    const dueDateStr = dueDate
 
     // Generate IDs with proper sequential string format
     const highestReading = await queryOne<{ MeterReading_ID: string } & RowDataPacket>(

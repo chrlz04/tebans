@@ -21,6 +21,7 @@ const readingSchema = z.object({
     .number({ error: 'Reading must be a number' })
     .min(0, 'Reading cannot be negative'),
   readingDate:       z.string().min(1, 'Reading date is required'),
+  dueDate:           z.string().min(1, 'Due date is required'),
   amountWithTaxEvat: z
     .number({ error: 'Amount must be a number' })
     .min(0, 'Amount cannot be negative'),
@@ -292,7 +293,7 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
             </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
             <Input
             label="Current Reading (kWh)"
             type="number"
@@ -307,6 +308,13 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
             error={errors.readingDate?.message}
             required
             {...register('readingDate')}
+            />
+            <Input
+            label="Due Date"
+            type="date"
+            error={errors.dueDate?.message}
+            required
+            {...register('dueDate')}
             />
         </div>
 
