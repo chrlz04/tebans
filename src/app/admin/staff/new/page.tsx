@@ -11,6 +11,7 @@ import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
+import { PUROK_OPTIONS } from '@/lib/constants'
 
 const staffSchema = z
   .object({
@@ -19,7 +20,9 @@ const staffSchema = z
     contactNo:   z.string().min(1, 'Contact number is required'),
     username:    z.string().min(1, 'Username is required'),
     userType:    z.enum(['meter_reader', 'cashier']),
-    assignedArea: z.string().min(1, 'Assigned area is required'),
+    assignedArea: z.enum(PUROK_OPTIONS, {
+      errorMap: () => ({ message: 'Please select an assigned area' }),
+    } as any),
     password:    z
       .string()
       .min(8, 'Password must be at least 8 characters')
@@ -137,13 +140,25 @@ export default function StaffRegistrationPage() {
                 <option value="cashier">Cashier</option>
               </select>
             </div>
-            <Input
-              label="Assigned Area"
-              placeholder="e.g. Tubod, Clarin"
-              error={errors.assignedArea?.message}
-              required
-              {...register('assignedArea')}
-            />
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">
+                Assigned Area <span className="text-red-500">*</span>
+              </label>
+              <select
+                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                {...register('assignedArea')}
+              >
+                <option value="">Select Area</option>
+                {PUROK_OPTIONS.map((area) => (
+                  <option key={area} value={area}>
+                    {area}
+                  </option>
+                ))}
+              </select>
+              {errors.assignedArea && (
+                <p className="text-xs text-red-600">{errors.assignedArea.message}</p>
+              )}
+            </div>
           </div>
 
           {/* Divider */}
