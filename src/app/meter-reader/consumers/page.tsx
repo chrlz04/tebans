@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Eye, Edit, UserPlus, Zap } from 'lucide-react'
+import { Eye, Edit, Zap } from 'lucide-react'
 import { useRouter } from 'next/navigation' 
 import Link from 'next/link'
 import api from '@/lib/api'
@@ -13,6 +13,7 @@ import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import ConsumerBillModal from '@/components/shared/ConsumerBillModal'
 import EditConsumerModal from '@/components/shared/EditConsumerModal'
+import ConsumerTabs from '../components/ConsumerTabs'
 import type { Consumer } from '@/types'
 import type { Column } from '@/components/shared/DataTable'
 
@@ -118,12 +119,14 @@ export default function MeterReaderConsumersPage() {
   return (
     <div className="flex flex-col gap-6">
 
+      <ConsumerTabs />
+
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Consumers</h1>
+          <h1 className="text-3xl font-bold text-gray-900">View Consumers</h1>
           <p className="text-sm text-gray-500 mt-1">
-            View and manage assigned consumer accounts
+            Browse and search assigned consumer accounts
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -131,12 +134,6 @@ export default function MeterReaderConsumersPage() {
             <Button variant="secondary" size="sm">
               <Zap size={16} className="mr-2" />
               Batch Input
-            </Button>
-          </Link>
-          <Link href="/meter-reader/consumers/new">
-            <Button variant="primary" size="sm">
-              <UserPlus size={16} className="mr-2" />
-              Register Consumer
             </Button>
           </Link>
         </div>
