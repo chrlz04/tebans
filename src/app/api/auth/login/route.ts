@@ -3,6 +3,10 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { queryOne } from '@/lib/db-helpers'
 import { ok, err } from '@/lib/auth-helpers'
+import { handleApiError } from '@/lib/error-handler'
+import { validateRequired } from '@/lib/validators'
+import { logger } from '@/lib/logger'
+import { checkRateLimit } from '@/lib/rate-limiter'
 import { RowDataPacket } from 'mysql2'
 
 interface LoginRow extends RowDataPacket {
@@ -18,11 +22,19 @@ interface LoginRow extends RowDataPacket {
 
 export async function POST(req: NextRequest) {
   try {
+
+    const ip = req.headers.get('x-forwarded-for') || 'unknown'
+    const { allowed } = checkRateLimit(ip)
+    if (!allowed) {
+      return err('Too many login attempts, please try again later', 429)
+    }
+
     const { username, password } = await req.json()
 
     // ── Validate inputs ──
-    if (!username || !password) {
-      return err('Username and password are required', 400)
+    const validationError = validateRequired({ username, password }, ['username', 'password'])
+    if (validationError) {
+      return err(validationError, 400)
     }
 
     // ── Find user by username ──
@@ -78,7 +90,7 @@ export async function POST(req: NextRequest) {
     }, 'Login successful')
 
   } catch (error) {
-    console.error('Login error:', error)
-    return err('Internal server error', 500)
+    logger.error('Login error:', error)
+    return handleApiError(error)
   }
 }

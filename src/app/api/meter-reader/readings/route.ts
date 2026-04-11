@@ -1,5 +1,8 @@
 import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
+import { handleApiError } from '@/lib/error-handler'
+import { validateRequired } from '@/lib/validators'
+import { logger } from '@/lib/logger'
 import { queryOne, execute } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 
@@ -32,8 +35,13 @@ export async function POST(req: NextRequest) {
       dueDate,
     } = await req.json()
 
-    if (!consumerId || currentReading === undefined || !readingDate || !amountWithTaxEvat || !dueDate) {
-      return err('All fields are required', 400)
+
+    const reqError = validateRequired({
+      consumerId, currentReading, readingDate, amountWithTaxEvat, dueDate
+    }, ['consumerId', 'readingDate', 'amountWithTaxEvat', 'dueDate'])
+
+    if (reqError || currentReading === undefined) {
+      return err(reqError || 'currentReading is required', 400)
     }
 
     // Get consumer details
@@ -165,7 +173,7 @@ export async function POST(req: NextRequest) {
     }, 'Bill generated successfully')
 
   } catch (error) {
-    console.error('Record meter reading error:', error)
-    return err('Internal server error', 500)
+    logger.error('Record meter reading error:', error)
+    return handleApiError(error)
   }
 }

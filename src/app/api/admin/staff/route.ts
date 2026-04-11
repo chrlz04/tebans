@@ -1,6 +1,9 @@
 import { NextRequest } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
+import { handleApiError } from '@/lib/error-handler'
+import { validateRequired } from '@/lib/validators'
+import { logger } from '@/lib/logger'
 import { query, execute, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 
@@ -60,8 +63,8 @@ export async function GET(req: NextRequest) {
     })))
 
   } catch (error) {
-    console.error('Get staff error:', error)
-    return err('Internal server error', 500)
+    logger.error('Get staff error:', error)
+    return handleApiError(error)
   }
 }
 
@@ -82,8 +85,13 @@ export async function POST(req: NextRequest) {
     } = await req.json()
 
     // Validate required fields
-    if (!firstName || !lastName || !contactNo || !username || !userType || !password) {
-      return err('All fields are required', 400)
+
+    const reqError = validateRequired({
+      firstName, lastName, contactNo, username, userType, password
+    }, ['firstName', 'lastName', 'contactNo', 'username', 'userType', 'password'])
+
+    if (reqError) {
+      return err(reqError, 400)
     }
 
     if (!['meter_reader', 'cashier'].includes(userType)) {
@@ -164,7 +172,7 @@ export async function POST(req: NextRequest) {
     return ok({ userId }, 'Staff account created successfully')
 
   } catch (error) {
-    console.error('Create staff error:', error)
-    return err('Internal server error', 500)
+    logger.error('Create staff error:', error)
+    return handleApiError(error)
   }
 }
