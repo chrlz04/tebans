@@ -43,42 +43,6 @@ export default function CollectionReportsPage() {
     collections?.reduce((sum, c) => sum + (c.amountPaid ?? 0), 0) ?? 0
   const totalRecords = collections?.length ?? 0
 
-  const columns: Column<CollectionRecord>[] = [
-    {
-      key: 'receiptNumber',
-      label: 'Receipt No.',
-      render: (row) => (
-        <span className="font-mono text-xs">{row.receiptNumber}</span>
-      ),
-    },
-    {
-      key: 'consumerName',
-      label: 'Consumer Name',
-    },
-    {
-      key: 'amountPaid',
-      label: 'Amount Paid',
-      render: (row) =>
-        `₱${(row.amountPaid ?? 0).toLocaleString('en-PH', {
-          minimumFractionDigits: 2,
-        })}`,
-    },
-    {
-      key: 'datePaid',
-      label: 'Date Paid',
-      render: (row) =>
-        new Date(row.datePaid).toLocaleDateString('en-PH', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        }),
-    },
-    {
-      key: 'paymentMethod',
-      label: 'Payment Method',
-    },
-  ]
-
   // ── CSV Export ──
   const handleExport = () => {
     if (!collections || collections.length === 0) return
@@ -129,46 +93,95 @@ export default function CollectionReportsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <StatCard
-          label="Total Collections"
-          value={
-            isLoading
+      <div className="bg-white rounded-xl border border-primary-500 border-l-[6px] p-6 flex items-center justify-between shadow-sm">
+        <div className="flex flex-col">
+          <span className="text-sm text-gray-500 font-medium">Total Collections</span>
+          <span className="text-3xl font-bold text-gray-900 mt-1">
+            {isLoading
               ? '—'
               : `₱${totalCollections.toLocaleString('en-PH', {
                   minimumFractionDigits: 2,
-                })}`
-          }
-          variant="success"
-        />
-        <StatCard
-          label="Total Records"
-          value={isLoading ? '—' : totalRecords}
-          variant="default"
+                })}`}
+          </span>
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="text-sm text-gray-500 font-medium">Total Records</span>
+          <span className="text-3xl font-bold text-gray-900 mt-1">
+            {isLoading ? '—' : totalRecords}
+          </span>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="mb-2">
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onStartChange={setStartDate}
+          onEndChange={setEndDate}
         />
       </div>
 
-      {/* Main Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">Collection Records</h2>
 
-        {/* Filters */}
-        <div className="mb-5">
-          <DateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onStartChange={setStartDate}
-            onEndChange={setEndDate}
-          />
-        </div>
+        {isLoading ? (
+          <div className="text-center py-8 text-gray-500">Loading records...</div>
+        ) : !collections || collections.length === 0 ? (
+          <div className="text-center py-8 text-gray-500 bg-white rounded-xl border border-gray-200">
+            No collection records found.
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {collections.map((record) => (
+              <div
+                key={record.paymentId}
+                className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <span className="text-xs text-gray-500 block">Transaction ID</span>
+                      <span className="font-bold text-gray-900">{record.receiptNumber}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-500 block">Date & Time</span>
+                      <span className="text-gray-900">
+                        {new Date(record.datePaid).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })} &bull; {new Date(record.datePaid).toLocaleTimeString('en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-500 block">Consumer Name</span>
+                      <span className="font-bold text-gray-900">{record.consumerName}</span>
+                    </div>
+                  </div>
+                  <div className="bg-primary-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                    Paid
+                  </div>
+                </div>
 
-        {/* Table */}
-        <DataTable
-          columns={columns}
-          data={collections ?? []}
-          isLoading={isLoading}
-          emptyMessage="No collection records found."
-          keyExtractor={(row) => row.paymentId}
-        />
+                <hr className="border-t border-gray-100 my-3" />
+
+                <div>
+                  <span className="text-xs text-gray-500 block">Amount Paid</span>
+                  <span className="text-2xl font-bold text-primary-500 mt-1 block">
+                    ₱{record.amountPaid?.toLocaleString('en-PH', {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
