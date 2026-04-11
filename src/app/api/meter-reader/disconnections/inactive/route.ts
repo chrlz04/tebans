@@ -9,6 +9,7 @@ interface InactiveRow extends RowDataPacket {
   First_Name:     string
   Last_Name:      string
   Contact_No:     string
+  Address:        string
   Request_Status: string | null
   Scheduled_Date: string | null
 }
@@ -37,6 +38,7 @@ export async function GET(req: NextRequest) {
         u.First_Name,
         u.Last_Name,
         u.Contact_No,
+        c.Address,
         dr.Request_Status,
         dr.Scheduled_Date
        FROM Consumer c
@@ -57,6 +59,7 @@ export async function GET(req: NextRequest) {
          u.First_Name,
          u.Last_Name,
          u.Contact_No,
+         c.Address,
          dr.Request_Status,
          dr.Scheduled_Date
        ORDER BY u.Last_Name ASC`,
@@ -68,6 +71,7 @@ export async function GET(req: NextRequest) {
       firstName:      o.First_Name,
       lastName:       o.Last_Name,
       contactNo:      o.Contact_No,
+      address:        o.Address,
       amountDue:      0,
       scheduledDate:  o.Scheduled_Date ?? new Date(
         new Date().setDate(new Date().getDate() + 7)

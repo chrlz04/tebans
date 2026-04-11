@@ -8,6 +8,7 @@ interface OverdueRow extends RowDataPacket {
   First_Name:     string
   Last_Name:      string
   Contact_No:     string
+  Address:        string
   Amount:         number
   Due_Date:       string
   Request_Status: string | null
@@ -27,6 +28,7 @@ export async function GET(req: NextRequest) {
         u.First_Name,
         u.Last_Name,
         u.Contact_No,
+        c.Address,
         SUM(b.Amount) AS Amount,
         MIN(b.Due_Date) AS Due_Date,
         dr.Request_Status,
@@ -45,6 +47,7 @@ export async function GET(req: NextRequest) {
          u.First_Name,
          u.Last_Name,
          u.Contact_No,
+         c.Address,
          dr.Request_Status,
          dr.Scheduled_Date
        ORDER BY Due_Date ASC`,
@@ -56,6 +59,7 @@ export async function GET(req: NextRequest) {
       firstName:      o.First_Name,
       lastName:       o.Last_Name,
       contactNo:      o.Contact_No,
+      address:        o.Address,
       amountDue:      o.Amount,
       scheduledDate:  o.Scheduled_Date ?? new Date(
         new Date().setDate(new Date().getDate() + 7)
