@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Edit, Eye, UserPlus } from 'lucide-react'
+import { Edit, Eye, UserPlus, ToggleRight, ToggleLeft } from 'lucide-react'
 import Link from 'next/link'
 import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
@@ -118,13 +118,14 @@ export default function ManageAccountsPage() {
                 type: 'staff',
               })
             }
-            className={`text-xs px-2 py-1 rounded-full font-medium transition-colors ${
+            title={row.accountStatus === 'Active' ? 'Deactivate' : 'Activate'}
+            className={`p-1.5 rounded-lg border-2 transition-colors ${
               row.accountStatus === 'Active'
-                ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                : 'bg-green-50 text-green-600 hover:bg-green-100'
+                ? 'border-green-600 bg-green-50 text-green-600 hover:bg-green-100'
+                : 'border-red-500 bg-red-50 text-red-500 hover:bg-red-100'
             }`}
           >
-            {row.accountStatus === 'Active' ? 'Deactivate' : 'Activate'}
+            {row.accountStatus === 'Active' ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
           </button>
         </div>
       ),
@@ -158,13 +159,14 @@ export default function ManageAccountsPage() {
                 type: 'consumer',
               })
             }
-            className={`text-xs px-2 py-1 rounded-full font-medium transition-colors ${
+            title={row.accountStatus === 'Active' ? 'Deactivate' : 'Activate'}
+            className={`p-1.5 rounded-lg border-2 transition-colors ${
               row.accountStatus === 'Active'
-                ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                : 'bg-green-50 text-green-600 hover:bg-green-100'
+                ? 'border-green-600 bg-green-50 text-green-600 hover:bg-green-100'
+                : 'border-red-500 bg-red-50 text-red-500 hover:bg-red-100'
             }`}
           >
-            {row.accountStatus === 'Active' ? 'Deactivate' : 'Activate'}
+            {row.accountStatus === 'Active' ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
           </button>
         </div>
       ),
