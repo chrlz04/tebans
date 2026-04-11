@@ -1,5 +1,8 @@
 import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
+import { handleApiError } from '@/lib/error-handler'
+import { validateRequired } from '@/lib/validators'
+import { logger } from '@/lib/logger'
 import { execute, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 import { generateSequentialId } from '@/lib/services/billing.service'
@@ -23,8 +26,10 @@ export async function POST(req: NextRequest) {
 
     const { consumerId, smsMessage } = await req.json()
 
-    if (!consumerId) {
-      return err('Consumer ID is required', 400)
+
+    const reqError = validateRequired({ consumerId }, ['consumerId'])
+    if (reqError) {
+      return err(reqError, 400)
     }
 
     // Get meter reader ID
@@ -97,7 +102,7 @@ export async function POST(req: NextRequest) {
     }, 'Disconnection request submitted successfully')
 
   } catch (error) {
-    console.error('Disconnection request error:', error)
-    return err('Internal server error', 500)
+    logger.error('Disconnection request error:', error)
+    return handleApiError(error)
   }
 }

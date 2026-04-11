@@ -2,6 +2,9 @@ import { NextRequest } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { queryOne, execute } from '@/lib/db-helpers'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
+import { handleApiError } from '@/lib/error-handler'
+import { validateRequired, validatePassword } from '@/lib/validators'
+import { logger } from '@/lib/logger'
 import { RowDataPacket } from 'mysql2'
 
 interface LoginRow extends RowDataPacket {
@@ -20,14 +23,17 @@ export async function PUT(req: NextRequest) {
     ])
     if (error) return error
 
+
     const { currentPassword, newPassword } = await req.json()
 
-    if (!currentPassword || !newPassword) {
-      return err('Current and new password are required', 400)
+    const reqError = validateRequired({ currentPassword, newPassword }, ['currentPassword', 'newPassword'])
+    if (reqError) {
+      return err(reqError, 400)
     }
 
-    if (newPassword.length < 8) {
-      return err('Password must be at least 8 characters', 400)
+    const passError = validatePassword(newPassword)
+    if (passError) {
+      return err(passError, 400)
     }
 
     // ── Get current password from DB ──
@@ -62,7 +68,7 @@ export async function PUT(req: NextRequest) {
     return ok(null, 'Password changed successfully')
 
   } catch (error) {
-    console.error('Change password error:', error)
-    return err('Internal server error', 500)
+    logger.error('Change password error:', error)
+    return handleApiError(error)
   }
 }
