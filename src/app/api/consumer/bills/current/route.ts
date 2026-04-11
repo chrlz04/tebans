@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
+import { handleApiError } from '@/lib/error-handler'
+import { logger } from '@/lib/logger'
 import { queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 
@@ -52,7 +54,7 @@ export async function GET(req: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Get current bill error:', error)
-    return err('Internal server error', 500)
+    logger.error('Get current bill error:', error)
+    return handleApiError(error)
   }
 }
