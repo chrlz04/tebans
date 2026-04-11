@@ -1,5 +1,8 @@
 import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
+import { handleApiError } from '@/lib/error-handler'
+import { validateRequired } from '@/lib/validators'
+import { logger } from '@/lib/logger'
 import { query, execute, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 
@@ -70,8 +73,8 @@ export async function GET(req: NextRequest) {
     })))
 
   } catch (error) {
-    console.error('Get consumers error:', error)
-    return err('Internal server error', 500)
+    logger.error('Get consumers error:', error)
+    return handleApiError(error)
   }
 }
 
@@ -90,8 +93,13 @@ export async function POST(req: NextRequest) {
       contactNo,
     } = await req.json()
 
-    if (!firstName || !lastName || !address || !meterSerialNo || !areaName || !contactNo) {
-      return err('All fields are required', 400)
+
+    const reqError = validateRequired({
+      firstName, lastName, address, meterSerialNo, areaName, contactNo
+    }, ['firstName', 'lastName', 'address', 'meterSerialNo', 'areaName', 'contactNo'])
+
+    if (reqError) {
+      return err(reqError, 400)
     }
 
     // Check for duplicate meter serial number
@@ -146,7 +154,7 @@ export async function POST(req: NextRequest) {
     return ok({ consumerId }, 'Consumer account created successfully')
 
   } catch (error) {
-    console.error('Create consumer error:', error)
-    return err('Internal server error', 500)
+    logger.error('Create consumer error:', error)
+    return handleApiError(error)
   }
 }

@@ -1,5 +1,8 @@
 import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
+import { handleApiError } from '@/lib/error-handler'
+import { validateRequired } from '@/lib/validators'
+import { logger } from '@/lib/logger'
 import { execute, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 
@@ -20,8 +23,10 @@ export async function PUT(
     const { userId }  = await params
     const { firstName, lastName, contactNo, userType, assignedArea } = await req.json()
 
-    if (!firstName || !lastName || !contactNo) {
-      return err('All fields are required', 400)
+
+    const reqError = validateRequired({ firstName, lastName, contactNo }, ['firstName', 'lastName', 'contactNo'])
+    if (reqError) {
+      return err(reqError, 400)
     }
 
     await execute(
@@ -46,7 +51,7 @@ export async function PUT(
     return ok(null, 'Staff account updated successfully')
 
   } catch (error) {
-    console.error('Update staff error:', error)
-    return err('Internal server error', 500)
+    logger.error('Update staff error:', error)
+    return handleApiError(error)
   }
 }

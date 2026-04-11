@@ -1,5 +1,8 @@
 import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
+import { handleApiError } from '@/lib/error-handler'
+import { validateRequired, validatePaymentMethod } from '@/lib/validators'
+import { logger } from '@/lib/logger'
 import { query, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 import { generateSequentialId } from '@/lib/services/billing.service'
@@ -34,7 +37,13 @@ export async function POST(req: NextRequest) {
       return err('At least one bill must be selected', 400)
     }
 
-    if (!['Cash'].includes(paymentMethod)) {
+
+    const reqError = validateRequired({ paymentMethod }, ['paymentMethod'])
+    if (reqError) {
+      return err(reqError, 400)
+    }
+
+    if (!validatePaymentMethod(paymentMethod)) {
       return err('Invalid payment method', 400)
     }
 
@@ -122,7 +131,7 @@ export async function POST(req: NextRequest) {
     }, 'Payment recorded successfully')
 
   } catch (error) {
-    console.error('Process payment error:', error)
-    return err('Internal server error', 500)
+    logger.error('Process payment error:', error)
+    return handleApiError(error)
   }
 }

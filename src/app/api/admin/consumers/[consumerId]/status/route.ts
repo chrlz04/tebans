@@ -1,5 +1,8 @@
 import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
+import { handleApiError } from '@/lib/error-handler'
+import { validateAccountStatus } from '@/lib/validators'
+import { logger } from '@/lib/logger'
 import { execute } from '@/lib/db-helpers'
 
 // ── PATCH /api/admin/consumers/[consumerId]/status ────────
@@ -14,7 +17,8 @@ export async function PATCH(
     const { consumerId } = await params
     const { status }     = await req.json()
 
-    if (!['Active', 'Inactive'].includes(status)) {
+
+    if (!validateAccountStatus(status)) {
       return err('Invalid status value', 400)
     }
 
@@ -29,7 +33,7 @@ export async function PATCH(
     return ok(null, `Consumer account ${status === 'Active' ? 'activated' : 'deactivated'} successfully`)
 
   } catch (error) {
-    console.error('Toggle consumer status error:', error)
-    return err('Internal server error', 500)
+    logger.error('Toggle consumer status error:', error)
+    return handleApiError(error)
   }
 }
