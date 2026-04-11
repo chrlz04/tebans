@@ -129,7 +129,7 @@ export interface CashierDashboardStats {
   transactionsProcessed: number
   pendingCashRemittance: number
   pendingConsumersToPay: number
-  recentTransactions: Payment[]
+  recentTransactions: (Payment & { consumerName?: string })[]
 }
 
 // ─── Shared ──────────────────────────────────────────────
