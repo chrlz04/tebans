@@ -159,11 +159,11 @@ export default function ProcessPaymentPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="max-w-3xl mx-auto flex flex-col gap-6 relative min-h-[calc(100vh-6rem)] pb-48">
 
       {/* Page Header */}
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900">
           Process Payment
         </h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -171,17 +171,17 @@ export default function ProcessPaymentPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex flex-col gap-6 flex-1">
 
         {/* Bills List */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6">
+        <div className="flex flex-col gap-4">
 
           {/* Search */}
-          <div className="mb-4">
+          <div>
             <SearchBar
               value={search}
               onChange={setSearch}
-              placeholder="Search by bill number or consumer name..."
+              placeholder="Search Bill or Name..."
             />
           </div>
 
@@ -190,12 +190,14 @@ export default function ProcessPaymentPage() {
             <button
               type="button"
               onClick={toggleAll}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-3 transition-colors"
+              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-1 transition-colors w-fit"
             >
               {selectedBillIds.length === unpaidBills.length ? (
-                <CheckSquare size={16} className="text-primary-500" />
+                <div className="w-5 h-5 rounded border bg-primary-500 border-primary-500 flex items-center justify-center">
+                  <CheckSquare size={14} className="text-white" />
+                </div>
               ) : (
-                <Square size={16} />
+                <div className="w-5 h-5 rounded border border-gray-300" />
               )}
               Select All ({unpaidBills.length})
             </button>
@@ -203,13 +205,13 @@ export default function ProcessPaymentPage() {
 
           {/* Bills */}
           {isLoading ? (
-            <div className="flex flex-col gap-3 animate-pulse">
+            <div className="flex flex-col gap-4 animate-pulse">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-20 bg-gray-100 rounded-lg" />
+                <div key={i} className="h-32 bg-gray-100 rounded-xl" />
               ))}
             </div>
           ) : unpaidBills && unpaidBills.length > 0 ? (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-4">
               {unpaidBills.map((bill) => {
                 const isSelected = selectedBillIds.includes(bill.billId)
                 return (
@@ -217,35 +219,45 @@ export default function ProcessPaymentPage() {
                     key={bill.billId}
                     type="button"
                     onClick={() => toggleBill(bill.billId)}
-                    className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors text-left ${
+                    className={`w-full flex items-start gap-4 p-5 rounded-xl border transition-all text-left ${
                       isSelected
-                        ? 'border-primary-400 bg-primary-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        ? 'border-primary-500 shadow-sm'
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    {isSelected ? (
-                      <CheckSquare size={18} className="text-primary-500 shrink-0" />
-                    ) : (
-                      <Square size={18} className="text-gray-400 shrink-0" />
-                    )}
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {bill.consumerName}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {bill.billingPeriod}
-                      </p>
-                      <p className="text-xs font-mono text-gray-400">
-                        {bill.billId}
-                      </p>
+                    <div className="pt-1">
+                      {isSelected ? (
+                         <div className="w-5 h-5 rounded border bg-primary-500 border-primary-500 flex items-center justify-center">
+                          <CheckSquare size={14} className="text-white" />
+                        </div>
+                      ) : (
+                        <div className="w-5 h-5 rounded border border-gray-300" />
+                      )}
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className="text-sm font-bold text-gray-900">
-                        ₱{(bill.amount ?? 0).toLocaleString('en-PH', {
-                          minimumFractionDigits: 2,
-                        })}
-                      </span>
-                      <Badge status={bill.paymentStatus} />
+
+                    <div className="flex-1 flex flex-col gap-3">
+                      <div>
+                        <p className="text-xs text-gray-500 mb-0.5">Consumer Name</p>
+                        <p className="text-base font-semibold text-gray-900">
+                          {bill.consumerName}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-gray-500 mb-0.5">Billing Period</p>
+                        <p className="text-sm text-gray-900">
+                          {bill.billingPeriod}
+                        </p>
+                      </div>
+
+                      <div className="border-t border-gray-100 pt-3 mt-1">
+                         <p className="text-xs text-gray-500 mb-0.5">Total Amount Due</p>
+                         <p className="text-xl font-bold text-gray-900">
+                          ₱{(bill.amount ?? 0).toLocaleString('en-PH', {
+                            minimumFractionDigits: 2,
+                          })}
+                        </p>
+                      </div>
                     </div>
                   </button>
                 )
@@ -258,42 +270,20 @@ export default function ProcessPaymentPage() {
           )}
         </div>
 
-        {/* Payment Summary */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 h-fit sticky top-6">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">
-            Payment Summary
-          </h2>
+        {/* Sticky Footer */}
+        <div className="fixed bottom-0 left-0 lg:left-64 right-0 bg-white border-t border-gray-200 p-6 z-10">
+          <div className="max-w-3xl mx-auto flex flex-col gap-4">
 
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Selected Invoices</span>
-              <span className="font-medium text-gray-900">
-                {selectedBillIds.length}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Total Amount</span>
-              <span className="font-bold text-gray-900">
-                ₱{totalSelected.toLocaleString('en-PH', {
-                  minimumFractionDigits: 2,
-                })}
-              </span>
-            </div>
-
-            {/* Payment Method */}
-            <div className="flex flex-col gap-1 pt-2 border-t border-gray-100">
-              <label className="text-sm font-medium text-gray-700">
-                Payment Method
-              </label>
-              <select
-                value={paymentMethod}
-                onChange={(e) =>
-                  setPaymentMethod(e.target.value as 'Cash')
-                }
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="Cash">Cash</option>
-              </select>
+            <div className="flex flex-col">
+               <p className="text-sm text-gray-500">Total Selected Amount</p>
+               <p className="text-3xl font-bold text-gray-900">
+                  ₱{totalSelected.toLocaleString('en-PH', {
+                    minimumFractionDigits: 2,
+                  })}
+               </p>
+               <p className="text-xs text-gray-500 mt-1">
+                 {selectedBillIds.length} invoices selected
+               </p>
             </div>
 
             {mutation.isError && (
@@ -304,19 +294,13 @@ export default function ProcessPaymentPage() {
 
             <Button
               variant="primary"
-              className="w-full mt-2"
+              className="w-full py-3 text-lg font-medium"
               disabled={selectedBillIds.length === 0}
               isLoading={mutation.isPending}
               onClick={() => mutation.mutate()}
             >
               Record Payment Transaction
             </Button>
-
-            {selectedBillIds.length === 0 && (
-              <p className="text-xs text-gray-400 text-center">
-                Select at least one bill to proceed
-              </p>
-            )}
           </div>
         </div>
       </div>
