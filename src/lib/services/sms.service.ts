@@ -150,31 +150,3 @@ export function buildDisconnectionMessage({
     `- Tubod Electric Cooperative`
   )
 }
-
-// ── Build payment receipt message ────────────────────────
-export function buildPaymentReceiptMessage({
-  consumerName,
-  amountPaid,
-  receiptNumber,
-  billingMonth,
-}: {
-  consumerName:  string
-  amountPaid:    number
-  receiptNumber: string
-  billingMonth?: string  // ← optional
-}): string {
-  const formattedAmount = amountPaid.toLocaleString('en-PH', {
-    minimumFractionDigits: 2,
-  })
-
-  const periodText = billingMonth
-    ? `for ${billingMonth} `
-    : ''
-
-  return (
-    `Dear ${consumerName}, your payment of P${formattedAmount} ` +
-    `${periodText}has been received. ` +
-    `Receipt No: ${receiptNumber}. Thank you! ` +
-    `- Tubod Electric Cooperative`
-  )
-}
