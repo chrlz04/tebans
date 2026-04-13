@@ -24,6 +24,7 @@ interface ConsumerRow extends RowDataPacket {
   First_Name: string
   Last_Name:  string
   Contact_No: string
+  Billing_Month: string
 }
 
 export async function POST(req: NextRequest) {
@@ -92,36 +93,39 @@ export async function POST(req: NextRequest) {
 
       // Update bill status
       await updateBillStatus(bill.Bill_ID, bill.Amount)
-    }
 
-    const totalAmount = bills.reduce((sum, b) => sum + b.Amount, 0)
-
-    // Group consumers to send SMS (usually, one payment is for one consumer's bills,
-    // but just in case multiple consumers' bills are paid in one request)
-    const consumerIds = [...new Set(bills.map(b => b.Consumer_ID))]
-    for (const cid of consumerIds) {
-      const consumerAmount = bills.filter(b => b.Consumer_ID === cid).reduce((sum, b) => sum + b.Amount, 0)
+      // Fetch consumer and bill details for SMS
       const consumer = await queryOne<ConsumerRow>(
-        `SELECT u.First_Name, u.Last_Name, u.Contact_No
+        `SELECT
+          u.First_Name,
+          u.Last_Name,
+          u.Contact_No,
+          b.Billing_Month
          FROM Consumer c
          JOIN User u ON c.User_ID = u.User_ID
-         WHERE c.Consumer_ID = ?`,
-        [cid]
+         JOIN Bill b ON b.Consumer_ID = c.Consumer_ID
+         WHERE c.Consumer_ID = ?
+           AND b.Bill_ID = ?`,
+        [bill.Consumer_ID, bill.Bill_ID]
       )
 
-      if (consumer?.Contact_No) {
-        const smsContent = buildPaymentReceiptMessage({
+      if (consumer && consumer.Contact_No) {
+        const smsMessage = buildPaymentReceiptMessage({
           consumerName:  `${consumer.First_Name} ${consumer.Last_Name}`,
-          amountPaid:    consumerAmount,
-          receiptNumber: receiptNumber,
+          amountPaid:    bill.Amount,
+          receiptNumber,
+          billingMonth:  consumer.Billing_Month,
         })
 
         await sendSms({
           to:      consumer.Contact_No,
-          content: smsContent,
+          content: smsMessage,
         })
       }
     }
+
+    const totalAmount = bills.reduce((sum, b) => sum + b.Amount, 0)
+
 
     return ok({
       receiptNumber,
