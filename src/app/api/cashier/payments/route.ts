@@ -7,7 +7,6 @@ import { query, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 import { generateSequentialId } from '@/lib/services/billing.service'
 import { generateReceiptNumber, recordPayment, updateBillStatus } from '@/lib/services/payment.service'
-import { sendSms, buildPaymentReceiptMessage } from '@/lib/services/sms.service'
 
 interface BillRow extends RowDataPacket {
   Bill_ID:        string
@@ -18,13 +17,6 @@ interface BillRow extends RowDataPacket {
 
 interface CashierRow extends RowDataPacket {
   Cashier_ID: string
-}
-
-interface ConsumerRow extends RowDataPacket {
-  First_Name: string
-  Last_Name:  string
-  Contact_No: string
-  Billing_Month: string
 }
 
 export async function POST(req: NextRequest) {
@@ -93,35 +85,6 @@ export async function POST(req: NextRequest) {
 
       // Update bill status
       await updateBillStatus(bill.Bill_ID, bill.Amount)
-
-      // Fetch consumer and bill details for SMS
-      const consumer = await queryOne<ConsumerRow>(
-        `SELECT
-          u.First_Name,
-          u.Last_Name,
-          u.Contact_No,
-          b.Billing_Month
-         FROM Consumer c
-         JOIN User u ON c.User_ID = u.User_ID
-         JOIN Bill b ON b.Consumer_ID = c.Consumer_ID
-         WHERE c.Consumer_ID = ?
-           AND b.Bill_ID = ?`,
-        [bill.Consumer_ID, bill.Bill_ID]
-      )
-
-      if (consumer && consumer.Contact_No) {
-        const smsMessage = buildPaymentReceiptMessage({
-          consumerName:  `${consumer.First_Name} ${consumer.Last_Name}`,
-          amountPaid:    bill.Amount,
-          receiptNumber,
-          billingMonth:  consumer.Billing_Month,
-        })
-
-        await sendSms({
-          to:      consumer.Contact_No,
-          content: smsMessage,
-        })
-      }
     }
 
     const totalAmount = bills.reduce((sum, b) => sum + b.Amount, 0)
