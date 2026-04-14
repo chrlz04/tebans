@@ -129,9 +129,7 @@ export default function Sidebar({ role, isMobileOpen, onCloseMobile }: SidebarPr
               'flex items-center rounded-lg text-sm transition-colors',
               isCollapsed ? 'justify-center py-2.5 px-0' : 'gap-3 px-3 py-2.5',
               pathname === item.href
-                ? role === 'admin'
-                  ? 'bg-primary-50 text-primary-700 font-medium'
-                  : 'bg-blue-50 text-blue-700 font-medium'
+                ? 'bg-primary-50 text-primary-700 font-medium'
                 : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
             )}
           >
