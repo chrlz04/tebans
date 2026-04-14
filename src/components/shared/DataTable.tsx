@@ -36,15 +36,16 @@ export default function DataTable<T>({
 
   return (
     <div className="w-full overflow-x-auto rounded-lg border border-gray-200">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm min-w-max">
         {/* Header */}
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
-            {columns.map((col) => (
+            {columns.map((col, index) => (
               <th
                 key={String(col.key)}
                 className={clsx(
-                  'px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide',
+                  'px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap',
+                  index === 0 ? 'sticky left-0 z-10 bg-gray-50 shadow-[1px_0_0_0_#e5e7eb]' : '',
                   col.className
                 )}
               >
@@ -68,12 +69,16 @@ export default function DataTable<T>({
             data.map((row) => (
               <tr
                 key={keyExtractor(row)}
-                className="hover:bg-gray-50 transition-colors"
+                className="hover:bg-gray-50 transition-colors group"
               >
-                {columns.map((col) => (
+                {columns.map((col, index) => (
                   <td
                     key={String(col.key)}
-                    className={clsx('px-4 py-3 text-gray-700', col.className)}
+                    className={clsx(
+                      'px-4 py-3 text-gray-700 min-h-[44px] whitespace-nowrap',
+                      index === 0 ? 'sticky left-0 z-10 bg-white group-hover:bg-gray-50 shadow-[1px_0_0_0_#e5e7eb]' : '',
+                      col.className
+                    )}
                   >
                     {col.render
                       ? col.render(row)
