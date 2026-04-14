@@ -5,6 +5,7 @@ import { validateRequired } from '@/lib/validators'
 import { logger } from '@/lib/logger'
 import { queryOne, execute } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
+import { sendSms, buildBillingAlertMessage } from '@/lib/services/sms.service'
 
 interface ConsumerRow extends RowDataPacket {
   Consumer_ID:     string
@@ -164,12 +165,46 @@ export async function POST(req: NextRequest) {
       ]
     )
 
+    // ── Bill/Disconnection/Payment is saved here ──────────────
+    // Critical operation done — now attempt SMS
+    let smsSent = false
+    if (!consumer.Contact_No) {
+      logger.warn('SMS skipped — no contact number', {
+        consumerId,
+      })
+    } else {
+      const smsMessage = buildBillingAlertMessage({
+        consumerName:  `${consumer.First_Name} ${consumer.Last_Name}`,
+        billAmount:    amountWithTaxEvat,
+        dueDate:       dueDateStr,
+        billingMonth,
+      })
+
+      // Send SMS without blocking or failing the main operation
+      const smsResult = await sendSms({
+        to:      consumer.Contact_No,
+        content: smsMessage,
+      })
+
+      if (!smsResult.success) {
+        // Log the failure but don't throw — bill is already saved
+        logger.warn('SMS notification failed after bill generation', {
+          consumerId: consumerId,
+          reason:     smsResult.message,
+        })
+      }
+
+      smsSent = smsResult.success
+    }
+
     return ok({
       billId,
+      meterReadingId,
       billAmount:    amountWithTaxEvat,
       billingMonth,
       dueDate:       dueDateStr,
       previousReading,
+      smsSent,
     }, 'Bill generated successfully')
 
   } catch (error) {

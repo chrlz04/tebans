@@ -83,22 +83,41 @@ export async function POST(req: NextRequest) {
       [consumerId]
     )
 
-    if (consumer?.Contact_No) {
+    // ── Bill/Disconnection/Payment is saved here ──────────────
+    // Critical operation done — now attempt SMS
+    let smsSent = false
+    if (!consumer?.Contact_No) {
+      logger.warn('SMS skipped — no contact number', {
+        consumerId,
+      })
+    } else {
       const smsContent = buildDisconnectionMessage({
         consumerName:  `${consumer.First_Name} ${consumer.Last_Name}`,
         scheduledDate: scheduledDateStr,
         reason:        reason,
       })
 
-      await sendSms({
+      // Send SMS without blocking or failing the main operation
+      const smsResult = await sendSms({
         to:      consumer.Contact_No,
         content: smsContent,
       })
+
+      if (!smsResult.success) {
+        // Log the failure but don't throw — record is already saved
+        logger.warn('SMS notification failed after disconnection request', {
+          consumerId: consumerId,
+          reason:     smsResult.message,
+        })
+      }
+
+      smsSent = smsResult.success
     }
 
     return ok({
       disconnectionId,
       scheduledDate: scheduledDateStr,
+      smsSent,
     }, 'Disconnection request submitted successfully')
 
   } catch (error) {
