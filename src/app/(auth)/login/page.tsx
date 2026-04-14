@@ -49,9 +49,17 @@ export default function LoginPage() {
     <div className="min-h-screen flex">
 
       {/* ── Left Panel — Branding (Desktop) ── */}
-      <div className="hidden lg:flex flex-col justify-center items-center w-1/2 bg-primary-500 px-12 py-10 text-white text-center">
-        
-        <div className="flex flex-col items-center gap-10 w-full max-w-xl">
+      <div className="relative hidden lg:flex flex-col justify-center items-center w-1/2 px-12 py-10 text-white text-center bg-gray-900">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-contain bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/tebans-background.png')" }}
+        />
+        {/* Dark/Colored Overlay */}
+        <div className="absolute inset-0 bg-[#689633]/50" />
+
+        {/* Content Wrapper */}
+        <div className="relative z-10 flex flex-col items-center gap-10 w-full max-w-xl">
           <div className="flex flex-col items-center gap-4">
             <div className="flex items-center justify-center">
               <Zap size={70} className="text-white" /> 
