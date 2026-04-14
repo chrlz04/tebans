@@ -56,7 +56,7 @@ export default function LoginPage() {
           style={{ backgroundImage: "url('/tebans-background.png')" }}
         />
         {/* Dark/Colored Overlay */}
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-[#689633]/50" />
 
         {/* Content Wrapper */}
         <div className="relative z-10 flex flex-col items-center gap-10 w-full max-w-xl">
