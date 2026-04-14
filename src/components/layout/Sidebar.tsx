@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
@@ -61,42 +61,65 @@ const roleLabels: Record<Role, string> = {
   cashier: 'Cashier',
 }
 
-export default function Sidebar({ role }: { role: Role }) {
+interface SidebarProps {
+  role: Role
+  isMobileOpen: boolean
+  onCloseMobile: () => void
+}
+
+export default function Sidebar({ role, isMobileOpen, onCloseMobile }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const items = navItems[role]
 
-  return (
-    <aside 
-      className={clsx(
-        "flex flex-col min-h-screen bg-white border-r border-gray-200 py-6 transition-all duration-300 relative",
-        isCollapsed ? "w-20 px-3" : "w-64 px-4"
-      )}
-    >
-      {/* Toggle Button */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-7 bg-white border border-gray-200 rounded-full p-1 text-gray-500 hover:text-gray-900 shadow-sm z-10"
-      >
-        {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-      </button>
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    if (isMobileOpen) {
+      onCloseMobile()
+    }
+  }, [pathname])
 
-      {/* Logo / System Name */}
-      <div className={clsx("mb-8 flex items-center", isCollapsed ? "justify-center" : "px-2 gap-3")}>
-        <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center text-white shrink-0">
-          <Zap size={18} />
-        </div>
-        {!isCollapsed && (
-          <div className="whitespace-nowrap overflow-hidden">
-            <h1 className="text-base font-semibold text-gray-900 leading-tight">TEBANS</h1>
-            <p className="text-xs text-gray-500">{role === 'admin' ? 'Admin Portal' : roleLabels[role]}</p>
-          </div>
+  // Close on Escape key
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobileOpen) {
+        onCloseMobile()
+      }
+    }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [isMobileOpen, onCloseMobile])
+
+  return (
+    <>
+      {/* Mobile Backdrop */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
+          onClick={onCloseMobile}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar Content */}
+      <aside
+        className={clsx(
+          "fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-gray-200 py-6 transition-all duration-300 md:relative md:translate-x-0",
+          isCollapsed ? "w-[var(--sidebar-width-collapsed)] px-3" : "w-[var(--sidebar-width)] px-4",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
-      </div>
+      >
+        {/* Toggle Button (Desktop Only) */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="hidden md:flex absolute -right-3 top-7 bg-white border border-gray-200 rounded-full p-1 text-gray-500 hover:text-gray-900 shadow-sm z-10"
+        >
+          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
 
       {/* Nav Links */}
-      <nav className="flex flex-col gap-1 flex-1">
+      <nav className="flex flex-col gap-1 flex-1 mt-4">
         {items.map((item) => (
           <Link
             key={item.href}
@@ -124,6 +147,7 @@ export default function Sidebar({ role }: { role: Role }) {
           © 2026 TEBANS System
         </p>
       )}
-    </aside>
+      </aside>
+    </>
   )
 }
