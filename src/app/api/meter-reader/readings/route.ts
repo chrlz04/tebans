@@ -178,6 +178,8 @@ export async function POST(req: NextRequest) {
         billAmount:    amountWithTaxEvat,
         dueDate:       dueDateStr,
         billingMonth,
+        previousReading,
+        currentReading,
       })
 
       // Send SMS without blocking or failing the main operation
