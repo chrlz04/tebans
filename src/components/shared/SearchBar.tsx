@@ -28,7 +28,7 @@ export default function SearchBar({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={clsx(
-          "w-full pl-10 pr-10 py-2 text-sm rounded-lg bg-white outline-none transition-all",
+          "w-full pl-10 pr-10 py-2 min-h-[44px] text-sm rounded-lg bg-white outline-none transition-all",
           "border border-gray-300 text-gray-800 placeholder:text-gray-400",
           "shadow-sm ring-1 ring-black/5",
           "focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20"

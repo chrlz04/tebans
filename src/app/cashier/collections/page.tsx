@@ -93,10 +93,10 @@ export default function CollectionReportsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="bg-white rounded-xl border border-primary-500 border-l-[6px] p-6 flex items-center justify-between shadow-sm">
-        <div className="flex flex-col">
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 bg-white rounded-xl border border-primary-500 border-l-[6px] p-6 flex flex-col shadow-sm">
           <span className="text-sm text-gray-500 font-medium">Total Collections</span>
-          <span className="text-3xl font-bold text-gray-900 mt-1">
+          <span className="text-3xl font-bold text-gray-900 mt-1 whitespace-nowrap">
             {isLoading
               ? '—'
               : `₱${totalCollections.toLocaleString('en-PH', {
@@ -104,7 +104,7 @@ export default function CollectionReportsPage() {
                 })}`}
           </span>
         </div>
-        <div className="flex flex-col items-end">
+        <div className="flex-1 bg-white rounded-xl border border-primary-500 border-l-[6px] p-6 flex flex-col sm:items-end shadow-sm">
           <span className="text-sm text-gray-500 font-medium">Total Records</span>
           <span className="text-3xl font-bold text-gray-900 mt-1">
             {isLoading ? '—' : totalRecords}
@@ -138,7 +138,7 @@ export default function CollectionReportsPage() {
                 key={record.paymentId}
                 className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
               >
-                <div className="flex justify-between items-start mb-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
                   <div className="flex flex-col gap-3">
                     <div>
                       <span className="text-xs text-gray-500 block">Transaction ID</span>
@@ -163,7 +163,7 @@ export default function CollectionReportsPage() {
                       <span className="font-bold text-gray-900">{record.consumerName}</span>
                     </div>
                   </div>
-                  <div className="bg-primary-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                  <div className="bg-primary-500 text-white text-xs font-semibold px-3 py-1 rounded-full self-start">
                     Paid
                   </div>
                 </div>
@@ -172,7 +172,7 @@ export default function CollectionReportsPage() {
 
                 <div>
                   <span className="text-xs text-gray-500 block">Amount Paid</span>
-                  <span className="text-2xl font-bold text-primary-500 mt-1 block">
+                  <span className="text-2xl font-bold text-primary-500 mt-1 block whitespace-nowrap">
                     ₱{record.amountPaid?.toLocaleString('en-PH', {
                       minimumFractionDigits: 2,
                     })}
