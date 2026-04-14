@@ -179,7 +179,7 @@ export default function ChangePasswordForm({ endpoint }: ChangePasswordFormProps
         <Button
           type="submit"
           isLoading={isSubmitting}
-          className="w-full bg-[#749D47] hover:bg-[#62873B] text-white flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium transition-colors mt-2"
+          className="w-full sm:w-auto bg-[#749D47] hover:bg-[#62873B] text-white flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium transition-colors mt-2"
         >
           <ShieldCheck size={18} />
           Update Admin Password
