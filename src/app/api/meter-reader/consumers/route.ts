@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import bcrypt from 'bcryptjs'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
 import { handleApiError } from '@/lib/error-handler'
 import { validateRequired } from '@/lib/validators'
@@ -123,11 +124,39 @@ export async function POST(req: NextRequest) {
       }
     }
     const userId = `user-con-${nextUserSeq.toString().padStart(3, '0')}`
+    const loginId = `login-con-${nextUserSeq.toString().padStart(3, '0')}`
+
+    // Determine username based on firstName
+    const baseUsername = firstName.replace(/\s+/g, '').toLowerCase()
+    let username = baseUsername
+    let usernameSuffix = 1
+
+    // Ensure username is unique
+    while (true) {
+      const existingUser = await queryOne(
+        'SELECT Login_ID FROM Login WHERE User_name = ?',
+        [username]
+      )
+      if (!existingUser) {
+        break
+      }
+      username = `${baseUsername}${usernameSuffix}`
+      usernameSuffix++
+    }
+
+    // Default password for consumer
+    const hashedPassword = await bcrypt.hash('P@ssw0rd', 10)
+
+    // Insert Login record
+    await execute(
+      'INSERT INTO Login (Login_ID, User_name, Password) VALUES (?, ?, ?)',
+      [loginId, username, hashedPassword]
+    )
 
     await execute(
-      `INSERT INTO User (User_ID, First_Name, Last_Name, Contact_No, User_Type, Account_Status)
-       VALUES (?, ?, ?, ?, 'consumer', 'Active')`,
-      [userId, firstName, lastName, contactNo]
+      `INSERT INTO User (User_ID, First_Name, Last_Name, Contact_No, User_Type, Account_Status, Login_ID)
+       VALUES (?, ?, ?, ?, 'consumer', 'Active', ?)`,
+      [userId, firstName, lastName, contactNo, loginId]
     )
 
     const highestConsumer = await queryOne<{ Consumer_ID: string } & RowDataPacket>(
