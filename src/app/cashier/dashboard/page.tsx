@@ -53,7 +53,7 @@ export default function CashierDashboardPage() {
           value={
             isLoading
               ? '—'
-              : `₱${(data?.totalCollectionsToday ?? 0).toLocaleString('en-PH', {
+              : `₱${Number(data?.totalCollectionsToday ?? 0).toLocaleString('en-PH', {
                   minimumFractionDigits: 2,
                 })}`
           }
@@ -69,7 +69,7 @@ export default function CashierDashboardPage() {
           value={
             isLoading
               ? '—'
-              : `₱${(data?.pendingCashRemittance ?? 0).toLocaleString('en-PH', {
+              : `₱${Number(data?.pendingCashRemittance ?? 0).toLocaleString('en-PH', {
                   minimumFractionDigits: 2,
                 })}`
           }
@@ -116,7 +116,7 @@ export default function CashierDashboardPage() {
                 </div>
                 <div className="flex items-center sm:justify-end">
                   <p className="text-lg font-bold text-[#81A858] whitespace-nowrap">
-                    ₱{(transaction.amountPaid ?? 0).toLocaleString('en-PH', {
+                    ₱{Number(transaction.amountPaid ?? 0).toLocaleString('en-PH', {
                       minimumFractionDigits: 2,
                     })}
                   </p>
