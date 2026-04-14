@@ -33,13 +33,13 @@ export default function TopBar({ onToggleMobileSidebar }: TopBarProps) {
   }
 
   return (
-    <header className="flex items-center justify-between px-4 sm:px-6 py-3 bg-white border-b border-gray-200 shrink-0 h-16">
+    <header className="flex items-center justify-between md:justify-end px-4 sm:px-6 py-3 bg-white border-b border-gray-200 shrink-0 h-16">
       
       {/* Sidebar Toggle & Branding */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 md:hidden">
         <button
           onClick={onToggleMobileSidebar}
-          className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center text-white shrink-0 hover:bg-primary-600 transition-colors focus:outline-none md:cursor-default"
+          className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center text-white shrink-0 hover:bg-primary-600 transition-colors focus:outline-none"
         >
           <Zap size={16} />
         </button>

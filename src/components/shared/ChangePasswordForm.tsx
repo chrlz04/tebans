@@ -94,7 +94,7 @@ export default function ChangePasswordForm({ endpoint }: ChangePasswordFormProps
         <input
           type={show ? 'text' : 'password'}
           placeholder={placeholder}
-          className={`w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-[#749D47] focus:border-transparent ${
+          className={`w-full min-h-[44px] pl-10 pr-10 py-2.5 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-[#749D47] focus:border-transparent ${
             error
               ? 'border-red-400 bg-red-50 text-red-900'
               : 'border-gray-200 bg-white text-gray-900 placeholder:text-gray-400'
