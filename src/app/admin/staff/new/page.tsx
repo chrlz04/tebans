@@ -91,7 +91,7 @@ export default function StaffRegistrationPage() {
           className="flex flex-col gap-5"
         >
           {/* Name */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="First Name"
               placeholder="Enter first name"
@@ -109,7 +109,7 @@ export default function StaffRegistrationPage() {
           </div>
 
           {/* Contact and Username */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Contact Number"
               placeholder="e.g. 09xxxxxxxxx"
@@ -127,7 +127,7 @@ export default function StaffRegistrationPage() {
           </div>
 
           {/* Role and Area */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-700">
                 Staff Role <span className="text-red-500">*</span>
@@ -165,7 +165,7 @@ export default function StaffRegistrationPage() {
           <hr className="border-gray-200" />
 
           {/* Password */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Initial Password"
               type="password"

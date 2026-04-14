@@ -59,11 +59,13 @@ export default function AdminDashboardPage() {
     <div className="flex flex-col gap-6">
 
       {/* Page Header */}
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Overview of the system's current state
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Overview of the system's current state
+          </p>
+        </div>
       </div>
 
       {/* Summary Cards */}
