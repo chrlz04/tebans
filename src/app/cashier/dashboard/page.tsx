@@ -12,9 +12,9 @@ function CashierStatCard({ label, value, icon }: { label: string, value: string 
       <div className="bg-[#81A858] text-white p-3 rounded-xl shrink-0">
         {icon}
       </div>
-      <div>
+      <div className="flex-1">
         <p className="text-sm text-gray-500 mb-0.5">{label}</p>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
+        <p className="text-2xl font-bold text-gray-900 whitespace-nowrap">{value}</p>
       </div>
     </div>
   )
@@ -47,7 +47,7 @@ export default function CashierDashboardPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 max-w-3xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
         <CashierStatCard
           label="Total Collections Today"
           value={
@@ -101,7 +101,7 @@ export default function CashierDashboardPage() {
             {data.recentTransactions.map((transaction) => (
               <div
                 key={transaction.paymentId}
-                className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-200 shadow-sm"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white rounded-2xl border border-gray-200 shadow-sm gap-2"
               >
                 <div className="flex flex-col gap-0.5">
                   <p className="text-sm font-semibold text-gray-900">
@@ -114,8 +114,8 @@ export default function CashierDashboardPage() {
                     {transaction.consumerName}
                   </p>
                 </div>
-                <div className="flex items-center">
-                  <p className="text-lg font-bold text-[#81A858]">
+                <div className="flex items-center sm:justify-end">
+                  <p className="text-lg font-bold text-[#81A858] whitespace-nowrap">
                     ₱{(transaction.amountPaid ?? 0).toLocaleString('en-PH', {
                       minimumFractionDigits: 2,
                     })}
