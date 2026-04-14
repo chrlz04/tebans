@@ -140,15 +140,17 @@ export default function ProcessPaymentPage() {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 w-full mt-2">
           <Button
             variant="secondary"
+            className="w-full sm:w-auto"
             onClick={() => setIsSuccess(false)}
           >
             Process Another Payment
           </Button>
           <Button
             variant="primary"
+            className="w-full sm:w-auto"
             onClick={() => window.print()}
           >
             Print Receipt
@@ -159,7 +161,7 @@ export default function ProcessPaymentPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-6 relative min-h-[calc(100vh-6rem)] pb-48">
+    <div className="max-w-3xl mx-auto flex flex-col gap-6 relative min-h-[calc(100vh-6rem)]">
 
       {/* Page Header */}
       <div>
@@ -225,7 +227,7 @@ export default function ProcessPaymentPage() {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className="pt-1">
+                    <div className="pt-1 shrink-0">
                       {isSelected ? (
                          <div className="w-5 h-5 rounded border bg-primary-500 border-primary-500 flex items-center justify-center">
                           <CheckSquare size={14} className="text-white" />
@@ -271,7 +273,7 @@ export default function ProcessPaymentPage() {
         </div>
 
         {/* Sticky Footer */}
-        <div className="fixed bottom-0 left-0 lg:left-64 right-0 bg-white border-t border-gray-200 p-6 z-10">
+        <div className="sticky bottom-0 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 sm:py-6 mt-auto bg-white border-t border-gray-200 z-10">
           <div className="max-w-3xl mx-auto flex flex-col gap-4">
 
             <div className="flex flex-col">
