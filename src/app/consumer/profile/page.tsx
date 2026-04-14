@@ -34,7 +34,7 @@ export default function ConsumerProfilePage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* Personal Info Card */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -64,7 +64,7 @@ export default function ConsumerProfilePage() {
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Full Name
                 </label>
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 px-3 py-2.5 min-h-[44px] bg-gray-50 rounded-lg border border-gray-200">
                   <User size={15} className="text-gray-400 shrink-0" />
                   <span className="text-sm text-gray-800">
                     {profile
@@ -79,7 +79,7 @@ export default function ConsumerProfilePage() {
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Account Number
                 </label>
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 px-3 py-2.5 min-h-[44px] bg-gray-50 rounded-lg border border-gray-200">
                   <Hash size={15} className="text-gray-400 shrink-0" />
                   <span className="text-sm text-gray-800 font-mono">
                     {profile?.consumerId ?? '—'}
@@ -92,7 +92,7 @@ export default function ConsumerProfilePage() {
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Service Address
                 </label>
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 px-3 py-2.5 min-h-[44px] bg-gray-50 rounded-lg border border-gray-200">
                   <MapPin size={15} className="text-gray-400 shrink-0" />
                   <span className="text-sm text-gray-800">
                     {profile?.address ?? '—'}
@@ -105,7 +105,7 @@ export default function ConsumerProfilePage() {
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Contact Number
                 </label>
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 px-3 py-2.5 min-h-[44px] bg-gray-50 rounded-lg border border-gray-200">
                   <Phone size={15} className="text-gray-400 shrink-0" />
                   <span className="text-sm text-gray-800">
                     {profile?.contactNo ?? '—'}
@@ -118,7 +118,7 @@ export default function ConsumerProfilePage() {
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Account Status
                 </label>
-                <div className="px-3 py-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center px-3 py-2.5 min-h-[44px] bg-gray-50 rounded-lg border border-gray-200">
                   {profile?.accountStatus ? (
                     <Badge status={profile.accountStatus} />
                   ) : (
@@ -132,7 +132,7 @@ export default function ConsumerProfilePage() {
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Meter Serial No.
                 </label>
-                <div className="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 px-3 py-2.5 min-h-[44px] bg-gray-50 rounded-lg border border-gray-200">
                   <span className="text-sm text-gray-800 font-mono">
                     {profile?.meterSerialNo ?? '—'}
                   </span>

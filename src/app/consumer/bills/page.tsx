@@ -45,6 +45,8 @@ export default function MyBillPage() {
     {
       key: 'billingMonth',
       label: 'Billing Month',
+      className: 'whitespace-nowrap',
+      render: (row) => <span className="whitespace-nowrap">{row.billingMonth}</span>
     },
     {
       key: 'currentReading',
@@ -60,13 +62,14 @@ export default function MyBillPage() {
       key: 'amount',
       label: 'Amount (Amount with Tax/EVAT)',
       render: (row) =>
-        `₱${(row.amount ?? 0).toLocaleString('en-PH', {
+        `₱${(Number(row.amount ?? 0)).toLocaleString('en-PH', {
           minimumFractionDigits: 2,
         })}`,
     },
     {
       key: 'paymentStatus',
       label: 'Status',
+      className: 'whitespace-nowrap',
       render: (row) => <Badge status={row.paymentStatus} />,
     },
   ]
@@ -84,13 +87,13 @@ export default function MyBillPage() {
 
       {/* Current Balance Card */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <p className="text-sm text-gray-500 font-medium">Current Balance</p>
             <p className="text-4xl font-bold text-gray-900 mt-1">
               {currentLoading
                 ? '—'
-                : `₱${(currentBill?.amountDue ?? 0).toLocaleString('en-PH', {
+                : `₱${(Number(currentBill?.amountDue ?? 0)).toLocaleString('en-PH', {
                     minimumFractionDigits: 2,
                   })}`}
             </p>
@@ -112,8 +115,8 @@ export default function MyBillPage() {
 
           {/* Near Disconnection Warning */}
           {currentBill?.nearDisconnection && (
-            <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg">
-              <AlertTriangle size={16} />
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg w-full sm:w-auto mt-2 sm:mt-0">
+              <AlertTriangle size={16} className="shrink-0" />
               <span className="font-medium">Near Disconnection</span>
             </div>
           )}
