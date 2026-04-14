@@ -72,7 +72,7 @@ export default function RegisterConsumerPage() {
           className="flex flex-col gap-5"
         >
           {/* Name */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="First Name"
               placeholder="Enter first name"
@@ -99,7 +99,7 @@ export default function RegisterConsumerPage() {
           />
 
           {/* Meter and Area */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Meter Serial No."
               placeholder="Enter meter serial number"
@@ -112,7 +112,7 @@ export default function RegisterConsumerPage() {
                 Area Name <span className="text-red-500">*</span>
               </label>
               <select
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 {...register('areaName')}
               >
                 <option value="">Select Area</option>
@@ -143,15 +143,16 @@ export default function RegisterConsumerPage() {
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-2">
-            <Link href="/meter-reader/consumers">
-              <Button type="button" variant="secondary">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+            <Link href="/meter-reader/consumers" className="w-full sm:w-auto">
+              <Button type="button" variant="secondary" className="w-full">
                 Cancel
               </Button>
             </Link>
             <Button
               type="submit"
               variant="primary"
+              className="w-full sm:w-auto"
               isLoading={isSubmitting || mutation.isPending}
             >
               Register Consumer

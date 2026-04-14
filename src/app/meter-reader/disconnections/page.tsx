@@ -272,7 +272,7 @@ export default function DisconnectionsPage() {
                     <p className="text-sm text-gray-800 mt-0.5">{selectedConsumer.address}</p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <p className="text-xs text-gray-500">Mobile Number</p>
                       <p className="text-sm font-medium text-gray-900 mt-0.5">{selectedConsumer.contactNo}</p>
@@ -289,7 +289,7 @@ export default function DisconnectionsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <p className="text-xs text-gray-500">Months Overdue</p>
                       <p className="text-sm font-medium text-red-600 mt-0.5">

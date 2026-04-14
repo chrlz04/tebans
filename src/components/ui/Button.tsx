@@ -20,7 +20,7 @@ export default function Button({
     <button
       disabled={disabled || isLoading}
       className={clsx(
-        'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
+        'inline-flex min-h-[44px] items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
         {
           // Variants
           'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500':
