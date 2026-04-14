@@ -104,11 +104,15 @@ export function buildBillingAlertMessage({
   billAmount,
   dueDate,
   billingMonth,
+  previousReading,
+  currentReading,
 }: {
   consumerName:  string
   billAmount:    number
   dueDate:       string
   billingMonth:  string
+  previousReading: number
+  currentReading:  number
 }): string {
   const formattedAmount = billAmount.toLocaleString('en-PH', {
     minimumFractionDigits: 2,
@@ -118,12 +122,13 @@ export function buildBillingAlertMessage({
     month: 'long',
     day:   'numeric',
   })
+  const totalKwh = currentReading - previousReading
 
   return (
     `Dear ${consumerName}, your electricity bill for ` +
-    `${billingMonth} is P${formattedAmount}. ` +
-    `Please pay on or before ${formattedDate}. ` +
-    `- Tubod Electric Cooperative`
+    `${billingMonth} is P${formattedAmount} (Previous: ${previousReading} kWh, Present: ${currentReading} kWh) with a total of ${totalKwh} kWh used this month. ` +
+    `Please pay on or before ${formattedDate}.\n\n` +
+    `- TEBANS`
   )
 }
 
