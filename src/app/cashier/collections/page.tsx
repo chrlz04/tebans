@@ -40,7 +40,7 @@ export default function CollectionReportsPage() {
   if (!hasAccess) return null
 
   const totalCollections =
-    collections?.reduce((sum, c) => sum + (c.amountPaid ?? 0), 0) ?? 0
+    collections?.reduce((sum, c) => sum + Number(c.amountPaid ?? 0), 0) ?? 0
   const totalRecords = collections?.length ?? 0
 
   // ── CSV Export ──
@@ -58,7 +58,7 @@ export default function CollectionReportsPage() {
     const rows = collections.map((c) => [
       c.receiptNumber,
       c.consumerName,
-      c.amountPaid.toFixed(2),
+      Number(c.amountPaid).toFixed(2),
       new Date(c.datePaid).toLocaleDateString('en-PH'),
       c.paymentMethod,
     ])
@@ -173,7 +173,7 @@ export default function CollectionReportsPage() {
                 <div>
                   <span className="text-xs text-gray-500 block">Amount Paid</span>
                   <span className="text-2xl font-bold text-primary-500 mt-1 block whitespace-nowrap">
-                    ₱{record.amountPaid?.toLocaleString('en-PH', {
+                    ₱{Number(record.amountPaid ?? 0).toLocaleString('en-PH', {
                       minimumFractionDigits: 2,
                     })}
                   </span>
