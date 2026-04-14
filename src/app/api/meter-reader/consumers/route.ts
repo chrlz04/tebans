@@ -113,18 +113,18 @@ export async function POST(req: NextRequest) {
     }
 
     const highestUser = await queryOne<{ User_ID: string } & RowDataPacket>(
-      `SELECT User_ID FROM User WHERE User_ID LIKE 'user-con-%' ORDER BY LENGTH(User_ID) DESC, User_ID DESC LIMIT 1`
+      `SELECT User_ID FROM User WHERE User_ID LIKE 'user-consumer-%' ORDER BY LENGTH(User_ID) DESC, User_ID DESC LIMIT 1`
     )
 
     let nextUserSeq = 1
     if (highestUser && highestUser.User_ID) {
-      const match = highestUser.User_ID.match(/^user-con-(\d+)$/)
+      const match = highestUser.User_ID.match(/^user-consumer-(\d+)$/)
       if (match && match[1]) {
         nextUserSeq = parseInt(match[1], 10) + 1
       }
     }
-    const userId = `user-con-${nextUserSeq.toString().padStart(3, '0')}`
-    const loginId = `login-con-${nextUserSeq.toString().padStart(3, '0')}`
+    const userId = `user-consumer-${nextUserSeq.toString().padStart(3, '0')}`
+    const loginId = `login-consumer-${nextUserSeq.toString().padStart(3, '0')}`
 
     // Determine username based on firstName
     const baseUsername = firstName.replace(/\s+/g, '').toLowerCase()
@@ -160,18 +160,18 @@ export async function POST(req: NextRequest) {
     )
 
     const highestConsumer = await queryOne<{ Consumer_ID: string } & RowDataPacket>(
-      `SELECT Consumer_ID FROM Consumer WHERE Consumer_ID LIKE 'con-%' ORDER BY LENGTH(Consumer_ID) DESC, Consumer_ID DESC LIMIT 1`
+      `SELECT Consumer_ID FROM Consumer WHERE Consumer_ID LIKE 'consumer-%' ORDER BY LENGTH(Consumer_ID) DESC, Consumer_ID DESC LIMIT 1`
     )
 
     let nextSeq = 1
     if (highestConsumer && highestConsumer.Consumer_ID) {
-      const match = highestConsumer.Consumer_ID.match(/^con-(\d+)$/)
+      const match = highestConsumer.Consumer_ID.match(/^consumer-(\d+)$/)
       if (match && match[1]) {
         nextSeq = parseInt(match[1], 10) + 1
       }
     }
 
-    const consumerId = `con-${nextSeq.toString().padStart(3, '0')}`
+    const consumerId = `consumer-${nextSeq.toString().padStart(3, '0')}`
 
     await execute(
       `INSERT INTO Consumer (
