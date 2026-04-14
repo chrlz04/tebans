@@ -152,6 +152,6 @@ export function buildDisconnectionMessage({
     `Dear ${consumerName}, your electricity service is scheduled ` +
     `for disconnection on ${formattedDate} due to: ${reason}. ` +
     `Please settle your account immediately. ` +
-    `- Tubod Electric Cooperative`
+    `- TEBANS`
   )
 }
