@@ -295,10 +295,11 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
             </div>
         )}
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Input
             label="Current Reading (kWh)"
             type="number"
+            inputMode="numeric"
             placeholder="Enter current reading"
             error={errors.currentReading?.message}
             required
@@ -351,15 +352,16 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
           </div>
         )}
 
-        <div className="flex justify-end gap-3">
-          <Link href="/meter-reader/consumers">
-            <Button type="button" variant="secondary">
+        <div className="flex flex-col sm:flex-row justify-end gap-3">
+          <Link href="/meter-reader/consumers" className="w-full sm:w-auto">
+            <Button type="button" variant="secondary" className="w-full">
               Cancel
             </Button>
           </Link>
           <Button
             type="submit"
             variant="primary"
+            className="w-full sm:w-auto"
             isLoading={isSubmitting || mutation.isPending}
           >
             Generate Bill & Send SMS

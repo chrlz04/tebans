@@ -234,10 +234,11 @@ export default function BatchRecordMeterReadingPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Current Reading (kWh)"
               type="number"
+              inputMode="numeric"
               placeholder="Enter current reading"
               error={errors.currentReading?.message}
               required
@@ -279,10 +280,11 @@ export default function BatchRecordMeterReadingPage() {
           </div>
         )}
 
-        <div className="flex justify-between gap-3">
+        <div className="flex flex-col sm:flex-row justify-between gap-3">
           <Button
             type="button"
             variant="secondary"
+            className="w-full sm:w-auto"
             onClick={handleNext}
             disabled={mutation.isPending || isSubmitting}
           >
@@ -292,6 +294,7 @@ export default function BatchRecordMeterReadingPage() {
           <Button
             type="submit"
             variant="primary"
+            className="w-full sm:w-auto"
             isLoading={isSubmitting || mutation.isPending}
             disabled={!!alertMessage}
           >
