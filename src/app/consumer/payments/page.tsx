@@ -35,12 +35,16 @@ export default function PaymentHistoryPage() {
     {
       key: 'datePaid',
       label: 'Date Paid',
-      render: (row) =>
-        new Date(row.datePaid).toLocaleDateString('en-PH', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        }),
+      className: 'whitespace-nowrap',
+      render: (row) => (
+        <span className="whitespace-nowrap">
+          {new Date(row.datePaid).toLocaleDateString('en-PH', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })}
+        </span>
+      ),
     },
     {
       key: 'receiptNumber',
@@ -64,13 +68,13 @@ export default function PaymentHistoryPage() {
       key: 'amountPaid',
       label: 'Amount Paid',
       render: (row) =>
-        `₱${(row.amountPaid ?? 0).toLocaleString('en-PH', {
+        `₱${(Number(row.amountPaid ?? 0)).toLocaleString('en-PH', {
           minimumFractionDigits: 2,
         })}`,
     },
   ]
 
-  const totalPaid = payments?.reduce((sum, p) => sum + (p.amountPaid ?? 0), 0) ?? 0
+  const totalPaid = payments?.reduce((sum, p) => sum + (Number(p.amountPaid ?? 0)), 0) ?? 0
 
   return (
     <div className="flex flex-col gap-6">
@@ -88,16 +92,17 @@ export default function PaymentHistoryPage() {
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-5">
-          <SearchBar
-            value={search}
-            onChange={setSearch}
-            placeholder="Search by receipt number..."
-            className="flex-1 max-w-sm"
-          />
+          <div className="flex-1 sm:max-w-sm">
+            <SearchBar
+              value={search}
+              onChange={setSearch}
+              placeholder="Search by receipt number..."
+            />
+          </div>
           <select
             value={year}
             onChange={(e) => setYear(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full sm:w-auto min-h-[44px] px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             {yearOptions.map((y) => (
               <option key={y} value={String(y)}>
