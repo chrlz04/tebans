@@ -5,6 +5,7 @@ import { handleApiError } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'
 import { query, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
+import { getManilaDateParts } from '@/lib/date-utils'
 
 interface SummaryRow extends RowDataPacket {
   total: number
@@ -50,14 +51,24 @@ export async function GET(req: NextRequest) {
       [today, assignedArea]
     )
 
-    // Pending cash remittance (all unpaid bills total)
+    // Pending cash remittance (collected payments not yet remitted)
+    // Period: 28th of previous month up to 27th of current month
+    const { year, month, day } = getManilaDateParts()
+
+    const startDateObj = new Date(year, day > 27 ? month : month - 1, 28)
+    const endDateObj = new Date(year, day > 27 ? month + 1 : month, 27)
+
+    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-28`
+    const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-27`
+
     const pendingRemittance = await queryOne<SummaryRow>(
-      `SELECT COALESCE(SUM(b.Amount), 0) AS total
-       FROM Bill b
-       JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
-       WHERE b.Payment_Status = 'Unpaid'
+      `SELECT COALESCE(SUM(p.Amount_Paid), 0) AS total
+       FROM Payment p
+       JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
+       WHERE DATE(p.Date_Paid) >= ?
+         AND DATE(p.Date_Paid) <= ?
          AND c.Area_Name = ?`,
-      [assignedArea]
+      [startDate, endDate, assignedArea]
     )
 
     // Pending consumers to pay
