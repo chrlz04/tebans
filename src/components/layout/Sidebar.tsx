@@ -110,6 +110,26 @@ export default function Sidebar({ role, isMobileOpen, onCloseMobile }: SidebarPr
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
+        {/* Branding / Logo */}
+        <div className={clsx(
+          "flex items-center mb-6",
+          isCollapsed ? "justify-center" : "justify-start px-2 gap-3"
+        )}>
+          <Link
+            href={items[0]?.href || '/'}
+            className="flex items-center gap-3 hover:opacity-90 transition-opacity focus:outline-none"
+          >
+            <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center text-white shrink-0 shadow-sm">
+              <Zap size={16} />
+            </div>
+            {!isCollapsed && (
+              <h1 className="text-xl font-bold text-gray-900 leading-none tracking-tight">
+                TEBANS
+              </h1>
+            )}
+          </Link>
+        </div>
+
         {/* Toggle Button (Desktop Only) */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
