@@ -64,6 +64,11 @@ export default function TopBar({ onToggleMobileSidebar }: TopBarProps) {
         {/* Logout Popup/Dropdown */}
         {isDropdownOpen && (
           <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
+            {/* Mobile-only User Info inside dropdown */}
+            <div className="sm:hidden px-4 py-3 border-b border-gray-100 mb-1">
+              <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'System User'}</p>
+              <p className="text-xs text-gray-500 truncate">{roleLabel}</p>
+            </div>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
