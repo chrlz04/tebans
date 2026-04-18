@@ -281,6 +281,10 @@ All endpoints are prefixed with `/api`. Protected endpoints require a valid JWT 
 | POST | `/api/auth/login` | Public | Login for all roles |
 | POST | `/api/auth/logout` | Any | Clear auth cookies |
 | PUT | `/api/auth/change-password` | Any | Change password |
+| PUT | `/api/admin/auth/change-password` | Admin | Change admin password |
+| PUT | `/api/consumer/auth/change-password` | Consumer | Change consumer password |
+| PUT | `/api/meter-reader/auth/change-password` | Meter Reader | Change meter reader password |
+| PUT | `/api/cashier/auth/change-password` | Cashier | Change cashier password |
 
 ### Admin
 
@@ -309,12 +313,14 @@ All endpoints are prefixed with `/api`. Protected endpoints require a valid JWT 
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/meter-reader/consumers` | List consumers |
+| GET | `/api/meter-reader/consumers/batch` | List consumers in batch mode |
 | POST | `/api/meter-reader/consumers` | Register new consumer |
 | PUT | `/api/meter-reader/consumers/[consumerId]` | Update consumer |
 | GET | `/api/meter-reader/consumers/[consumerId]/bill` | View consumer bills |
 | GET | `/api/meter-reader/consumers/[consumerId]/previous-reading` | Get last reading |
 | POST | `/api/meter-reader/readings` | Record meter reading + generate bill |
 | GET | `/api/meter-reader/disconnections/overdue` | List overdue accounts |
+| GET | `/api/meter-reader/disconnections/inactive` | List inactive accounts |
 | POST | `/api/meter-reader/disconnections` | Submit disconnection request |
 | GET | `/api/meter-reader/payments` | View payment collection |
 | GET | `/api/meter-reader/profile` | Get own profile |
