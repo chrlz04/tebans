@@ -9,10 +9,7 @@ const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const token = Cookies.get('token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
+  // Token is sent automatically via HttpOnly cookie
   return config
 })
 
@@ -27,9 +24,13 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      Cookies.remove('token')
-      Cookies.remove('role')
-      window.location.href = '/login'
+      // Call logout endpoint to clear httpOnly token
+      fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
+        Cookies.remove('role')
+        Cookies.remove('userId')
+        Cookies.remove('name')
+        window.location.href = '/login'
+      })
     }
     return Promise.reject(error)
   }
