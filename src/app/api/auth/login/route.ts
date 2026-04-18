@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { queryOne } from '@/lib/db-helpers'
@@ -82,12 +82,25 @@ export async function POST(req: NextRequest) {
 
     const fullName = `${account.First_Name} ${account.Last_Name}`.trim()
 
-    return ok({
-      token,
-      role:   account.User_Type,
-      userId: account.User_ID,
-      name:   fullName,
-    }, 'Login successful')
+    const response = NextResponse.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        role: account.User_Type,
+        userId: account.User_ID,
+        name: fullName,
+      }
+    });
+
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 // 1 day
+    });
+
+    return response;
 
   } catch (error) {
     logger.error('Login error:', error)

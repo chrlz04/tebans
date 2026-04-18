@@ -11,6 +11,7 @@ interface AuthUser {
   userId: string
   role: Role
   token: string
+  name: string
 }
 
 interface AuthContextType {
@@ -36,33 +37,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Rehydrate auth state from cookies on page load
-    const token = Cookies.get('token')
     const role = Cookies.get('role') as Role | undefined
     const userId = Cookies.get('userId')
+    const name = Cookies.get('name')
 
-    if (token && role && userId) {
-      setUser({ token, role, userId })
+    // Only hydrate if we have metadata - token is HttpOnly now
+    if (role && userId && name) {
+      setUser({ token: '', role, userId, name })
+    })
     }
 
     setIsLoading(false)
   }, [])
 
   const login = (data: AuthResponse) => {
-    // Store in cookies (expires in 1 day)
-    Cookies.set('token', data.token, { expires: 1 })
+    // Note: token is no longer stored by client, it's HTTPOnly
     Cookies.set('role', data.role, { expires: 1 })
     Cookies.set('userId', data.userId, { expires: 1 })
+    Cookies.set('name', data.name, { expires: 1 })
 
-    setUser({ token: data.token, role: data.role, userId: data.userId })
+    // token field is now empty on the client side
+    setUser({ token: '', role: data.role, userId: data.userId, name: data.name })
 
     // Redirect to role-specific home page
     router.push(roleHomePages[data.role])
   }
 
-  const logout = () => {
-    Cookies.remove('token')
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error('Logout failed', e);
+    }
     Cookies.remove('role')
     Cookies.remove('userId')
+    Cookies.remove('name')
     setUser(null)
     router.push('/login')
   }

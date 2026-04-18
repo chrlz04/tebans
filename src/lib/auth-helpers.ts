@@ -8,21 +8,20 @@ export interface JwtPayload {
   role:   Role
 }
 
-// ─── Verify JWT from request header ──────────────────────
+// ─── Verify JWT from cookies ──────────────────────────────
 export function verifyToken(req: NextRequest): JwtPayload | null {
   try {
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return null
+    const token = req.cookies.get('token')?.value;
+    if (!token) {
+      return null;
     }
-    const token   = authHeader.split(' ')[1]
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET!
-    ) as JwtPayload
-    return decoded
+    ) as JwtPayload;
+    return decoded;
   } catch {
-    return null
+    return null;
   }
 }
 

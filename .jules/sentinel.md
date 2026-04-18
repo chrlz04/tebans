@@ -1,0 +1,4 @@
+## 2024-04-18 - [Token Storage Vulnerability]
+**Vulnerability:** The application was storing sensitive JWT session tokens in normal browser cookies which are accessible via JavaScript using document.cookie. This made the application vulnerable to XSS attacks being able to steal the session token and impersonate users.
+**Learning:** React escapes content safely by default, but relying on this alone without setting `httpOnly` is not defense-in-depth. Next.js App Router exposes `cookies()` from `next/headers` or `req.cookies` which makes transitioning to server-only tokens trivial while securing the application substantially.
+**Prevention:** Always mark JWT cookies with `httpOnly: true` and `sameSite: 'lax'` (or strict) when setting cookies on the API response to restrict JavaScript from accessing them. Use an API route like `/api/auth/logout` to handle explicitly clearing the token.
