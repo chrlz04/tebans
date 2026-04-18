@@ -114,42 +114,108 @@ Browser
 tebans/
 ├── src/
 │   ├── app/
-│   │   ├── (auth)/login/          # Login page
-│   │   ├── admin/                 # Admin pages + layout
-│   │   ├── consumer/              # Consumer pages + layout
-│   │   ├── meter-reader/          # Meter reader pages + layout
-│   │   ├── cashier/               # Cashier pages + layout
-│   │   └── api/                   # All backend API routes
-│   │       ├── auth/              # Login, logout, change password
-│   │       ├── admin/             # Admin endpoints
-│   │       ├── consumer/          # Consumer endpoints
-│   │       ├── meter-reader/      # Meter reader endpoints
-│   │       └── cashier/           # Cashier endpoints
+│   │   ├── (auth)/login/
+│   │   │   └── page.tsx                   # Login page UI
+│   │   ├── admin/
+│   │   │   ├── accounts/page.tsx          # Consumer accounts management UI
+│   │   │   ├── dashboard/page.tsx         # Admin dashboard stats UI
+│   │   │   ├── settings/page.tsx          # Admin settings/password change UI
+│   │   │   ├── staff/new/page.tsx         # New staff registration UI
+│   │   │   └── layout.tsx                 # Admin layout & navigation
+│   │   ├── cashier/
+│   │   │   ├── collections/page.tsx       # Collections report UI
+│   │   │   ├── dashboard/page.tsx         # Cashier dashboard stats UI
+│   │   │   ├── payments/new/page.tsx      # Process new payment UI
+│   │   │   ├── settings/page.tsx          # Cashier settings/password change UI
+│   │   │   └── layout.tsx                 # Cashier layout & navigation
+│   │   ├── consumer/
+│   │   │   ├── bills/page.tsx             # Consumer billing history UI
+│   │   │   ├── payments/page.tsx          # Consumer payment history UI
+│   │   │   ├── profile/page.tsx           # Consumer profile details UI
+│   │   │   └── layout.tsx                 # Consumer layout & navigation
+│   │   ├── meter-reader/
+│   │   │   ├── consumers/
+│   │   │   │   ├── new/page.tsx           # Consumer registration UI
+│   │   │   │   └── page.tsx               # Consumers list UI
+│   │   │   ├── disconnections/page.tsx    # Overdue/inactive disconnections UI
+│   │   │   ├── payments/page.tsx          # Payment collections viewer UI
+│   │   │   ├── readings/
+│   │   │   │   ├── batch/page.tsx         # Batch meter reading UI
+│   │   │   │   ├── new/page.tsx           # Individual meter reading UI
+│   │   │   │   └── page.tsx               # Readings list UI
+│   │   │   ├── settings/page.tsx          # Meter reader settings UI
+│   │   │   └── layout.tsx                 # Meter reader layout & navigation
+│   │   ├── api/
+│   │   │   ├── auth/
+│   │   │   │   ├── login/route.ts         # User authentication endpoint
+│   │   │   │   ├── logout/route.ts        # Clear session endpoint
+│   │   │   │   └── change-password/route.ts # General change password endpoint
+│   │   │   ├── admin/
+│   │   │   │   ├── auth/change-password/route.ts # Admin specific password change
+│   │   │   │   ├── consumers/route.ts     # List all consumers
+│   │   │   │   ├── consumers/[consumerId]/status/route.ts # Toggle consumer active status
+│   │   │   │   ├── dashboard/route.ts     # Admin dashboard statistics
+│   │   │   │   ├── staff/route.ts         # List and create staff
+│   │   │   │   ├── staff/[userId]/route.ts # Update staff details
+│   │   │   │   └── staff/[userId]/status/route.ts # Toggle staff status
+│   │   │   ├── cashier/
+│   │   │   │   ├── auth/change-password/route.ts # Cashier specific password change
+│   │   │   │   ├── bills/unpaid/route.ts  # List all unpaid bills
+│   │   │   │   ├── collections/route.ts   # Cashier collections report
+│   │   │   │   ├── dashboard/route.ts     # Cashier dashboard statistics
+│   │   │   │   └── payments/route.ts      # Process payments endpoint
+│   │   │   ├── consumer/
+│   │   │   │   ├── auth/change-password/route.ts # Consumer specific password change
+│   │   │   │   ├── bills/route.ts         # List all bills for consumer
+│   │   │   │   ├── bills/current/route.ts # Get current active bill
+│   │   │   │   ├── bills/history/route.ts # Get billing history
+│   │   │   │   ├── payments/route.ts      # Get payment history
+│   │   │   │   └── profile/route.ts       # Get consumer profile details
+│   │   │   ├── meter-reader/
+│   │   │   │   ├── auth/change-password/route.ts # Meter reader specific password change
+│   │   │   │   ├── consumers/route.ts     # List consumers in assigned area
+│   │   │   │   ├── consumers/batch/route.ts # List consumers for batch processing
+│   │   │   │   ├── consumers/[consumerId]/route.ts # Get specific consumer details
+│   │   │   │   ├── consumers/[consumerId]/bill/route.ts # Get consumer bills
+│   │   │   │   ├── consumers/[consumerId]/previous-reading/route.ts # Get last meter reading
+│   │   │   │   ├── disconnections/route.ts # Process disconnections
+│   │   │   │   ├── disconnections/inactive/route.ts # List inactive disconnections
+│   │   │   │   ├── disconnections/overdue/route.ts # List overdue disconnections
+│   │   │   │   ├── payments/route.ts      # View payments in assigned area
+│   │   │   │   ├── profile/route.ts       # Get meter reader profile
+│   │   │   │   └── readings/route.ts      # Record meter reading and generate bill
+│   │   │   ├── debug/route.ts             # Debugging utility endpoint
+│   │   │   ├── hash/route.ts              # Password hashing utility endpoint
+│   │   │   ├── health/route.ts            # API health check endpoint
+│   │   │   └── test-sms/route.ts          # SMS gateway testing endpoint
+│   │   ├── globals.css                    # Tailwind CSS definitions
+│   │   ├── layout.tsx                     # Global Root Layout
+│   │   └── page.tsx                       # Landing/Home page
 │   ├── components/
-│   │   ├── ui/                    # Button, Input, Badge, Modal
-│   │   ├── layout/                # Sidebar, Header, DashboardLayout
-│   │   └── shared/                # DataTable, SearchBar, StatCard, etc.
+│   │   ├── ui/                            # Button, Input, Badge, Modal, etc.
+│   │   ├── layout/                        # Sidebar, Header, DashboardLayout
+│   │   └── shared/                        # DataTable, SearchBar, StatCard, etc.
 │   ├── lib/
-│   │   ├── db.ts                  # MySQL connection pool
-│   │   ├── db-helpers.ts          # query, execute, queryOne helpers
-│   │   ├── auth-helpers.ts        # JWT verify, requireRole, ok, err
-│   │   ├── auth-context.tsx       # React auth context
-│   │   ├── use-role-guard.ts      # Per-page role check hook
-│   │   ├── api.ts                 # Axios instance
-│   │   ├── error-handler.ts       # Global error handler
-│   │   ├── validators.ts          # Input validation helpers
-│   │   ├── rate-limiter.ts        # Login brute force protection
-│   │   ├── logger.ts              # Structured logger
+│   │   ├── db.ts                          # MySQL connection pool
+│   │   ├── db-helpers.ts                  # Query execution helpers
+│   │   ├── auth-helpers.ts                # JWT and role-based access helpers
+│   │   ├── auth-context.tsx               # React Auth Provider context
+│   │   ├── use-role-guard.ts              # Custom hook for role-based protection
+│   │   ├── api.ts                         # Axios interceptor setup
+│   │   ├── error-handler.ts               # Standard API error formatter
+│   │   ├── validators.ts                  # Input schema validations (Zod)
+│   │   ├── rate-limiter.ts                # Request rate limiting utility
+│   │   ├── logger.ts                      # Backend structured logger
 │   │   └── services/
-│   │       ├── billing.service.ts # getPreviousReading, getBillingMonth, generateSequentialId
-│   │       ├── payment.service.ts # recordPayment, updateBillStatus, generateReceiptNumber
-│   │       └── sms.service.ts     # sendSms, message builders
+│   │       ├── billing.service.ts         # Billing core logic
+│   │       ├── payment.service.ts         # Payment processing logic
+│   │       └── sms.service.ts             # SMS notification logic
 │   ├── types/
-│   │   └── index.ts               # All TypeScript interfaces
-│   └── proxy.ts                   # RBAC route guard (replaces middleware.ts)
-├── .env.local                     # Environment variables (not committed)
-├── next.config.ts
-└── package.json
+│   │   └── index.ts                       # TypeScript interfaces and types
+│   └── proxy.ts                           # Global RBAC route guard
+├── .env.local                             # Environment variables
+├── next.config.ts                         # Next.js configuration
+└── package.json                           # Project dependencies
 ```
 
 ---
