@@ -2,7 +2,7 @@
 
 **Tubod Electricity Billing Alert and Notification System**
 
-A web-based billing alert and notification system for Tubod Electric Cooperative in Barangay Tubod, Clarin, Bohol. TEBANS automates SMS notifications for electricity bills, payment confirmations, and disconnection alerts — replacing manual, paper-based communication between the cooperative and its consumers.
+A web-based billing alert and notification system in Barangay Tubod, Clarin, Bohol. TEBANS automates SMS notifications for electricity bills, payment confirmations, and disconnection alerts — replacing manual, paper-based communication between the staff and its consumers.
 
 ---
 
