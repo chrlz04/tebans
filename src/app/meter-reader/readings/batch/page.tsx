@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -41,6 +41,18 @@ export default function BatchRecordMeterReadingPage() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isCompleted, setIsCompleted] = useState(false)
   const [alertMessage, setAlertMessage] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<{ text: string; isWarning: boolean } | null>(null)
+
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
 
   // Fetch all active consumers
   const { data: consumers, isLoading: consumersLoading } = useQuery<BatchConsumer[]>({
@@ -95,8 +107,25 @@ export default function BatchRecordMeterReadingPage() {
       const res = await api.post('/meter-reader/readings', values)
       return res.data
     },
-    onSuccess: () => {
-      handleNext()
+    onSuccess: (data) => {
+      if (!currentConsumer) {
+        handleNext()
+        return
+      }
+
+      if (data.smsSent) {
+        setSuccessMessage({ text: `Reading saved for ${currentConsumer.firstName} ${currentConsumer.lastName}. SMS sent successfully! Moving to next consumer...`, isWarning: false })
+      } else {
+        setSuccessMessage({ text: `Reading saved for ${currentConsumer.firstName} ${currentConsumer.lastName}. SMS failed to send or no contact number. Moving to next consumer...`, isWarning: true })
+      }
+
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+
+      timeoutRef.current = setTimeout(() => {
+        handleNext()
+      }, 3000)
     },
   })
 
@@ -107,6 +136,7 @@ export default function BatchRecordMeterReadingPage() {
       amountWithTaxEvat: undefined,
     })
     setAlertMessage(null)
+    setSuccessMessage(null)
 
     if (consumers && currentIndex < consumers.length - 1) {
       setCurrentIndex((prev) => prev + 1)
@@ -194,6 +224,13 @@ export default function BatchRecordMeterReadingPage() {
         </div>
       )}
 
+      {successMessage && (
+        <div className={`mb-6 flex items-start gap-3 border rounded-lg px-4 py-3 ${successMessage.isWarning ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
+          <AlertCircle size={18} className={`${successMessage.isWarning ? 'text-amber-600' : 'text-green-600'} mt-0.5 shrink-0`} />
+          <p className={`text-sm ${successMessage.isWarning ? 'text-amber-800' : 'text-green-800'}`}>{successMessage.text}</p>
+        </div>
+      )}
+
       {/* Progress Bar */}
       <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
         <div
@@ -250,7 +287,7 @@ export default function BatchRecordMeterReadingPage() {
               type="date"
               error={errors.readingDate?.message}
               required
-              disabled={!!alertMessage}
+              disabled={!!alertMessage || !!successMessage}
               {...register('readingDate')}
             />
           </div>
@@ -261,7 +298,7 @@ export default function BatchRecordMeterReadingPage() {
             placeholder="Enter amount as computed by BOHECO"
             error={errors.amountWithTaxEvat?.message}
             required
-            disabled={!!alertMessage}
+            disabled={!!alertMessage || !!successMessage}
             {...register('amountWithTaxEvat', { valueAsNumber: true })}
           />
         </div>
@@ -286,7 +323,7 @@ export default function BatchRecordMeterReadingPage() {
             variant="secondary"
             className="w-full sm:w-auto"
             onClick={handleNext}
-            disabled={mutation.isPending || isSubmitting}
+            disabled={mutation.isPending || isSubmitting || !!successMessage}
           >
             <SkipForward size={16} className="mr-2" />
             Skip Consumer
@@ -296,7 +333,7 @@ export default function BatchRecordMeterReadingPage() {
             variant="primary"
             className="w-full sm:w-auto"
             isLoading={isSubmitting || mutation.isPending}
-            disabled={!!alertMessage}
+            disabled={!!alertMessage || !!successMessage}
           >
             Save & Next
           </Button>
