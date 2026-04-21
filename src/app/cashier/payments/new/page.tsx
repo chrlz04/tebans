@@ -53,7 +53,7 @@ export default function ProcessPaymentPage() {
       )
       setReceiptData({
         receiptNumber: data.receiptNumber,
-        totalAmount: selectedBills?.reduce((sum, b) => sum + (b.amount ?? 0), 0) ?? 0,
+        totalAmount: selectedBills?.reduce((sum, b) => sum + Number(b.amount ?? 0), 0) ?? 0,
         consumerNames: selectedBills?.map((b) => b.consumerName) ?? [],
       })
       setIsSuccess(true)
@@ -85,7 +85,7 @@ export default function ProcessPaymentPage() {
   )
 
   const totalSelected = selectedBills?.reduce(
-    (sum, b) => sum + (b.amount ?? 0),
+    (sum, b) => sum + Number(b.amount ?? 0),
     0
   ) ?? 0
 
@@ -161,7 +161,7 @@ export default function ProcessPaymentPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-6 relative min-h-[calc(100vh-6rem)]">
+    <div className="max-w-3xl mx-auto flex flex-col gap-6 relative">
 
       {/* Page Header */}
       <div>
@@ -173,7 +173,7 @@ export default function ProcessPaymentPage() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-6 flex-1">
+      <div className="flex flex-col gap-6 flex-1 pb-48">
 
         {/* Bills List */}
         <div className="flex flex-col gap-4">
@@ -255,7 +255,7 @@ export default function ProcessPaymentPage() {
                       <div className="border-t border-gray-100 pt-3 mt-1">
                          <p className="text-xs text-gray-500 mb-0.5">Total Amount Due</p>
                          <p className="text-xl font-bold text-gray-900">
-                          ₱{(bill.amount ?? 0).toLocaleString('en-PH', {
+                          ₱{Number(bill.amount ?? 0).toLocaleString('en-PH', {
                             minimumFractionDigits: 2,
                           })}
                         </p>
@@ -272,8 +272,8 @@ export default function ProcessPaymentPage() {
           )}
         </div>
 
-        {/* Sticky Footer */}
-        <div className="sticky bottom-0 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 sm:py-6 mt-auto bg-white border-t border-gray-200 z-10">
+        {/* Fixed Footer */}
+        <div className="fixed bottom-0 left-0 right-0 md:left-[var(--sidebar-width)] px-4 sm:px-6 py-4 sm:py-6 bg-white border-t border-gray-200 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
           <div className="max-w-3xl mx-auto flex flex-col gap-4">
 
             <div className="flex flex-col">
