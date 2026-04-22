@@ -102,6 +102,8 @@ export default function AdminDashboardPage() {
           isLoading={isLoading}
           emptyMessage="No recent registrations found."
           keyExtractor={(row) => row.userId}
+          totalCount={data?.recentRegistrations?.length ?? 0}
+          itemName="registrations"
         />
       </div>
     </div>
