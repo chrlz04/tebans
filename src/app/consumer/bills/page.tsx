@@ -160,6 +160,8 @@ export default function MyBillPage() {
           isLoading={historyLoading}
           emptyMessage="No billing records found."
           keyExtractor={(row) => row.billId}
+          totalCount={history?.length ?? 0}
+          itemName="bills"
         />
       </div>
     </div>

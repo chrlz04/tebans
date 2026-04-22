@@ -26,11 +26,9 @@ export default function MeterReaderConsumersPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   const { data: consumers, isLoading } = useQuery<Consumer[]>({
-    queryKey: ['meter-reader-consumers', search],
+    queryKey: ['meter-reader-consumers'],
     queryFn: async () => {
-      const res = await api.get('/meter-reader/consumers', {
-        params: { search },
-      })
+      const res = await api.get('/meter-reader/consumers')
       return res.data
     },
     enabled: hasAccess,
@@ -38,6 +36,16 @@ export default function MeterReaderConsumersPage() {
 
   if (authLoading) return null
   if (!hasAccess) return null
+
+  const filteredConsumers = consumers?.filter((consumer) => {
+    const s = search.toLowerCase()
+    return (
+      consumer.firstName.toLowerCase().includes(s) ||
+      consumer.lastName.toLowerCase().includes(s) ||
+      consumer.consumerId.toLowerCase().includes(s) ||
+      (consumer.areaName || '').toLowerCase().includes(s)
+    )
+  })
 
   const columns: Column<Consumer>[] = [
   {
@@ -151,10 +159,12 @@ export default function MeterReaderConsumersPage() {
         </div>
         <DataTable
           columns={columns}
-          data={consumers ?? []}
+          data={filteredConsumers ?? []}
           isLoading={isLoading}
           emptyMessage="No consumers found."
           keyExtractor={(row) => row.consumerId}
+          totalCount={consumers?.length ?? 0}
+          itemName="consumers"
         />
       </div>
 

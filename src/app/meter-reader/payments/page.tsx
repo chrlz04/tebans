@@ -113,6 +113,8 @@ export default function MeterReaderPaymentsPage() {
           isLoading={isLoading}
           emptyMessage="No payment records found."
           keyExtractor={(row) => row.paymentId}
+          totalCount={payments?.length ?? 0}
+          itemName="payments"
         />
 
         {/* Summary */}
