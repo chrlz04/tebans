@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { User, MapPin, Hash, Phone } from 'lucide-react'
 import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
+import ChangePasswordForm from '@/components/shared/ChangePasswordForm'
 
 interface MeterReaderProfile {
   userId:       string
@@ -85,6 +86,14 @@ export default function MeterReaderProfilePage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Change Password Card */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 className="text-base font-semibold text-gray-900 mb-5">
+          Change Password
+        </h2>
+        <ChangePasswordForm endpoint="/meter-reader/auth/change-password" />
       </div>
     </div>
   )
