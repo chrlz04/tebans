@@ -5,6 +5,7 @@ import { User, LogOut, Zap } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 const roleLabels: Record<string, string> = {
   admin: 'Administrator',
@@ -69,6 +70,18 @@ export default function TopBar({ onToggleMobileSidebar }: TopBarProps) {
               <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'System User'}</p>
               <p className="text-xs text-gray-500 truncate">{roleLabel}</p>
             </div>
+
+            {user?.role && (
+              <Link
+                href={`/${user.role === 'meter_reader' ? 'meter-reader' : user.role}/profile`}
+                onClick={() => setIsDropdownOpen(false)}
+                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <User size={16} />
+                Profile
+              </Link>
+            )}
+
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
