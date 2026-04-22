@@ -100,124 +100,127 @@ export default function ConsumerBillModal({
         title="Bill Details"
         size="lg"
       >
-        <div className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto pr-1">
-          {/* Back button */}
-          <button
-            onClick={() => setSelectedBill(null)}
-            className="flex items-center gap-1.5 text-xs text-primary-600
-              hover:opacity-75 transition-opacity w-fit"
-          >
-            <ArrowLeft size={12} />
-            Back to all bills
-          </button>
+        <div className="flex flex-col max-h-[70vh]">
+          {/* Scrollable Content */}
+          <div className="flex flex-col gap-4 overflow-y-auto pr-1 pb-4">
+            {/* Back button */}
+            <button
+              onClick={() => setSelectedBill(null)}
+              className="flex items-center gap-1.5 text-xs text-primary-600
+                hover:opacity-75 transition-opacity w-fit"
+            >
+              <ArrowLeft size={12} />
+              Back to all bills
+            </button>
 
-          {/* Header */}
-          <div className="text-center py-1">
-            <p className="text-base font-bold text-primary-600 leading-tight">
-              TEBANS
-            </p>
-            <p className="text-[11px] text-gray-400 mt-0.5">
-              Tubod Electricity Billing Alert and Notification System
-              · Tubod, Clarin, Bohol
-            </p>
-          </div>
+            {/* Header */}
+            <div className="text-center py-1">
+              <p className="text-base font-bold text-primary-600 leading-tight">
+                TEBANS
+              </p>
+              <p className="text-[11px] text-gray-400 mt-0.5">
+                Tubod Electricity Billing Alert and Notification System
+                · Tubod, Clarin, Bohol
+              </p>
+            </div>
 
-          {/* Consumer info */}
-          <div className="border border-gray-100 rounded-xl bg-gray-50 p-4">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-              Consumer Information
-            </p>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
-              <div>
-                <span className="text-gray-400">Account #</span>
-                <p className="font-mono text-gray-800 mt-0.5">
-                  {consumer.consumerId}
+            {/* Consumer info */}
+            <div className="border border-gray-100 rounded-xl bg-gray-50 p-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                Consumer Information
+              </p>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
+                <div>
+                  <span className="text-gray-400">Account #</span>
+                  <p className="font-mono text-gray-800 mt-0.5">
+                    {consumer.consumerId}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Consumer</span>
+                  <p className="font-medium text-gray-800 mt-0.5">
+                    {consumer.firstName} {consumer.lastName}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Meter #</span>
+                  <p className="font-mono text-gray-800 mt-0.5">
+                    {consumer.meterSerialNo}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Contact</span>
+                  <p className="font-mono text-gray-800 mt-0.5">
+                    {consumer.contactNo}
+                  </p>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-400">Service Address</span>
+                  <p className="text-gray-800 mt-0.5">{consumer.address}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Account Status</span>
+                  <div className="mt-1">
+                    <Badge status={consumer.accountStatus} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Period & due date */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="px-4 py-3 rounded-lg bg-blue-50 border border-blue-100">
+                <span className="text-[11px] font-semibold text-blue-600">
+                  Billing Period
+                </span>
+                <p className="text-sm font-bold text-blue-900 mt-0.5">
+                  {selectedBill.billingMonth}
                 </p>
               </div>
-              <div>
-                <span className="text-gray-400">Consumer</span>
-                <p className="font-medium text-gray-800 mt-0.5">
-                  {consumer.firstName} {consumer.lastName}
+              <div className="px-4 py-3 rounded-lg bg-red-50 border border-red-100">
+                <span className="text-[11px] font-semibold text-red-600">
+                  Due Date
+                </span>
+                <p className="text-sm font-bold text-red-900 mt-0.5">
+                  {fmtDate(selectedBill.dueDate)}
                 </p>
               </div>
-              <div>
-                <span className="text-gray-400">Meter #</span>
-                <p className="font-mono text-gray-800 mt-0.5">
-                  {consumer.meterSerialNo}
-                </p>
-              </div>
-              <div>
-                <span className="text-gray-400">Contact</span>
-                <p className="font-mono text-gray-800 mt-0.5">
-                  {consumer.contactNo}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <span className="text-gray-400">Service Address</span>
-                <p className="text-gray-800 mt-0.5">{consumer.address}</p>
-              </div>
-              <div>
-                <span className="text-gray-400">Account Status</span>
-                <div className="mt-1">
-                  <Badge status={consumer.accountStatus} />
+            </div>
+
+            {/* Meter Reading */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                Meter Reading
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center bg-gray-50 rounded-lg px-3 py-3 border border-gray-200">
+                  <p className="text-[11px] text-gray-400 mb-1">Previous</p>
+                  <p className="text-lg font-bold text-gray-900">
+                    {selectedBill.previousReading.toLocaleString()}
+                  </p>
+                  <p className="text-[11px] text-gray-400">kWh</p>
+                </div>
+                <div className="text-center bg-gray-50 rounded-lg px-3 py-3 border border-gray-200">
+                  <p className="text-[11px] text-gray-400 mb-1">Current</p>
+                  <p className="text-lg font-bold text-gray-900">
+                    {selectedBill.currentReading.toLocaleString()}
+                  </p>
+                  <p className="text-[11px] text-gray-400">kWh</p>
+                </div>
+                <div className="text-center bg-gray-50 rounded-lg px-3 py-3 border border-gray-200">
+                  <p className="text-[11px] text-gray-400 mb-1">Consumption</p>
+                  <p className="text-lg font-bold text-primary-600">
+                    {selectedBill.consumption.toLocaleString()}
+                  </p>
+                  <p className="text-[11px] text-gray-400">kWh</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Period & due date */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="px-4 py-3 rounded-lg bg-blue-50 border border-blue-100">
-              <span className="text-[11px] font-semibold text-blue-600">
-                Billing Period
-              </span>
-              <p className="text-sm font-bold text-blue-900 mt-0.5">
-                {selectedBill.billingMonth}
-              </p>
-            </div>
-            <div className="px-4 py-3 rounded-lg bg-red-50 border border-red-100">
-              <span className="text-[11px] font-semibold text-red-600">
-                Due Date
-              </span>
-              <p className="text-sm font-bold text-red-900 mt-0.5">
-                {fmtDate(selectedBill.dueDate)}
-              </p>
-            </div>
-          </div>
-
-          {/* Meter Reading */}
-          <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-              Meter Reading
-            </p>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="text-center bg-gray-50 rounded-lg px-3 py-3 border border-gray-200">
-                <p className="text-[11px] text-gray-400 mb-1">Previous</p>
-                <p className="text-lg font-bold text-gray-900">
-                  {selectedBill.previousReading.toLocaleString()}
-                </p>
-                <p className="text-[11px] text-gray-400">kWh</p>
-              </div>
-              <div className="text-center bg-gray-50 rounded-lg px-3 py-3 border border-gray-200">
-                <p className="text-[11px] text-gray-400 mb-1">Current</p>
-                <p className="text-lg font-bold text-gray-900">
-                  {selectedBill.currentReading.toLocaleString()}
-                </p>
-                <p className="text-[11px] text-gray-400">kWh</p>
-              </div>
-              <div className="text-center bg-gray-50 rounded-lg px-3 py-3 border border-gray-200">
-                <p className="text-[11px] text-gray-400 mb-1">Consumption</p>
-                <p className="text-lg font-bold text-primary-600">
-                  {selectedBill.consumption.toLocaleString()}
-                </p>
-                <p className="text-[11px] text-gray-400">kWh</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Amount banner */}
-          <div className="px-5 py-4 rounded-xl bg-primary-500 flex items-center
-            justify-between text-white">
+          {/* Amount banner (Fixed at bottom) */}
+          <div className="mt-2 shrink-0 px-5 py-4 rounded-xl bg-primary-500 flex items-center
+            justify-between text-white shadow-sm border border-primary-600">
             <div>
               <p className="text-xs font-semibold opacity-90">Total Amount Due</p>
               <div className="flex items-center gap-2 mt-1">
