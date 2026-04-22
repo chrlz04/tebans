@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle } from 'lucide-react'
 import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
+import { getManilaDateParts } from '@/lib/date-utils'
 import DataTable from '@/components/shared/DataTable'
 import Badge from '@/components/ui/Badge'
 import type { Bill } from '@/types'
@@ -40,6 +41,19 @@ export default function MyBillPage() {
 
   if (authLoading) return null
   if (!hasAccess) return null
+
+  // Calculate remaining days for the current bill if it exists
+  let diffDays: number | null = null;
+  if (currentBill?.dueDate) {
+    const { year, month, day } = getManilaDateParts();
+    const today = new Date(year, month, day);
+    const dueDate = new Date(currentBill.dueDate);
+    dueDate.setHours(0, 0, 0, 0); // ensure time part is 0 for correct day diff
+
+    // milliseconds in a day = 1000 * 60 * 60 * 24 = 86400000
+    const diffTime = dueDate.getTime() - today.getTime();
+    diffDays = Math.ceil(diffTime / 86400000);
+  }
 
   const columns: Column<Bill>[] = [
     {
@@ -86,8 +100,15 @@ export default function MyBillPage() {
       </div>
 
       {/* Current Balance Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-xl border border-gray-200 p-6 relative">
+        {currentBill && currentBill.dueDate && diffDays !== null && (
+          <div className="absolute top-4 right-4">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+              {diffDays <= 0 ? 'Overdue' : `${diffDays} days until the deadline`}
+            </span>
+          </div>
+        )}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 sm:mt-0">
           <div>
             <p className="text-sm text-gray-500 font-medium">Current Balance</p>
             <p className="text-4xl font-bold text-gray-900 mt-1">
