@@ -26,9 +26,9 @@ export default function ManageAccountsPage() {
 
   // ── Fetch Staff ──
   const { data: staffData, isLoading: staffLoading } = useQuery<User[]>({
-    queryKey: ['admin-staff', search],
+    queryKey: ['admin-staff'],
     queryFn: async () => {
-      const res = await api.get('/admin/staff', { params: { search } })
+      const res = await api.get('/admin/staff')
       return res.data
     },
     enabled: hasAccess && activeTab === 'staff',
@@ -36,12 +36,32 @@ export default function ManageAccountsPage() {
 
   // ── Fetch Consumers ──
   const { data: consumerData, isLoading: consumerLoading } = useQuery<Consumer[]>({
-    queryKey: ['admin-consumers', search],
+    queryKey: ['admin-consumers'],
     queryFn: async () => {
-      const res = await api.get('/admin/consumers', { params: { search } })
+      const res = await api.get('/admin/consumers')
       return res.data
     },
     enabled: hasAccess && activeTab === 'consumer',
+  })
+
+  const filteredStaffData = staffData?.filter((staff) => {
+    const s = search.toLowerCase()
+    return (
+      staff.firstName.toLowerCase().includes(s) ||
+      staff.lastName.toLowerCase().includes(s) ||
+      staff.userId.toLowerCase().includes(s) ||
+      staff.userType.toLowerCase().includes(s)
+    )
+  })
+
+  const filteredConsumerData = consumerData?.filter((consumer) => {
+    const s = search.toLowerCase()
+    return (
+      consumer.firstName.toLowerCase().includes(s) ||
+      consumer.lastName.toLowerCase().includes(s) ||
+      consumer.consumerId.toLowerCase().includes(s) ||
+      (consumer.areaName || '').toLowerCase().includes(s)
+    )
   })
 
   // ── Toggle Account Status ──
@@ -233,10 +253,12 @@ export default function ManageAccountsPage() {
             <>
               <DataTable
                 columns={staffColumns}
-                data={staffData ?? []}
+                data={filteredStaffData ?? []}
                 isLoading={staffLoading}
                 emptyMessage="No staff accounts found."
                 keyExtractor={(row) => row.userId}
+                totalCount={staffData?.length ?? 0}
+                itemName="staff accounts"
               />
               <div className="flex gap-4 text-xs text-gray-500 pt-2">
                 <span>Active: <strong className="text-green-600">{activeStaff}</strong></span>
@@ -247,10 +269,12 @@ export default function ManageAccountsPage() {
             <>
               <DataTable
                 columns={consumerColumns}
-                data={consumerData ?? []}
+                data={filteredConsumerData ?? []}
                 isLoading={consumerLoading}
                 emptyMessage="No consumer accounts found."
                 keyExtractor={(row) => row.consumerId}
+                totalCount={consumerData?.length ?? 0}
+                itemName="consumer accounts"
               />
               <div className="flex gap-4 text-xs text-gray-500 pt-2">
                 <span>Active: <strong className="text-green-600">{activeConsumers}</strong></span>

@@ -18,10 +18,10 @@ export default function PaymentHistoryPage() {
   const [year, setYear] = useState<string>(String(currentYear))
 
   const { data: payments, isLoading } = useQuery<Payment[]>({
-    queryKey: ['consumer-payments', search, year],
+    queryKey: ['consumer-payments', year],
     queryFn: async () => {
       const res = await api.get('/consumer/payments', {
-        params: { search, year },
+        params: { year },
       })
       return res.data
     },
@@ -30,6 +30,11 @@ export default function PaymentHistoryPage() {
 
   if (authLoading) return null
   if (!hasAccess) return null
+
+  const filteredPayments = payments?.filter((payment) => {
+    const s = search.toLowerCase()
+    return payment.receiptNumber.toLowerCase().includes(s)
+  })
 
   const columns: Column<Payment>[] = [
     {
@@ -74,7 +79,7 @@ export default function PaymentHistoryPage() {
     },
   ]
 
-  const totalPaid = payments?.reduce((sum, p) => sum + (Number(p.amountPaid ?? 0)), 0) ?? 0
+  const totalPaid = filteredPayments?.reduce((sum, p) => sum + (Number(p.amountPaid ?? 0)), 0) ?? 0
 
   return (
     <div className="flex flex-col gap-6">
@@ -115,14 +120,16 @@ export default function PaymentHistoryPage() {
         {/* Table */}
         <DataTable
           columns={columns}
-          data={payments ?? []}
+          data={filteredPayments ?? []}
           isLoading={isLoading}
           emptyMessage="No payment records found."
           keyExtractor={(row) => row.paymentId}
+          totalCount={payments?.length ?? 0}
+          itemName="payments"
         />
 
         {/* Summary */}
-        {!isLoading && payments && payments.length > 0 && (
+        {!isLoading && filteredPayments && filteredPayments.length > 0 && (
           <div className="flex justify-end mt-4 pt-4 border-t border-gray-100">
             <div className="text-sm text-gray-600">
               Total Paid:{' '}
