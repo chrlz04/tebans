@@ -150,3 +150,8 @@ export interface DateRangeFilter {
   startDate: string
   endDate: string
 }
+export interface MeterReaderDashboardStats {
+  totalConsumers: number
+  paymentCollections: number
+  inactiveAccounts: number
+}
