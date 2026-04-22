@@ -32,3 +32,8 @@ VALUES (
   'admin-login-001',
   'admin-user-001'
 );
+-- System Settings
+INSERT IGNORE INTO System_Settings (Setting_Key, Setting_Value) VALUES
+('SMS_API_URL', 'https://api.httpsms.com/v1/messages/send'),
+('SMS_API_KEY', ''),
+('SMS_PHONE_NUMBER', '');
