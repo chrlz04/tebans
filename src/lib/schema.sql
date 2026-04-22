@@ -125,3 +125,15 @@ CREATE TABLE IF NOT EXISTS Notification (
   FOREIGN KEY (MeterReading_ID)         REFERENCES MeterReading(MeterReading_ID),
   FOREIGN KEY (DisconnectionRequest_ID) REFERENCES DisconnectionRequest(DisconnectionRequest_ID)
 );
+-- ─── System Settings ──────────────────────────────────────
+CREATE TABLE IF NOT EXISTS System_Settings (
+  Setting_Key   VARCHAR(100) PRIMARY KEY,
+  Setting_Value TEXT NOT NULL,
+  Updated_At    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Seed default SMS settings
+INSERT IGNORE INTO System_Settings (Setting_Key, Setting_Value) VALUES
+('SMS_API_URL', 'https://api.httpsms.com/v1/messages/send'),
+('SMS_API_KEY', ''),
+('SMS_PHONE_NUMBER', '');

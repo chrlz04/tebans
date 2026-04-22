@@ -1,5 +1,7 @@
 import axios from 'axios'
 import { logger } from '@/lib/logger'
+import { query } from '@/lib/db-helpers'
+import { RowDataPacket } from 'mysql2'
 
 interface SmsPayload {
   to:      string
@@ -10,6 +12,11 @@ interface SmsResult {
   success:   boolean
   message:   string
   messageId?: string
+}
+
+interface SettingRow extends RowDataPacket {
+  Setting_Key: string
+  Setting_Value: string
 }
 
 // ── Format PH number to E.164 ─────────────────────────────
@@ -37,11 +44,29 @@ export function formatPhoneNumber(phone: string): string {
   return cleaned
 }
 
-// ── Send a single SMS via httpSMS ─────────────────────────
+// ── Send a single SMS via configured Provider ─────────────────────────
 export async function sendSms(payload: SmsPayload): Promise<SmsResult> {
   try {
-    const apiKey     = process.env.HTTPSMS_API_KEY
-    const fromNumber = process.env.HTTPSMS_PHONE_NUMBER
+    let apiUrl = 'https://api.httpsms.com/v1/messages/send'
+    let apiKey = process.env.HTTPSMS_API_KEY
+    let fromNumber = process.env.HTTPSMS_PHONE_NUMBER
+
+    try {
+      const rows = await query<SettingRow>(
+        `SELECT Setting_Key, Setting_Value FROM System_Settings WHERE Setting_Key IN ('SMS_API_URL', 'SMS_API_KEY', 'SMS_PHONE_NUMBER')`
+      )
+
+      const dbSettings = rows.reduce((acc, row) => {
+        acc[row.Setting_Key] = row.Setting_Value
+        return acc
+      }, {} as Record<string, string>)
+
+      if (dbSettings['SMS_API_URL']) apiUrl = dbSettings['SMS_API_URL']
+      if (dbSettings['SMS_API_KEY']) apiKey = dbSettings['SMS_API_KEY']
+      if (dbSettings['SMS_PHONE_NUMBER']) fromNumber = dbSettings['SMS_PHONE_NUMBER']
+    } catch (dbError) {
+      logger.warn('Failed to fetch SMS settings from database, falling back to env vars', { error: String(dbError) })
+    }
 
     if (!apiKey || !fromNumber) {
       logger.warn('SMS credentials not configured — skipping SMS')
@@ -57,10 +82,11 @@ export async function sendSms(payload: SmsPayload): Promise<SmsResult> {
     logger.info('Sending SMS', {
       to:      formattedTo,
       length:  payload.content.length,
+      apiUrl:  apiUrl
     })
 
     const response = await axios.post(
-      'https://api.httpsms.com/v1/messages/send',
+      apiUrl,
       {
         from:    fromNumber,
         to:      formattedTo,
