@@ -13,6 +13,8 @@ interface DataTableProps<T> {
   isLoading?: boolean
   emptyMessage?: string
   keyExtractor: (row: T) => string
+  totalCount?: number
+  itemName?: string
 }
 
 export default function DataTable<T>({
@@ -21,6 +23,8 @@ export default function DataTable<T>({
   isLoading = false,
   emptyMessage = 'No records found.',
   keyExtractor,
+  totalCount,
+  itemName,
 }: DataTableProps<T>) {
   if (isLoading) {
     return (
@@ -90,6 +94,13 @@ export default function DataTable<T>({
           )}
         </tbody>
       </table>
+
+      {/* Footer / Count Info */}
+      {!isLoading && totalCount !== undefined && itemName && (
+        <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 text-sm text-gray-500">
+          Showing {data.length} of {totalCount} {itemName}
+        </div>
+      )}
     </div>
   )
 }
