@@ -1,4 +1,3 @@
-import ChangePasswordForm from '@/components/shared/ChangePasswordForm'
 import SmsSettingsForm from '@/components/admin/SmsSettingsForm'
 
 export default function AdminSettingsPage() {
@@ -8,14 +7,10 @@ export default function AdminSettingsPage() {
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-semibold text-gray-900">Settings</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage your account security and system settings</p>
+            <p className="text-sm text-gray-500 mt-1">Manage your system settings</p>
           </div>
         </div>
         
-        <div>
-          <ChangePasswordForm endpoint="/admin/auth/change-password" />
-        </div>
-
         <div>
           <SmsSettingsForm />
         </div>
