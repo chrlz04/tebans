@@ -8,7 +8,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, helperText, className, ...props }, ref) => {
+  ({ label, error, helperText, className, type, min, ...props }, ref) => {
     return (
       <div className="flex flex-col gap-1">
         {label && (
@@ -21,6 +21,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         <input
           ref={ref}
+          type={type}
+          min={type === 'number' && min === undefined ? 0 : min}
           className={clsx(
             'w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
             error

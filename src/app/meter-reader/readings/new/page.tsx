@@ -303,6 +303,12 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
             placeholder="Enter current reading"
             error={errors.currentReading?.message}
             required
+            min={0}
+            onKeyDown={(e) => {
+              if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+                e.preventDefault()
+              }
+            }}
             {...register('currentReading', { valueAsNumber: true })}
             />
             <Input
@@ -327,6 +333,12 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
             placeholder="Enter amount as computed by BOHECO"
             error={errors.amountWithTaxEvat?.message}
             required
+            min={0}
+            onKeyDown={(e) => {
+              if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+                e.preventDefault()
+              }
+            }}
             {...register('amountWithTaxEvat', { valueAsNumber: true })}
         />
 
