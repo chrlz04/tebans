@@ -81,6 +81,7 @@ function RecordReadingForm() {
         lastName:      prefilledConsumerName.split(' ').slice(1).join(' '),
         meterSerialNo: prefilledMeterSerial,
         address:       '',
+        areaId:        '',
         areaName:      '',
         contactNo:     '',
         accountStatus: 'Active',

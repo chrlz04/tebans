@@ -3,19 +3,25 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 import api from '@/lib/api'
 import Modal from '@/components/ui/Modal'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import type { Consumer } from '@/types'
+import { getProvinces, getMunicipalities, getBarangays } from '@/lib/psgc'
+import type { Area } from '@/types/area'
 
 const editConsumerSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName:  z.string().min(1, 'Last name is required'),
-  address:   z.string().min(1, 'Address is required'),
-  contactNo: z.string().min(1, 'Contact number is required'),
-  areaName:  z.string().min(1, 'Area name is required'),
+  firstName:     z.string().min(1, 'First name is required'),
+  lastName:      z.string().min(1, 'Last name is required'),
+  street:        z.string().optional(),
+  provinceCode:  z.string().min(1, 'Province is required'),
+  municipalityCode: z.string().min(1, 'Municipality is required'),
+  barangayCode:  z.string().min(1, 'Barangay is required'),
+  contactNo:     z.string().min(1, 'Contact number is required'),
+  areaId:        z.string().min(1, 'Area name is required'),
 })
 
 type EditConsumerValues = z.infer<typeof editConsumerSchema>
@@ -33,24 +39,120 @@ export default function EditConsumerModal({
 }: EditConsumerModalProps) {
   const queryClient = useQueryClient()
 
+  const [initialProvinceCode, setInitialProvinceCode] = useState('')
+  const [initialMunicipalityCode, setInitialMunicipalityCode] = useState('')
+  const [initialBarangayCode, setInitialBarangayCode] = useState('')
+
   const {
     register,
     handleSubmit,
+    watch,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<EditConsumerValues>({
     resolver: zodResolver(editConsumerSchema),
     defaultValues: {
       firstName: consumer.firstName,
       lastName:  consumer.lastName,
-      address:   consumer.address,
       contactNo: consumer.contactNo,
-      areaName:  consumer.areaName,
+      areaId:  consumer.areaId,
+      street: '', // Will update
+      provinceCode: '', // Will update
+      municipalityCode: '', // Will update
+      barangayCode: '', // Will update
     },
   })
 
+  const selectedProvinceCode = watch('provinceCode')
+  const selectedMunicipalityCode = watch('municipalityCode')
+
+  // Queries
+  const { data: areas, isLoading: areasLoading } = useQuery<Area[]>({
+    queryKey: ['areas'],
+    queryFn: async () => {
+      const res = await api.get('/areas')
+      return res.data
+    },
+  })
+
+  const { data: provinces, isLoading: provincesLoading } = useQuery({
+    queryKey: ['provinces'],
+    queryFn: getProvinces,
+  })
+
+  const { data: municipalities, isLoading: municipalitiesLoading } = useQuery({
+    queryKey: ['municipalities', selectedProvinceCode],
+    queryFn: () => getMunicipalities(selectedProvinceCode),
+    enabled: !!selectedProvinceCode,
+  })
+
+  const { data: barangays, isLoading: barangaysLoading } = useQuery({
+    queryKey: ['barangays', selectedMunicipalityCode],
+    queryFn: () => getBarangays(selectedMunicipalityCode),
+    enabled: !!selectedMunicipalityCode,
+  })
+
+  // Reverse mapping from string names to codes
+  useEffect(() => {
+    if (provinces && consumer.province && isOpen) {
+      const p = provinces.find((x) => x.name === consumer.province)
+      if (p) {
+        setInitialProvinceCode(p.code)
+        reset(formValues => ({ ...formValues, provinceCode: p.code }))
+      }
+    }
+  }, [provinces, consumer.province, isOpen, reset])
+
+  useEffect(() => {
+    if (municipalities && consumer.municipality && selectedProvinceCode === initialProvinceCode && isOpen) {
+      const m = municipalities.find((x) => x.name === consumer.municipality)
+      if (m) {
+        setInitialMunicipalityCode(m.code)
+        reset(formValues => ({ ...formValues, municipalityCode: m.code }))
+      }
+    }
+  }, [municipalities, consumer.municipality, selectedProvinceCode, initialProvinceCode, isOpen, reset])
+
+  useEffect(() => {
+    if (barangays && consumer.barangay && selectedMunicipalityCode === initialMunicipalityCode && isOpen) {
+      const b = barangays.find((x) => x.name === consumer.barangay)
+      if (b) {
+        setInitialBarangayCode(b.code)
+        reset(formValues => ({ ...formValues, barangayCode: b.code }))
+
+        // Try to extract street from address
+        let street = consumer.address
+        if (consumer.province) street = street.replace(consumer.province, '')
+        if (consumer.municipality) street = street.replace(consumer.municipality, '')
+        if (consumer.barangay) street = street.replace(consumer.barangay, '')
+        street = street.replace(/,\s*/g, ' ').trim()
+
+        reset(formValues => ({ ...formValues, street: street }))
+      }
+    }
+  }, [barangays, consumer.barangay, consumer.address, selectedMunicipalityCode, initialMunicipalityCode, consumer.province, consumer.municipality, isOpen, reset])
+
   const mutation = useMutation({
     mutationFn: async (values: EditConsumerValues) => {
-      await api.put(`/meter-reader/consumers/${consumer.consumerId}`, values)
+      const province = provinces?.find(p => p.code === values.provinceCode)?.name
+      const municipality = municipalities?.find(m => m.code === values.municipalityCode)?.name
+      const barangay = barangays?.find(b => b.code === values.barangayCode)?.name
+
+      const addressParts = [values.street, barangay, municipality, province].filter(Boolean)
+      const address = addressParts.join(', ')
+
+      const payload = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        address,
+        province,
+        municipality,
+        barangay,
+        areaId: values.areaId,
+        contactNo: values.contactNo,
+      }
+
+      await api.put(`/meter-reader/consumers/${consumer.consumerId}`, payload)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['meter-reader-consumers'] })
@@ -98,12 +200,72 @@ export default function EditConsumerModal({
         </div>
 
         {/* Address */}
-        <Input
-          label="Service Address"
-          error={errors.address?.message}
-          required
-          {...register('address')}
-        />
+        <div className="flex flex-col gap-4">
+          <h3 className="text-sm font-medium text-gray-900 border-b pb-2">Service Address</h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Province */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">
+                Province <span className="text-red-500">*</span>
+              </label>
+              <select
+                className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                {...register('provinceCode')}
+                disabled={provincesLoading}
+              >
+                <option value="">Select Province</option>
+                {provinces?.map((p) => (
+                  <option key={p.code} value={p.code}>{p.name}</option>
+                ))}
+              </select>
+              {errors.provinceCode && <p className="text-xs text-red-600">{errors.provinceCode.message}</p>}
+            </div>
+
+            {/* Municipality */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">
+                Municipality <span className="text-red-500">*</span>
+              </label>
+              <select
+                className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                {...register('municipalityCode')}
+                disabled={!selectedProvinceCode || municipalitiesLoading}
+              >
+                <option value="">Select Municipality</option>
+                {municipalities?.map((m) => (
+                  <option key={m.code} value={m.code}>{m.name}</option>
+                ))}
+              </select>
+              {errors.municipalityCode && <p className="text-xs text-red-600">{errors.municipalityCode.message}</p>}
+            </div>
+
+            {/* Barangay */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">
+                Barangay <span className="text-red-500">*</span>
+              </label>
+              <select
+                className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                {...register('barangayCode')}
+                disabled={!selectedMunicipalityCode || barangaysLoading}
+              >
+                <option value="">Select Barangay</option>
+                {barangays?.map((b) => (
+                  <option key={b.code} value={b.code}>{b.name}</option>
+                ))}
+              </select>
+              {errors.barangayCode && <p className="text-xs text-red-600">{errors.barangayCode.message}</p>}
+            </div>
+          </div>
+
+          <Input
+            label="Street / House No."
+            placeholder="e.g. 123 Rizal St. or Lot 4 Blk 2"
+            error={errors.street?.message}
+            {...register('street')}
+          />
+        </div>
 
         {/* Contact and Area */}
         <div className="grid grid-cols-2 gap-4">
@@ -113,12 +275,26 @@ export default function EditConsumerModal({
             required
             {...register('contactNo')}
           />
-          <Input
-            label="Area Name"
-            error={errors.areaName?.message}
-            required
-            {...register('areaName')}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">
+              Area Name <span className="text-red-500">*</span>
+            </label>
+            <select
+              className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              {...register('areaId')}
+              disabled={areasLoading}
+            >
+              <option value="">Select Area</option>
+              {areas?.map((area) => (
+                <option key={area.areaId} value={area.areaId}>
+                  {area.name}
+                </option>
+              ))}
+            </select>
+            {errors.areaId && (
+              <p className="text-xs text-red-600">{errors.areaId.message}</p>
+            )}
+          </div>
         </div>
 
         {mutation.isError && (

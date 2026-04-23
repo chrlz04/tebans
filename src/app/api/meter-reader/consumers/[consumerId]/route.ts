@@ -12,9 +12,9 @@ export async function PUT(
     if (error) return error
 
     const { consumerId } = await params
-    const { firstName, lastName, address, contactNo, areaName } = await req.json()
+    const { firstName, lastName, address, province, municipality, barangay, areaId, contactNo } = await req.json()
 
-    if (!firstName || !lastName || !address || !contactNo) {
+    if (!firstName || !lastName || !address || !contactNo || !areaId) {
       return err('All fields are required', 400)
     }
 
@@ -26,10 +26,13 @@ export async function PUT(
          u.First_Name = ?,
          u.Last_Name  = ?,
          c.Address    = ?,
-         u.Contact_No = ?,
-         c.Area_Name  = ?
+         c.Province   = ?,
+         c.Municipality = ?,
+         c.Barangay   = ?,
+         c.Area_ID    = ?,
+         u.Contact_No = ?
        WHERE c.Consumer_ID = ?`,
-      [firstName, lastName, address, contactNo, areaName, consumerId]
+      [firstName, lastName, address, province, municipality, barangay, areaId, contactNo, consumerId]
     )
 
     return ok(null, 'Consumer updated successfully')
