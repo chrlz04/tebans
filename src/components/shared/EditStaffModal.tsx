@@ -9,16 +9,15 @@ import Modal from '@/components/ui/Modal'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import type { User, UserRole } from '@/types'
-import { PUROK_OPTIONS } from '@/lib/constants'
+import { useQuery } from '@tanstack/react-query'
+import type { Area } from '@/types/area'
 
 const editStaffSchema = z.object({
   firstName:   z.string().min(1, 'First name is required'),
   lastName:    z.string().min(1, 'Last name is required'),
   contactNo:   z.string().min(1, 'Contact number is required'),
   userType:    z.enum(['admin', 'meter_reader', 'cashier']),
-  assignedArea: z.enum(PUROK_OPTIONS, {
-    errorMap: () => ({ message: 'Please select an assigned area' }),
-  } as any).optional().or(z.literal('')),
+  assignedAreaId: z.string().optional().or(z.literal('')),
 })
 
 type EditStaffValues = z.infer<typeof editStaffSchema>
@@ -36,6 +35,16 @@ export default function EditStaffModal({
 }: EditStaffModalProps) {
   const queryClient = useQueryClient()
 
+  // Queries
+  const { data: areas, isLoading: areasLoading } = useQuery<Area[]>({
+    queryKey: ['admin-areas'],
+    queryFn: async () => {
+      const res = await api.get('/admin/areas')
+      return res.data
+    },
+    enabled: isOpen,
+  })
+
   const {
     register,
     handleSubmit,
@@ -47,7 +56,7 @@ export default function EditStaffModal({
       lastName:  staff.lastName,
       contactNo: staff.contactNo,
       userType:  staff.userType as UserRole,
-      assignedArea: (staff.assignedArea as any) || '',
+      assignedAreaId: staff.assignedAreaId || '',
     },
   })
 
@@ -101,35 +110,18 @@ export default function EditStaffModal({
             </label>
             <select
               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              {...register('userType')}
-            >
-              <option value="admin">Admin</option>
-              <option value="meter_reader">Meter Reader</option>
-              <option value="cashier">Cashier</option>
-            </select>
-            {errors.userType && (
-              <p className="text-xs text-red-600">{errors.userType.message}</p>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">
-              Assigned Area
-            </label>
-            <select
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              {...register('assignedArea')}
-              disabled={staff.userType === 'admin'}
+              {...register('assignedAreaId')}
+              disabled={staff.userType === 'admin' || areasLoading}
             >
               <option value="">Select Area</option>
-              {PUROK_OPTIONS.map((area) => (
-                <option key={area} value={area}>
-                  {area}
+              {areas?.map((area) => (
+                <option key={area.areaId} value={area.areaId}>
+                  {area.name}
                 </option>
               ))}
             </select>
-            {errors.assignedArea && (
-              <p className="text-xs text-red-600">{errors.assignedArea.message}</p>
+            {errors.assignedAreaId && (
+              <p className="text-xs text-red-600">{errors.assignedAreaId.message}</p>
             )}
           </div>
         </div>

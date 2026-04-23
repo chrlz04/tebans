@@ -31,30 +31,42 @@ CREATE TABLE IF NOT EXISTS Admin (
   FOREIGN KEY (User_ID)  REFERENCES User(User_ID)
 );
 
+-- ─── Area ─────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS Area (
+  Area_ID VARCHAR(36) PRIMARY KEY,
+  Name    VARCHAR(100) NOT NULL UNIQUE
+);
+
 -- ─── MeterReader ──────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS MeterReader (
   MeterReader_ID VARCHAR(36)  PRIMARY KEY,
-  Assigned_Area  VARCHAR(100) NOT NULL,
+  Assigned_Area_ID VARCHAR(36),
   User_ID        VARCHAR(36)  NOT NULL UNIQUE,
-  FOREIGN KEY (User_ID) REFERENCES User(User_ID)
+  FOREIGN KEY (User_ID) REFERENCES User(User_ID),
+  FOREIGN KEY (Assigned_Area_ID) REFERENCES Area(Area_ID) ON DELETE SET NULL
 );
 
 -- ─── Cashier ──────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS Cashier (
   Cashier_ID    VARCHAR(36)  PRIMARY KEY,
-  Assigned_Area VARCHAR(100) NOT NULL,
+  Assigned_Area_ID VARCHAR(36),
   User_ID       VARCHAR(36)  NOT NULL UNIQUE,
-  FOREIGN KEY (User_ID) REFERENCES User(User_ID)
+  FOREIGN KEY (User_ID) REFERENCES User(User_ID),
+  FOREIGN KEY (Assigned_Area_ID) REFERENCES Area(Area_ID) ON DELETE SET NULL
 );
 
 -- ─── Consumer ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS Consumer (
   Consumer_ID    VARCHAR(36)  PRIMARY KEY,
   Address        TEXT         NOT NULL,
+  Province       VARCHAR(100),
+  Municipality   VARCHAR(100),
+  Barangay       VARCHAR(100),
+  Area_ID        VARCHAR(36),
   Meter_Serial_No VARCHAR(100) NOT NULL UNIQUE,
-  Area_Name      VARCHAR(100) NOT NULL,
   User_ID        VARCHAR(36)  NOT NULL UNIQUE,
-  FOREIGN KEY (User_ID) REFERENCES User(User_ID)
+  FOREIGN KEY (User_ID) REFERENCES User(User_ID),
+  FOREIGN KEY (Area_ID) REFERENCES Area(Area_ID) ON DELETE SET NULL
 );
 
 -- ─── MeterReading ─────────────────────────────────────────
@@ -137,3 +149,10 @@ INSERT IGNORE INTO System_Settings (Setting_Key, Setting_Value) VALUES
 ('SMS_API_URL', 'https://api.httpsms.com/v1/messages/send'),
 ('SMS_API_KEY', ''),
 ('SMS_PHONE_NUMBER', '');
+
+-- Seed default Areas
+INSERT IGNORE INTO Area (Area_ID, Name) VALUES
+('area-001', 'Centro'),
+('area-002', 'Kabugnayan'),
+('area-003', 'Ukay'),
+('area-004', 'Molave');

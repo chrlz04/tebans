@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
     // Fetch the meter reader's assigned area
     const meterReader = await queryOne<{ Assigned_Area: string } & RowDataPacket>(
-      `SELECT Assigned_Area FROM MeterReader WHERE User_ID = ?`,
+      `SELECT Assigned_Area_ID FROM MeterReader WHERE User_ID = ?`,
       [payload!.userId]
     )
 
@@ -26,14 +26,14 @@ export async function GET(req: NextRequest) {
       return err('Meter reader profile not found', 404)
     }
 
-    const assignedArea = meterReader.Assigned_Area
+    const assignedAreaId = meterReader.Assigned_Area_ID
 
     // 1. Total consumers in assigned area
     const totalConsumersRow = await queryOne<SummaryRow>(
       `SELECT COUNT(c.Consumer_ID) AS count
        FROM Consumer c
-       WHERE c.Area_Name = ?`,
-      [assignedArea]
+       WHERE c.Area_ID = ?`,
+      [assignedAreaId]
     )
 
     // 2. Payment collections in assigned area
@@ -41,8 +41,8 @@ export async function GET(req: NextRequest) {
       `SELECT COALESCE(SUM(p.Amount_Paid), 0) AS total
        FROM Payment p
        JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
-       WHERE c.Area_Name = ?`,
-      [assignedArea]
+       WHERE c.Area_ID = ?`,
+      [assignedAreaId]
     )
 
     // 3. Inactive/Overdue Accounts
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
       `SELECT COUNT(c.Consumer_ID) AS count
        FROM Consumer c
        JOIN User u ON u.User_ID = c.User_ID
-       WHERE c.Area_Name = ?
+       WHERE c.Area_ID = ?
          AND u.User_Type = 'consumer'
          AND u.Account_Status = 'Active'
          AND NOT EXISTS (
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
            WHERE b.Consumer_ID = c.Consumer_ID
            AND b.Billing_Month = ?
          )`,
-      [assignedArea, prevMonthStr]
+      [assignedAreaId, prevMonthStr]
     )
 
     return ok({

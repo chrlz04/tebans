@@ -1,21 +1,20 @@
-'use client'
+import re
 
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useRouter } from 'next/navigation'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import Link from 'next/link'
-import { useEffect } from 'react'
-import api from '@/lib/api'
-import { useRoleGuard } from '@/lib/use-role-guard'
-import Input from '@/components/ui/Input'
-import Button from '@/components/ui/Button'
-import ConsumerTabs from '../../components/ConsumerTabs'
+with open('src/app/meter-reader/consumers/new/page.tsx', 'r') as f:
+    content = f.read()
+
+# Add imports
+content = re.sub(
+    r"import \{ PUROK_OPTIONS \} from '@/lib/constants'",
+    """import { useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { getProvinces, getMunicipalities, getBarangays } from '@/lib/psgc'
-import type { Area } from '@/types/area'
+import type { Area } from '@/types/area'""", content)
 
-const consumerSchema = z.object({
+# Modify schema
+content = re.sub(
+    r"const consumerSchema = z\.object\(\{.*?\n\}\)",
+    """const consumerSchema = z.object({
   firstName:     z.string().min(1, 'First name is required'),
   lastName:      z.string().min(1, 'Last name is required'),
   street:        z.string().optional(),
@@ -25,15 +24,12 @@ const consumerSchema = z.object({
   meterSerialNo: z.string().min(1, 'Meter serial number is required'),
   areaId:        z.string().min(1, 'Area is required'),
   contactNo:     z.string().min(1, 'Contact number is required'),
-})
+})""", content, flags=re.DOTALL)
 
-type ConsumerFormValues = z.infer<typeof consumerSchema>
-
-export default function RegisterConsumerPage() {
-  const { hasAccess, isLoading: authLoading } = useRoleGuard('meter_reader')
-  const router = useRouter()
-
-  const {
+# Modify form state hook and mutations
+content = re.sub(
+    r"const \{.*?register,\s*handleSubmit,\s*formState:.*?\} = useForm<ConsumerFormValues>\(\{.*?\}\)",
+    """const {
     register,
     handleSubmit,
     watch,
@@ -70,10 +66,11 @@ export default function RegisterConsumerPage() {
     queryKey: ['barangays', selectedMunicipalityCode],
     queryFn: () => getBarangays(selectedMunicipalityCode),
     enabled: !!selectedMunicipalityCode,
-  })
+  })""", content, flags=re.DOTALL)
 
-  const mutation = useMutation({
-    mutationFn: async (values: ConsumerFormValues) => {
+content = re.sub(
+    r"mutationFn: async \(values: ConsumerFormValues\) => \{.*?\await api\.post\('/meter-reader/consumers', values\).*?\},",
+    """mutationFn: async (values: ConsumerFormValues) => {
       const province = provinces?.find(p => p.code === values.provinceCode)?.name
       const municipality = municipalities?.find(m => m.code === values.municipalityCode)?.name
       const barangay = barangays?.find(b => b.code === values.barangayCode)?.name
@@ -94,54 +91,12 @@ export default function RegisterConsumerPage() {
       }
 
       await api.post('/meter-reader/consumers', payload)
-    },
-    onSuccess: () => {
-      router.push('/meter-reader/consumers')
-    },
-  })
+    },""", content, flags=re.DOTALL)
 
-  if (authLoading) return null
-  if (!hasAccess) return null
-
-  return (
-    <div className="max-w-2xl">
-      <ConsumerTabs />
-
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Register New Consumer
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Create a new consumer account in the system
-        </p>
-      </div>
-
-      {/* Form Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <form
-          onSubmit={handleSubmit((values) => mutation.mutate(values))}
-          className="flex flex-col gap-5"
-        >
-          {/* Name */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="First Name"
-              placeholder="Enter first name"
-              error={errors.firstName?.message}
-              required
-              {...register('firstName')}
-            />
-            <Input
-              label="Last Name"
-              placeholder="Enter last name"
-              error={errors.lastName?.message}
-              required
-              {...register('lastName')}
-            />
-          </div>
-
-          {/* Address */}
+# Modify inputs
+content = re.sub(
+    r"\{\/\* Address \*\/\}\s*<Input\s*label=\"Service Address\"\s*placeholder=\"Enter complete address\"\s*error=\{errors\.address\?\.message\}\s*required\s*\{\.\.\.register\('address'\)\}\s*\/>",
+    """{/* Address */}
           <div className="flex flex-col gap-4">
             <h3 className="text-sm font-medium text-gray-900 border-b pb-2">Service Address</h3>
 
@@ -207,22 +162,12 @@ export default function RegisterConsumerPage() {
               error={errors.street?.message}
               {...register('street')}
             />
-          </div>
+          </div>""", content)
 
-          {/* Meter and Area */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Meter Serial No."
-              placeholder="Enter meter serial number"
-              error={errors.meterSerialNo?.message}
-              required
-              {...register('meterSerialNo')}
-            />
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
-                Area Name <span className="text-red-500">*</span>
-              </label>
-              <select
+
+content = re.sub(
+    r"<select.*?\{\.\.\.register\('areaName'\)\}.*?>.*?<option value=\"\">Select Area</option>.*?\{PUROK_OPTIONS\.map\(\(area\) => \(\s*<option key=\{area\} value=\{area\}>\s*\{area\}\s*</option>\s*\)\)\}\s*</select>\s*\{errors\.areaName && \(\s*<p className=\"text-xs text-red-600\">\{errors\.areaName\.message\}</p>\s*\)\}",
+    """<select
                 className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 {...register('areaId')}
                 disabled={areasLoading}
@@ -236,42 +181,8 @@ export default function RegisterConsumerPage() {
               </select>
               {errors.areaId && (
                 <p className="text-xs text-red-600">{errors.areaId.message}</p>
-              )}
-            </div>
-          </div>
+              )}""", content, flags=re.DOTALL)
 
-          {/* Contact */}
-          <Input
-            label="Contact Number"
-            placeholder="e.g. 09xxxxxxxxx"
-            error={errors.contactNo?.message}
-            required
-            {...register('contactNo')}
-          />
 
-          {mutation.isError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
-              Failed to register consumer. Please try again.
-            </div>
-          )}
-
-          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
-            <Link href="/meter-reader/consumers" className="w-full sm:w-auto">
-              <Button type="button" variant="secondary" className="w-full">
-                Cancel
-              </Button>
-            </Link>
-            <Button
-              type="submit"
-              variant="primary"
-              className="w-full sm:w-auto"
-              isLoading={isSubmitting || mutation.isPending}
-            >
-              Register Consumer
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
-}
+with open('src/app/meter-reader/consumers/new/page.tsx', 'w') as f:
+    f.write(content)

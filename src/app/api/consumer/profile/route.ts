@@ -10,8 +10,12 @@ interface ConsumerProfileRow extends RowDataPacket {
   First_Name:     string
   Last_Name:      string
   Address:        string
-  Meter_Serial_No: string
+  Province:       string
+  Municipality:   string
+  Barangay:       string
+  Area_ID:        string
   Area_Name:      string
+  Meter_Serial_No: string
   Contact_No:     string
   Account_Status: string
 }
@@ -32,12 +36,17 @@ export async function GET(req: NextRequest) {
         u.First_Name,
         u.Last_Name,
         c.Address,
+        c.Province,
+        c.Municipality,
+        c.Barangay,
+        c.Area_ID,
+        a.Name AS Area_Name,
         c.Meter_Serial_No,
-        c.Area_Name,
         u.Contact_No,
         u.Account_Status
        FROM Consumer c
        JOIN User u ON u.User_ID = c.User_ID
+       LEFT JOIN Area a ON a.Area_ID = c.Area_ID
        WHERE c.User_ID = ?`,
       [payload!.userId]
     )
@@ -51,8 +60,12 @@ export async function GET(req: NextRequest) {
       firstName:     profile.First_Name,
       lastName:      profile.Last_Name,
       address:       profile.Address,
-      meterSerialNo: profile.Meter_Serial_No,
+      province:      profile.Province,
+      municipality:  profile.Municipality,
+      barangay:      profile.Barangay,
+      areaId:        profile.Area_ID,
       areaName:      profile.Area_Name,
+      meterSerialNo: profile.Meter_Serial_No,
       contactNo:     profile.Contact_No,
       accountStatus: profile.Account_Status,
     })
