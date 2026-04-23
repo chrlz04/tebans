@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
     // Fetch the cashier's assigned area
     const cashier = await queryOne<{ Assigned_Area: string } & RowDataPacket>(
-      `SELECT Assigned_Area FROM Cashier WHERE User_ID = ?`,
+      `SELECT Assigned_Area_ID FROM Cashier WHERE User_ID = ?`,
       [payload!.userId]
     )
 
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       return err('Cashier profile not found', 404)
     }
 
-    const assignedArea = cashier.Assigned_Area
+    const assignedAreaId = cashier.Assigned_Area_ID
 
     const search      = req.nextUrl.searchParams.get('search') || ''
     const searchParam = `%${search}%`
@@ -48,14 +48,14 @@ export async function GET(req: NextRequest) {
        JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
        JOIN User u ON u.User_ID = c.User_ID
        WHERE b.Payment_Status != 'Paid'
-         AND c.Area_Name = ?
+         AND c.Area_ID = ?
          AND (
            u.First_Name  LIKE ? OR
            u.Last_Name   LIKE ? OR
            b.Bill_ID     LIKE ?
          )
        ORDER BY b.Due_Date ASC`,
-      [assignedArea, searchParam, searchParam, searchParam]
+      [assignedAreaId, searchParam, searchParam, searchParam]
     )
 
     return ok(bills.map((b) => ({

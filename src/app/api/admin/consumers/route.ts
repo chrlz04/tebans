@@ -11,7 +11,7 @@ interface ConsumerRow extends RowDataPacket {
   Last_Name:         string
   Address:           string
   Meter_Serial_No:   string
-  Area_Name:         string
+  Area_Name: string
   Contact_No:        string
   Account_Status:    string
   Registration_Date: string
@@ -32,17 +32,19 @@ export async function GET(req: NextRequest) {
         u.Last_Name,
         c.Address,
         c.Meter_Serial_No,
-        c.Area_Name,
+        a.Name AS Area_Name,
+        c.Area_ID,
         u.Contact_No,
         u.Account_Status,
         u.Registration_Date
        FROM Consumer c
        JOIN User u ON u.User_ID = c.User_ID
+       LEFT JOIN Area a ON a.Area_ID = c.Area_ID
        WHERE
          u.First_Name  LIKE ? OR
          u.Last_Name   LIKE ? OR
          c.Consumer_ID LIKE ? OR
-         c.Area_Name   LIKE ?
+         a.Name LIKE ?
        ORDER BY u.Registration_Date DESC`,
       [searchParam, searchParam, searchParam, searchParam]
     )
@@ -53,6 +55,7 @@ export async function GET(req: NextRequest) {
       lastName:         c.Last_Name,
       address:          c.Address,
       meterSerialNo:    c.Meter_Serial_No,
+      areaId:           c.Area_ID,
       areaName:         c.Area_Name,
       contactNo:        c.Contact_No,
       accountStatus:    c.Account_Status,
