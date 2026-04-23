@@ -21,7 +21,7 @@ export async function PUT(
     if (error) return error
 
     const { userId }  = await params
-    const { firstName, lastName, contactNo, userType, assignedArea } = await req.json()
+    const { firstName, lastName, contactNo, userType, assignedAreaId } = await req.json()
 
 
     const reqError = validateRequired({ firstName, lastName, contactNo }, ['firstName', 'lastName', 'contactNo'])
@@ -36,15 +36,15 @@ export async function PUT(
       [firstName, lastName, contactNo, userType, userId]
     )
 
-    if (userType === 'meter_reader' && assignedArea) {
+    if (userType === 'meter_reader' && assignedAreaId) {
       await execute(
-        `UPDATE MeterReader SET Assigned_Area = ? WHERE User_ID = ?`,
-        [assignedArea, userId]
+        `UPDATE MeterReader SET Assigned_Area_ID = ? WHERE User_ID = ?`,
+        [assignedAreaId, userId]
       )
-    } else if (userType === 'cashier' && assignedArea) {
+    } else if (userType === 'cashier' && assignedAreaId) {
       await execute(
-        `UPDATE Cashier SET Assigned_Area = ? WHERE User_ID = ?`,
-        [assignedArea, userId]
+        `UPDATE Cashier SET Assigned_Area_ID = ? WHERE User_ID = ?`,
+        [assignedAreaId, userId]
       )
     }
 

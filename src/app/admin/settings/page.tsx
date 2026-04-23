@@ -1,4 +1,6 @@
 import SmsSettingsForm from '@/components/admin/SmsSettingsForm'
+import Link from 'next/link'
+import { MapPin, MessageSquare } from 'lucide-react'
 
 export default function AdminSettingsPage() {
   return (
@@ -11,8 +13,32 @@ export default function AdminSettingsPage() {
           </div>
         </div>
         
-        <div>
-          <SmsSettingsForm />
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+          <Link
+            href="/admin/settings/areas"
+            className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100"
+          >
+            <div className="p-2 bg-primary-50 text-primary-600 rounded-lg shrink-0">
+              <MapPin size={20} />
+            </div>
+            <div>
+              <h2 className="font-medium text-gray-900">Manage Service Areas</h2>
+              <p className="text-sm text-gray-500">Add, edit, or delete Puroks and areas.</p>
+            </div>
+          </Link>
+
+          <div className="p-4">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-2 bg-gray-100 text-gray-600 rounded-lg shrink-0">
+                <MessageSquare size={20} />
+              </div>
+              <div>
+                <h2 className="font-medium text-gray-900">SMS Configuration</h2>
+                <p className="text-sm text-gray-500">Configure your SMS API provider settings.</p>
+              </div>
+            </div>
+            <SmsSettingsForm />
+          </div>
         </div>
       </div>
     </div>

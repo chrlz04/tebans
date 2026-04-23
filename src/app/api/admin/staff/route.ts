@@ -15,7 +15,8 @@ interface StaffRow extends RowDataPacket {
   User_Type:         string
   Account_Status:    string
   Registration_Date: string
-  Assigned_Area:     string
+  Assigned_Area_ID:  string
+  Assigned_Area_Name: string
 }
 
 // ── GET /api/admin/staff ──────────────────────────────────
@@ -36,30 +37,34 @@ export async function GET(req: NextRequest) {
         u.User_Type,
         u.Account_Status,
         u.Registration_Date,
-        COALESCE(mr.Assigned_Area, c.Assigned_Area, '') AS Assigned_Area
+        COALESCE(mr.Assigned_Area_ID, c.Assigned_Area_ID) AS Assigned_Area_ID,
+        a.Name AS Assigned_Area_Name
        FROM User u
        LEFT JOIN MeterReader mr ON mr.User_ID = u.User_ID
        LEFT JOIN Cashier c ON c.User_ID = u.User_ID
+       LEFT JOIN Area a ON a.Area_ID = COALESCE(mr.Assigned_Area_ID, c.Assigned_Area_ID)
        WHERE u.User_Type IN ('meter_reader','cashier','admin')
          AND (
            u.First_Name  LIKE ? OR
            u.Last_Name   LIKE ? OR
            u.User_ID     LIKE ? OR
-           u.User_Type   LIKE ?
+           u.User_Type   LIKE ? OR
+           a.Name        LIKE ?
          )
        ORDER BY u.Registration_Date DESC`,
-      [searchParam, searchParam, searchParam, searchParam]
+      [searchParam, searchParam, searchParam, searchParam, searchParam]
     )
 
     return ok(staff.map((s) => ({
-      userId:           s.User_ID,
-      firstName:        s.First_Name,
-      lastName:         s.Last_Name,
-      contactNo:        s.Contact_No,
-      userType:         s.User_Type,
-      accountStatus:    s.Account_Status,
-      registrationDate: s.Registration_Date,
-      assignedArea:     s.Assigned_Area,
+      userId:             s.User_ID,
+      firstName:          s.First_Name,
+      lastName:           s.Last_Name,
+      contactNo:          s.Contact_No,
+      userType:           s.User_Type,
+      accountStatus:      s.Account_Status,
+      registrationDate:   s.Registration_Date,
+      assignedAreaId:     s.Assigned_Area_ID,
+      assignedAreaName:   s.Assigned_Area_Name,
     })))
 
   } catch (error) {
@@ -80,7 +85,7 @@ export async function POST(req: NextRequest) {
       contactNo,
       username,
       userType,
-      assignedArea,
+      assignedAreaId,
       password,
     } = await req.json()
 
@@ -159,13 +164,13 @@ export async function POST(req: NextRequest) {
     // Insert role-specific record
     if (userType === 'meter_reader') {
       await execute(
-        'INSERT INTO MeterReader (MeterReader_ID, Assigned_Area, User_ID) VALUES (?, ?, ?)',
-        [roleId, assignedArea || '', userId]
+        'INSERT INTO MeterReader (MeterReader_ID, Assigned_Area_ID, User_ID) VALUES (?, ?, ?)',
+        [roleId, assignedAreaId || null, userId]
       )
     } else if (userType === 'cashier') {
       await execute(
-        'INSERT INTO Cashier (Cashier_ID, Assigned_Area, User_ID) VALUES (?, ?, ?)',
-        [roleId, assignedArea || '', userId]
+        'INSERT INTO Cashier (Cashier_ID, Assigned_Area_ID, User_ID) VALUES (?, ?, ?)',
+        [roleId, assignedAreaId || null, userId]
       )
     }
 

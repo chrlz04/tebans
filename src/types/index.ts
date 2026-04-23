@@ -29,7 +29,8 @@ export interface User {
   userType: UserRole
   accountStatus: AccountStatus
   registrationDate: string
-  assignedArea?: string
+  assignedAreaId?: string
+  assignedAreaName?: string
 }
 
 // ─── Consumer ────────────────────────────────────────────
@@ -38,8 +39,12 @@ export interface Consumer {
   firstName: string
   lastName: string
   address: string
+  province?: string
+  municipality?: string
+  barangay?: string
+  areaId: string
+  areaName?: string
   meterSerialNo: string
-  areaName: string
   contactNo: string
   accountStatus: AccountStatus
 }

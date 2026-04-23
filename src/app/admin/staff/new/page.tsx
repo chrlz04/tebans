@@ -11,7 +11,8 @@ import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
-import { PUROK_OPTIONS } from '@/lib/constants'
+import { useQuery } from '@tanstack/react-query'
+import type { Area } from '@/types/area'
 
 const staffSchema = z
   .object({
@@ -20,9 +21,7 @@ const staffSchema = z
     contactNo:   z.string().min(1, 'Contact number is required'),
     username:    z.string().min(1, 'Username is required'),
     userType:    z.enum(['meter_reader', 'cashier']),
-    assignedArea: z.enum(PUROK_OPTIONS, {
-      errorMap: () => ({ message: 'Please select an assigned area' }),
-    } as any),
+    assignedAreaId: z.string().optional(),
     password:    z
       .string()
       .min(8, 'Password must be at least 8 characters')
@@ -49,6 +48,16 @@ export default function StaffRegistrationPage() {
   } = useForm<StaffFormValues>({
     resolver: zodResolver(staffSchema),
     defaultValues: { userType: 'meter_reader' },
+  })
+
+  // Queries
+  const { data: areas, isLoading: areasLoading } = useQuery<Area[]>({
+    queryKey: ['admin-areas'],
+    queryFn: async () => {
+      const res = await api.get('/admin/areas')
+      return res.data
+    },
+    enabled: hasAccess,
   })
 
   const mutation = useMutation({
@@ -134,29 +143,18 @@ export default function StaffRegistrationPage() {
               </label>
               <select
                 className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                {...register('userType')}
-              >
-                <option value="meter_reader">Meter Reader</option>
-                <option value="cashier">Cashier</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
-                Assigned Area <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                {...register('assignedArea')}
+                {...register('assignedAreaId')}
+                disabled={areasLoading}
               >
                 <option value="">Select Area</option>
-                {PUROK_OPTIONS.map((area) => (
-                  <option key={area} value={area}>
-                    {area}
+                {areas?.map((area) => (
+                  <option key={area.areaId} value={area.areaId}>
+                    {area.name}
                   </option>
                 ))}
               </select>
-              {errors.assignedArea && (
-                <p className="text-xs text-red-600">{errors.assignedArea.message}</p>
+              {errors.assignedAreaId && (
+                <p className="text-xs text-red-600">{errors.assignedAreaId.message}</p>
               )}
             </div>
           </div>
