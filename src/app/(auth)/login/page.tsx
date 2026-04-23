@@ -97,7 +97,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 w-full">
+          <form method="POST" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 w-full">
 
             {/* Username */}
             <Input
