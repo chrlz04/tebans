@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import type { AuthResponse } from '@/types'
 
 type Role = 'admin' | 'consumer' | 'meter_reader' | 'cashier'
@@ -34,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     // Rehydrate auth state from cookies on page load
@@ -73,6 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     Cookies.remove('userId')
     Cookies.remove('name')
     setUser(null)
+    queryClient.clear()
     window.location.replace('/login')
   }
 
