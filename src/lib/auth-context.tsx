@@ -26,7 +26,7 @@ const AuthContext = createContext<AuthContextType | null>(null)
 const roleHomePages: Record<Role, string> = {
   admin: '/admin/dashboard',
   consumer: '/consumer/bills',
-  meter_reader: '/meter-reader/consumers',
+  meter_reader: '/meter-reader/dashboard',
   cashier: '/cashier/dashboard',
 }
 
