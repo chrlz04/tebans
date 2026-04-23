@@ -5,5 +5,7 @@ export async function POST() {
 
   response.cookies.delete('token');
 
+  response.headers.set('Clear-Site-Data', '"cache"');
+
   return response;
 }
