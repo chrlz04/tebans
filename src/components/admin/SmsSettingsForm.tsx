@@ -64,9 +64,7 @@ export default function SmsSettingsForm() {
   }
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-      <h2 className="text-lg font-medium text-gray-900 mb-4">SMS API Provider Settings</h2>
-
+    <div className="bg-white">
       {successMsg && (
         <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-lg flex items-start gap-2 text-sm border border-green-200">
           <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
