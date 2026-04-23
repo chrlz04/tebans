@@ -47,7 +47,14 @@ export function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL(roleHomePages[role], req.url))
   }
 
-  return NextResponse.next()
+  const response = NextResponse.next()
+
+  // Add Cache-Control headers to protected routes to prevent BFCache (back button) access after logout
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  response.headers.set('Pragma', 'no-cache')
+  response.headers.set('Expires', '0')
+
+  return response
 }
 
 export const config = {
