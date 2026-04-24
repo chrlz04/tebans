@@ -2,13 +2,21 @@ import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
 import { handleApiError } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'
-import { queryOne } from '@/lib/db-helpers'
+import { queryOne, query } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 import { getManilaDateParts } from '@/lib/date-utils'
+import type { MeterReaderBillingProgress, UnbilledConsumer } from '@/types'
 
 interface SummaryRow extends RowDataPacket {
   total: number
   count: number
+}
+
+interface UnbilledConsumerRow extends RowDataPacket {
+  Consumer_ID: string
+  First_Name: string
+  Last_Name: string
+  Address: string
 }
 
 export async function GET(req: NextRequest) {
@@ -45,39 +53,70 @@ export async function GET(req: NextRequest) {
       [assignedAreaId]
     )
 
-    // 3. Inactive/Overdue Accounts
-    // Active consumers in assigned area with no bill in the previous month
+    // 3. Billing Cycle Progress (Current Month)
     const { year, month } = getManilaDateParts()
-    let prevMonth = month - 1
-    let prevYear = year
-    if (prevMonth < 0) {
-      prevMonth = 11
-      prevYear--
-    }
+    const currentMonthDate = new Date(year, month, 1)
+    const currentMonthStr = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
 
-    // Format is "Month Year", e.g., "October 2023"
-    const date = new Date(prevYear, prevMonth, 1)
-    const prevMonthStr = date.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
-
-    const inactiveAccountsRow = await queryOne<SummaryRow>(
+    const totalActiveConsumersRow = await queryOne<SummaryRow>(
       `SELECT COUNT(c.Consumer_ID) AS count
        FROM Consumer c
        JOIN User u ON u.User_ID = c.User_ID
+       WHERE c.Area_ID = ? AND u.Account_Status = 'Active'`,
+      [assignedAreaId]
+    )
+    const totalActiveConsumers = totalActiveConsumersRow?.count ?? 0
+
+    const billedConsumersRow = await queryOne<SummaryRow>(
+      `SELECT COUNT(DISTINCT b.Consumer_ID) AS count
+       FROM Bill b
+       JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
+       JOIN User u ON u.User_ID = c.User_ID
        WHERE c.Area_ID = ?
-         AND u.User_Type = 'consumer'
+         AND u.Account_Status = 'Active'
+         AND b.Billing_Month = ?`,
+      [assignedAreaId, currentMonthStr]
+    )
+    const billedConsumers = billedConsumersRow?.count ?? 0
+    const unbilledConsumers = Math.max(0, totalActiveConsumers - billedConsumers)
+    const completionRate = totalActiveConsumers > 0 ? Math.round((billedConsumers / totalActiveConsumers) * 100) : 0
+
+    const unbilledConsumersList = await query<UnbilledConsumerRow>(
+      `SELECT
+        c.Consumer_ID,
+        u.First_Name,
+        u.Last_Name,
+        c.Address
+       FROM Consumer c
+       JOIN User u ON u.User_ID = c.User_ID
+       WHERE c.Area_ID = ?
          AND u.Account_Status = 'Active'
          AND NOT EXISTS (
            SELECT 1 FROM Bill b
            WHERE b.Consumer_ID = c.Consumer_ID
            AND b.Billing_Month = ?
-         )`,
-      [assignedAreaId, prevMonthStr]
+         )
+       ORDER BY u.Last_Name ASC`,
+      [assignedAreaId, currentMonthStr]
     )
+
+    const billingProgress: MeterReaderBillingProgress = {
+      totalConsumers: totalActiveConsumers,
+      billedConsumers,
+      unbilledConsumers,
+      completionRate,
+      unbilledList: unbilledConsumersList.map((row) => ({
+        consumerId: row.Consumer_ID,
+        firstName: row.First_Name,
+        lastName: row.Last_Name,
+        address: row.Address,
+      })),
+    }
 
     return ok({
       totalConsumers:     totalConsumersRow?.count ?? 0,
       paymentCollections: paymentCollectionsRow?.total ?? 0,
-      inactiveAccounts:   inactiveAccountsRow?.count ?? 0,
+      billingProgress,
     })
 
   } catch (errError) {
