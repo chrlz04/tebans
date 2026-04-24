@@ -148,11 +148,27 @@ export interface AdminDashboardStats {
   billingProgress: AdminBillingProgress
 }
 
+export interface NotYetPaidConsumer {
+  consumerId: string
+  firstName: string
+  lastName: string
+  address: string
+  balance: number
+}
+
+export interface CashierCollectionProgress {
+  totalConsumers: number
+  paidConsumers: number
+  notYetPaidConsumers: number
+  completionRate: number
+  notYetPaidList: NotYetPaidConsumer[]
+}
+
 export interface CashierDashboardStats {
   totalCollectionsToday: number
   transactionsProcessed: number
   pendingCashRemittance: number
-  pendingConsumersToPay: number
+  collectionProgress: CashierCollectionProgress
   recentTransactions: (Payment & { consumerName?: string })[]
 }
 
