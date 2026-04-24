@@ -87,28 +87,33 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      {/* Billing Cycle Progress */}
-      <BillingCycleProgress progress={data?.billingProgress} isLoading={isLoading} />
-
-      {/* Recent Registrations */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="mb-4">
-          <h2 className="text-base font-semibold text-gray-900">
-            Recent Account Registrations
-          </h2>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Latest accounts added to the system
-          </p>
+      {/* Bottom Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Billing Cycle Progress */}
+        <div className="lg:col-span-2">
+          <BillingCycleProgress progress={data?.billingProgress} isLoading={isLoading} />
         </div>
-        <DataTable
-          columns={columns}
-          data={data?.recentRegistrations ?? []}
-          isLoading={isLoading}
-          emptyMessage="No recent registrations found."
-          keyExtractor={(row) => row.userId}
-          totalCount={data?.recentRegistrations?.length ?? 0}
-          itemName="registrations"
-        />
+
+        {/* Recent Registrations */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 lg:col-span-1">
+          <div className="mb-4">
+            <h2 className="text-base font-semibold text-gray-900">
+              Recent Account Registrations
+            </h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Latest accounts added to the system
+            </p>
+          </div>
+          <DataTable
+            columns={columns}
+            data={data?.recentRegistrations ?? []}
+            isLoading={isLoading}
+            emptyMessage="No recent registrations found."
+            keyExtractor={(row) => row.userId}
+            totalCount={data?.recentRegistrations?.length ?? 0}
+            itemName="registrations"
+          />
+        </div>
       </div>
     </div>
   )
