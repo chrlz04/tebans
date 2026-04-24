@@ -141,11 +141,30 @@ export interface AdminBillingProgress {
   meterReaderBreakdown: MeterReaderProgress[]
 }
 
+export interface CashierProgress {
+  cashierId: string
+  firstName: string
+  lastName: string
+  assignedAreaName: string
+  totalConsumers: number
+  paidConsumers: number
+  notYetPaidConsumers: number
+}
+
+export interface AdminPaymentProgress {
+  totalConsumers: number
+  paidConsumers: number
+  notYetPaidConsumers: number
+  overallCompletion: number
+  cashierBreakdown: CashierProgress[]
+}
+
 export interface AdminDashboardStats {
   totalActiveConsumers: number
   pendingDisconnections: number
   recentRegistrations: User[]
   billingProgress: AdminBillingProgress
+  paymentProgress: AdminPaymentProgress
 }
 
 export interface NotYetPaidConsumer {
