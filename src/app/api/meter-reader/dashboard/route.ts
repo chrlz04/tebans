@@ -19,6 +19,18 @@ interface UnbilledConsumerRow extends RowDataPacket {
   Address: string
 }
 
+interface OverdueRow extends RowDataPacket {
+  Consumer_ID:    string
+  First_Name:     string
+  Last_Name:      string
+  Contact_No:     string
+  Address:        string
+  Amount:         number
+  Due_Date:       string
+  Request_Status: string | null
+  Scheduled_Date: string | null
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { error, payload } = requireRole(req, ['meter_reader'])
@@ -113,10 +125,64 @@ export async function GET(req: NextRequest) {
       })),
     }
 
+    // 4. Overdue Accounts in assigned area
+    const today = new Date().toISOString().split('T')[0]
+
+    const overdueAccountsResult = await query<OverdueRow>(
+      `SELECT
+        c.Consumer_ID,
+        u.First_Name,
+        u.Last_Name,
+        u.Contact_No,
+        c.Address,
+        SUM(b.Amount) AS Amount,
+        MIN(b.Due_Date) AS Due_Date,
+        dr.Request_Status,
+        dr.Scheduled_Date
+       FROM Consumer c
+       JOIN User u ON u.User_ID = c.User_ID
+       JOIN Bill b ON b.Consumer_ID = c.Consumer_ID
+       LEFT JOIN DisconnectionRequest dr
+         ON dr.Consumer_ID = c.Consumer_ID
+         AND dr.Request_Status = 'Pending'
+       WHERE
+         c.Area_ID = ?
+         AND b.Payment_Status != 'Paid'
+         AND b.Due_Date < ?
+       GROUP BY
+         c.Consumer_ID,
+         u.First_Name,
+         u.Last_Name,
+         u.Contact_No,
+         c.Address,
+         dr.Request_Status,
+         dr.Scheduled_Date
+       ORDER BY Due_Date ASC`,
+      [assignedAreaId, today]
+    )
+
+    const overdueAccounts = overdueAccountsResult.map((o) => ({
+      consumerId:     o.Consumer_ID,
+      firstName:      o.First_Name,
+      lastName:       o.Last_Name,
+      contactNo:      o.Contact_No,
+      address:        o.Address,
+      amountDue:      o.Amount,
+      scheduledDate:  o.Scheduled_Date ?? new Date(
+        new Date().setDate(new Date().getDate() + 7)
+      ).toISOString().split('T')[0],
+      requestStatus:  o.Request_Status ?? 'Pending',
+      monthsOverdue:  Math.ceil(
+        (new Date().getTime() - new Date(o.Due_Date).getTime())
+        / (1000 * 60 * 60 * 24 * 30)
+      ),
+    }))
+
     return ok({
       totalConsumers:     totalConsumersRow?.count ?? 0,
       paymentCollections: paymentCollectionsRow?.total ?? 0,
       billingProgress,
+      overdueAccounts,
     })
 
   } catch (errError) {

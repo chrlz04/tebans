@@ -189,8 +189,22 @@ export interface MeterReaderBillingProgress {
   unbilledList: UnbilledConsumer[]
 }
 
+export interface OverdueAccount {
+  consumerId:          string
+  firstName:           string
+  lastName:            string
+  address:             string
+  monthsOverdue:       number
+  amountDue:           number
+  scheduledDate:       string
+  contactNo:           string
+  requestStatus:       'Pending' | 'Executed' | 'Cancelled'
+  isInactive?:         boolean
+}
+
 export interface MeterReaderDashboardStats {
   totalConsumers: number
   paymentCollections: number
   billingProgress: MeterReaderBillingProgress
+  overdueAccounts: OverdueAccount[]
 }
