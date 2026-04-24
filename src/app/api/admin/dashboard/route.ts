@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger'
 import { queryOne, query } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 import { getManilaDateParts } from '@/lib/date-utils'
-import type { AdminBillingProgress, MeterReaderProgress } from '@/types'
+import type { AdminBillingProgress, MeterReaderProgress, AdminPaymentProgress, CashierProgress } from '@/types'
 
 interface CountRow extends RowDataPacket {
   count: number
@@ -129,6 +129,74 @@ export async function GET(req: NextRequest) {
       meterReaderBreakdown,
     }
 
+    // Calculate Payment Collection Progress for current month
+    const activeCashiers = await query<MeterReaderAreaInfo>(
+      `SELECT
+        c.User_ID,
+        u.First_Name,
+        u.Last_Name,
+        c.Assigned_Area_ID,
+        a.Name AS Area_Name
+       FROM Cashier c
+       JOIN User u ON u.User_ID = c.User_ID
+       JOIN Area a ON a.Area_ID = c.Assigned_Area_ID
+       WHERE u.Account_Status = 'Active'`
+    )
+
+    const cashierBreakdown: CashierProgress[] = []
+    let globalPaymentTotalConsumers = 0
+    let globalPaidConsumers = 0
+
+    for (const c of activeCashiers) {
+      const areaTotalRow = await queryOne<CountRow>(
+        `SELECT COUNT(co.Consumer_ID) AS count
+         FROM Consumer co
+         JOIN User u ON u.User_ID = co.User_ID
+         WHERE co.Area_ID = ? AND u.Account_Status = 'Active'`,
+        [c.Assigned_Area_ID]
+      )
+
+      const areaPaidRow = await queryOne<CountRow>(
+        `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
+         FROM Payment p
+         JOIN Bill b ON p.Bill_ID = b.Bill_ID
+         JOIN Consumer co ON co.Consumer_ID = p.Consumer_ID
+         JOIN User u ON u.User_ID = co.User_ID
+         WHERE co.Area_ID = ?
+           AND u.Account_Status = 'Active'
+           AND MONTH(p.Date_Paid) = ?
+           AND DAY(p.Date_Paid) <= 27
+           AND b.Billing_Month = ?`,
+        [c.Assigned_Area_ID, month, currentMonthStr]
+      )
+
+      const totalAreaConsumers = areaTotalRow?.count ?? 0
+      const paidAreaConsumers = areaPaidRow?.count ?? 0
+      const notYetPaidConsumers = Math.max(0, totalAreaConsumers - paidAreaConsumers)
+
+      globalPaymentTotalConsumers += totalAreaConsumers
+      globalPaidConsumers += paidAreaConsumers
+
+      cashierBreakdown.push({
+        cashierId: c.User_ID,
+        firstName: c.First_Name,
+        lastName: c.Last_Name,
+        assignedAreaName: c.Area_Name,
+        totalConsumers: totalAreaConsumers,
+        paidConsumers: paidAreaConsumers,
+        notYetPaidConsumers: notYetPaidConsumers,
+      })
+    }
+
+    const paymentProgress: AdminPaymentProgress = {
+      totalConsumers: globalPaymentTotalConsumers,
+      paidConsumers: globalPaidConsumers,
+      notYetPaidConsumers: Math.max(0, globalPaymentTotalConsumers - globalPaidConsumers),
+      overallCompletion: globalPaymentTotalConsumers > 0 ? Math.round((globalPaidConsumers / globalPaymentTotalConsumers) * 100) : 0,
+      cashierBreakdown,
+    }
+
+
     return ok({
       totalActiveConsumers:  activeConsumers?.count ?? 0,
       pendingDisconnections: pendingDisconnections?.count ?? 0,
@@ -141,6 +209,7 @@ export async function GET(req: NextRequest) {
         registrationDate: u.Registration_Date,
       })),
       billingProgress,
+      paymentProgress,
     })
 
   } catch (error) {

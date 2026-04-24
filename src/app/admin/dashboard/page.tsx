@@ -7,6 +7,7 @@ import { useRoleGuard } from '@/lib/use-role-guard'
 import StatCard from '@/components/shared/StatCard'
 import Badge from '@/components/ui/Badge'
 import BillingCycleProgress from './components/BillingCycleProgress'
+import PaymentCollectionProgress from './components/PaymentCollectionProgress'
 import type { AdminDashboardStats, User } from '@/types'
 
 // Helper to get initials
@@ -72,14 +73,19 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Bottom Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Billing Cycle Progress */}
-        <div className="lg:col-span-2">
-          <BillingCycleProgress progress={data?.billingProgress} isLoading={isLoading} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+        {/* Progress Cards */}
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="h-full">
+            <BillingCycleProgress progress={data?.billingProgress} isLoading={isLoading} />
+          </div>
+          <div className="h-full">
+            <PaymentCollectionProgress progress={data?.paymentProgress} isLoading={isLoading} />
+          </div>
         </div>
 
         {/* Recent Registrations */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 lg:col-span-1">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 lg:col-span-1 h-full">
           <div className="mb-4">
             <h2 className="text-base font-semibold text-gray-900">
               Recent Account Registrations
