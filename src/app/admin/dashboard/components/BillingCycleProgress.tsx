@@ -13,11 +13,11 @@ interface Props {
 export default function BillingCycleProgress({ progress, isLoading }: Props) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-6 animate-pulse">
+      <div className="bg-white rounded-xl border border-gray-200 p-8 flex flex-col gap-6 animate-pulse">
         <div className="h-6 bg-gray-200 rounded w-1/3 mb-2" />
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 bg-gray-100 rounded-xl" />
+            <div key={i} className="h-28 bg-gray-100 rounded-xl" />
           ))}
         </div>
       </div>
@@ -29,7 +29,7 @@ export default function BillingCycleProgress({ progress, isLoading }: Props) {
   const currentMonthYear = new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila', month: 'long', year: 'numeric' })
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-8 h-full">
+    <div className="bg-white rounded-xl border border-gray-200 p-8 flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -40,71 +40,71 @@ export default function BillingCycleProgress({ progress, isLoading }: Props) {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 2xl:grid-cols-4 gap-4">
-        <div className="bg-[#f8f9f6] rounded-xl p-4 flex flex-col items-center justify-center">
-          <p className="text-sm text-gray-600 mb-1">Total consumers</p>
-          <p className="text-3xl font-bold text-gray-900">{progress.totalConsumers}</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="bg-[#f8f9f6] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
+          <p className="text-sm text-gray-500 text-center">Total consumers</p>
+          <p className="text-4xl font-bold text-gray-900">{progress.totalConsumers}</p>
         </div>
-        <div className="bg-[#f8f9f6] rounded-xl p-4 flex flex-col items-center justify-center">
-          <p className="text-sm text-gray-600 mb-1">Billed</p>
-          <p className="text-3xl font-bold text-[#2d6a4f]">{progress.billedConsumers}</p>
+        <div className="bg-[#f8f9f6] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
+          <p className="text-sm text-gray-500 text-center">Billed</p>
+          <p className="text-4xl font-bold text-[#2d6a4f]">{progress.billedConsumers}</p>
         </div>
-        <div className="bg-[#f8f9f6] rounded-xl p-4 flex flex-col items-center justify-center">
-          <p className="text-sm text-gray-600 mb-1">Not yet billed</p>
-          <p className="text-3xl font-bold text-[#8c6b23]">{progress.unbilledConsumers}</p>
+        <div className="bg-[#f8f9f6] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
+          <p className="text-sm text-gray-500 text-center">Not yet billed</p>
+          <p className="text-4xl font-bold text-[#8c6b23]">{progress.unbilledConsumers}</p>
         </div>
-        <div className="bg-[#f8f9f6] rounded-xl p-4 flex flex-col items-center justify-center">
-          <p className="text-sm text-gray-600 mb-1">Overall</p>
-          <p className="text-3xl font-bold text-gray-900">{progress.overallCompletion}%</p>
+        <div className="bg-[#f8f9f6] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
+          <p className="text-sm text-gray-500 text-center">Overall</p>
+          <p className="text-4xl font-bold text-gray-900">{progress.overallCompletion}%</p>
         </div>
       </div>
 
       {/* Breakdown per Meter Reader */}
-      <div className="flex-grow">
-        <h3 className="text-sm font-semibold text-gray-500 mb-4 tracking-wider uppercase">Per Meter Reader Breakdown</h3>
-        <div className="flex flex-col gap-4">
+      <div>
+        <h3 className="text-xs font-semibold text-gray-400 mb-5 tracking-widest uppercase">Per Meter Reader Breakdown</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {progress.meterReaderBreakdown.map((mr) => {
             const isComplete = mr.unbilledConsumers === 0
             const percentage = mr.totalConsumers > 0 ? Math.round((mr.billedConsumers / mr.totalConsumers) * 100) : 0
 
             return (
               <div key={mr.meterReaderId} className="border border-gray-200 rounded-xl p-5 flex flex-col gap-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex items-center gap-3 min-w-0">
                     <Avatar firstName={mr.firstName} lastName={mr.lastName} />
-                    <div>
-                      <h4 className="text-base font-semibold text-gray-900">{mr.firstName} {mr.lastName}</h4>
-                      <p className="text-sm text-gray-500 mt-0.5">{mr.assignedAreaName}</p>
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-semibold text-gray-900 truncate">{mr.firstName} {mr.lastName}</h4>
+                      <p className="text-xs text-gray-500 mt-0.5 truncate">{mr.assignedAreaName}</p>
                     </div>
                   </div>
                   {isComplete ? (
-                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0">
                       Complete
                     </span>
                   ) : (
-                    <span className="bg-[#fdf0e6] text-[#b83d1c] text-xs font-medium px-2.5 py-1 rounded-full">
+                    <span className="bg-[#fdf0e6] text-[#b83d1c] text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0">
                       {mr.unbilledConsumers} unbilled
                     </span>
                   )}
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-sm text-gray-700 mb-2">
+                  <div className="flex justify-between text-xs text-gray-500 mb-2">
                     <span>{mr.billedConsumers} / {mr.totalConsumers} billed</span>
-                    <span>{percentage}%</span>
+                    <span className="font-medium text-gray-700">{percentage}%</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-2">
                     <div
-                      className="bg-[#d4e1c1] h-2 rounded-full"
+                      className="bg-[#d4e1c1] h-2 rounded-full transition-all"
                       style={{ width: `${percentage}%` }}
-                    ></div>
+                    />
                   </div>
                 </div>
               </div>
             )
           })}
           {progress.meterReaderBreakdown.length === 0 && (
-            <div className="text-center text-sm text-gray-500 py-4">
+            <div className="text-center text-sm text-gray-500 py-6 col-span-2">
               No active meter readers found.
             </div>
           )}
