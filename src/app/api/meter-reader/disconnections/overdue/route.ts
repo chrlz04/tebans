@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
-import { query } from '@/lib/db-helpers'
+import { query, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 
 interface OverdueRow extends RowDataPacket {
@@ -17,9 +17,20 @@ interface OverdueRow extends RowDataPacket {
 
 export async function GET(req: NextRequest) {
   try {
-    const { error } = requireRole(req, ['meter_reader'])
+    const { error, payload } = requireRole(req, ['meter_reader'])
     if (error) return error
 
+    // Fetch the meter reader's assigned area
+    const meterReader = await queryOne<{ Assigned_Area_ID: string } & RowDataPacket>(
+      `SELECT Assigned_Area_ID FROM MeterReader WHERE User_ID = ?`,
+      [payload!.userId]
+    )
+
+    if (!meterReader) {
+      return err('Meter reader profile not found', 404)
+    }
+
+    const assignedAreaId = meterReader.Assigned_Area_ID
     const today = new Date().toISOString().split('T')[0]
 
     const overdueAccounts = await query<OverdueRow>(
@@ -40,7 +51,8 @@ export async function GET(req: NextRequest) {
          ON dr.Consumer_ID = c.Consumer_ID
          AND dr.Request_Status = 'Pending'
        WHERE
-         b.Payment_Status != 'Paid'
+         c.Area_ID = ?
+         AND b.Payment_Status != 'Paid'
          AND b.Due_Date < ?
        GROUP BY
          c.Consumer_ID,
@@ -51,7 +63,7 @@ export async function GET(req: NextRequest) {
          dr.Request_Status,
          dr.Scheduled_Date
        ORDER BY Due_Date ASC`,
-      [today]
+      [assignedAreaId, today]
     )
 
     return ok(overdueAccounts.map((o) => ({
