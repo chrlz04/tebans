@@ -48,28 +48,55 @@ export async function GET(req: NextRequest) {
 
     const assignedAreaId = meterReader.Assigned_Area_ID
 
-    // 1. Total consumers in assigned area
-    const totalConsumersRow = await queryOne<SummaryRow>(
-      `SELECT COUNT(c.Consumer_ID) AS count
-       FROM Consumer c
-       WHERE c.Area_ID = ?`,
-      [assignedAreaId]
-    )
+    // Calculate current billing cycle dates (28th of previous month to 27th of current month)
+    const { year, month, day } = getManilaDateParts()
+    const startDateObj = new Date(year, day > 27 ? month : month - 1, 28)
+    const endDateObj = new Date(year, day > 27 ? month + 1 : month, 27)
 
-    // 2. Payment collections in assigned area
+    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-28`
+    const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-27`
+
+    // 1. Payment collections in assigned area for current billing cycle
     const paymentCollectionsRow = await queryOne<SummaryRow>(
       `SELECT COALESCE(SUM(p.Amount_Paid), 0) AS total
        FROM Payment p
        JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
-       WHERE c.Area_ID = ?`,
-      [assignedAreaId]
+       WHERE c.Area_ID = ?
+         AND p.Date_Paid >= ?
+         AND p.Date_Paid <= ?`,
+      [assignedAreaId, startDate, endDate]
     )
 
-    // 3. Billing Cycle Progress (Current Month)
-    const { year, month } = getManilaDateParts()
+    // 2. Consumers Paid Percentage
     const currentMonthDate = new Date(year, month, 1)
     const currentMonthStr = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
 
+    const paidConsumersRow = await queryOne<SummaryRow>(
+      `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
+       FROM Payment p
+       JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
+       WHERE c.Area_ID = ?
+         AND p.Date_Paid >= ?
+         AND p.Date_Paid <= ?`,
+      [assignedAreaId, startDate, endDate]
+    )
+    const paidConsumersCount = paidConsumersRow?.count ?? 0
+
+    const billedConsumersForCurrentMonthRow = await queryOne<SummaryRow>(
+      `SELECT COUNT(DISTINCT b.Consumer_ID) AS count
+       FROM Bill b
+       JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
+       WHERE c.Area_ID = ?
+         AND b.Billing_Month = ?`,
+      [assignedAreaId, currentMonthStr]
+    )
+    const billedConsumersForCurrentMonthCount = billedConsumersForCurrentMonthRow?.count ?? 0
+
+    const consumersPaidPercentage = billedConsumersForCurrentMonthCount > 0
+      ? Math.round((paidConsumersCount / billedConsumersForCurrentMonthCount) * 100)
+      : 0
+
+    // 3. Billing Cycle Progress (Current Month)
     const totalActiveConsumersRow = await queryOne<SummaryRow>(
       `SELECT COUNT(c.Consumer_ID) AS count
        FROM Consumer c
@@ -179,7 +206,7 @@ export async function GET(req: NextRequest) {
     }))
 
     return ok({
-      totalConsumers:     totalConsumersRow?.count ?? 0,
+      consumersPaidPercentage,
       paymentCollections: paymentCollectionsRow?.total ?? 0,
       billingProgress,
       overdueAccounts,
