@@ -24,9 +24,10 @@ export async function GET(req: NextRequest) {
         u.Last_Name,
         u.Contact_No,
         c.Cashier_ID,
-        c.Assigned_Area
+        a.Name AS Assigned_Area
        FROM User u
        JOIN Cashier c ON c.User_ID = u.User_ID
+       LEFT JOIN Area a ON c.Assigned_Area_ID = a.Area_ID
        WHERE u.User_ID = ?`,
       [payload!.userId]
     )
