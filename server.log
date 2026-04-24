@@ -1,14 +1,8 @@
 
-> tebans@0.1.0 dev
-> next dev
+> tebans@0.1.0 start
+> next start
 
-▲ Next.js 16.2.1 (Turbopack)
+▲ Next.js 16.2.1
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 583ms
-
-○ Compiling /admin/accounts ...
- GET /admin/accounts 200 in 9.9s (next.js: 8.5s, proxy.ts: 371ms, application-code: 1049ms)
- GET /admin/accounts 200 in 126ms (next.js: 10ms, proxy.ts: 11ms, application-code: 105ms)
- GET /admin/accounts 200 in 88ms (next.js: 5ms, proxy.ts: 7ms, application-code: 75ms)
- GET /meter-reader/payments 200 in 975ms (next.js: 845ms, proxy.ts: 11ms, application-code: 120ms)
+✓ Ready in 201ms
