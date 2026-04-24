@@ -26,7 +26,7 @@ interface NotYetPaidConsumerRow extends RowDataPacket {
   First_Name:  string
   Last_Name:   string
   Address:     string
-  Total_Amount: number
+  Amount: number
 }
 
 export async function GET(req: NextRequest) {
@@ -120,7 +120,7 @@ export async function GET(req: NextRequest) {
         u.First_Name,
         u.Last_Name,
         c.Address,
-        b.Total_Amount
+        b.Amount
        FROM Bill b
        JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
        JOIN User u ON u.User_ID = c.User_ID
@@ -146,7 +146,7 @@ export async function GET(req: NextRequest) {
       firstName: row.First_Name,
       lastName: row.Last_Name,
       address: row.Address,
-      balance: row.Total_Amount,
+      balance: row.Amount,
     }))
 
     // Recent transactions today
