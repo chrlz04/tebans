@@ -51,8 +51,8 @@ export default function MeterReaderDashboardPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
         <MeterReaderStatCard
-          label="Total Consumers"
-          value={isLoading ? '—' : (data?.totalConsumers ?? 0)}
+          label="% Consumers Paid"
+          value={isLoading ? '—' : `${data?.consumersPaidPercentage ?? 0}%`}
           icon={<Users size={24} />}
         />
         <MeterReaderStatCard
