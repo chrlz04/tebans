@@ -13,19 +13,23 @@ export async function GET(req: NextRequest) {
     const { error } = requireRole(req, ['admin'])
     if (error) return error
 
+    const keys = [
+      'SMS_PROVIDER', 'SMS_API_URL', 'SMS_API_KEY', 'SMS_PHONE_NUMBER',
+      'SMS_DEVICE_ID', 'SMS_USERNAME', 'SMS_PASSWORD',
+      'SMS_CUSTOM_AUTH_TYPE', 'SMS_CUSTOM_AUTH_HEADER', 'SMS_CUSTOM_PAYLOAD'
+    ]
+
     const rows = await query<SettingRow>(
-      `SELECT Setting_Key, Setting_Value FROM System_Settings WHERE Setting_Key IN ('SMS_API_URL', 'SMS_API_KEY', 'SMS_PHONE_NUMBER')`
+      `SELECT Setting_Key, Setting_Value FROM System_Settings WHERE Setting_Key IN (${keys.map(() => '?').join(', ')})`,
+      keys
     )
 
-    const settings = {
-      SMS_API_URL: '',
-      SMS_API_KEY: '',
-      SMS_PHONE_NUMBER: ''
-    }
+    const settings: Record<string, string> = {}
+    keys.forEach(k => settings[k] = '')
 
     rows.forEach(row => {
       if (row.Setting_Key in settings) {
-        settings[row.Setting_Key as keyof typeof settings] = row.Setting_Value
+        settings[row.Setting_Key] = row.Setting_Value
       }
     })
 
@@ -42,16 +46,19 @@ export async function PUT(req: NextRequest) {
     if (error) return error
 
     const body = await req.json()
-    const { SMS_API_URL, SMS_API_KEY, SMS_PHONE_NUMBER } = body
 
-    if (SMS_API_URL === undefined || SMS_API_KEY === undefined || SMS_PHONE_NUMBER === undefined) {
-      return err('Missing required SMS settings', 400)
-    }
+    const keys = [
+      'SMS_PROVIDER', 'SMS_API_URL', 'SMS_API_KEY', 'SMS_PHONE_NUMBER',
+      'SMS_DEVICE_ID', 'SMS_USERNAME', 'SMS_PASSWORD',
+      'SMS_CUSTOM_AUTH_TYPE', 'SMS_CUSTOM_AUTH_HEADER', 'SMS_CUSTOM_PAYLOAD'
+    ]
 
     // Using execute iteratively as noted in project memory
-    await execute(`INSERT INTO System_Settings (Setting_Key, Setting_Value) VALUES ('SMS_API_URL', ?) ON DUPLICATE KEY UPDATE Setting_Value = ?`, [SMS_API_URL, SMS_API_URL])
-    await execute(`INSERT INTO System_Settings (Setting_Key, Setting_Value) VALUES ('SMS_API_KEY', ?) ON DUPLICATE KEY UPDATE Setting_Value = ?`, [SMS_API_KEY, SMS_API_KEY])
-    await execute(`INSERT INTO System_Settings (Setting_Key, Setting_Value) VALUES ('SMS_PHONE_NUMBER', ?) ON DUPLICATE KEY UPDATE Setting_Value = ?`, [SMS_PHONE_NUMBER, SMS_PHONE_NUMBER])
+    for (const key of keys) {
+      if (body[key] !== undefined) {
+        await execute(`INSERT INTO System_Settings (Setting_Key, Setting_Value) VALUES (?, ?) ON DUPLICATE KEY UPDATE Setting_Value = ?`, [key, body[key], body[key]])
+      }
+    }
 
     return ok(null, 'SMS settings updated successfully')
   } catch (error) {

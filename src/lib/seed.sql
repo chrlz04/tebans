@@ -34,6 +34,13 @@ VALUES (
 );
 -- System Settings
 INSERT IGNORE INTO System_Settings (Setting_Key, Setting_Value) VALUES
+('SMS_PROVIDER', 'httpsms'),
 ('SMS_API_URL', 'https://api.httpsms.com/v1/messages/send'),
 ('SMS_API_KEY', ''),
-('SMS_PHONE_NUMBER', '');
+('SMS_PHONE_NUMBER', ''),
+('SMS_DEVICE_ID', ''),
+('SMS_USERNAME', ''),
+('SMS_PASSWORD', ''),
+('SMS_CUSTOM_AUTH_TYPE', ''),
+('SMS_CUSTOM_AUTH_HEADER', ''),
+('SMS_CUSTOM_PAYLOAD', '');
