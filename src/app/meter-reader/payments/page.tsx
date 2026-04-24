@@ -115,25 +115,23 @@ export default function MeterReaderPaymentsPage() {
           keyExtractor={(row) => row.paymentId}
           totalCount={payments?.length ?? 0}
           itemName="payments"
+          summary={
+            <div className="flex gap-6 text-xs text-gray-500">
+              <span>
+                Paid:{' '}
+                <strong className="text-green-600">{paidCount}</strong>
+              </span>
+              <span>
+                Unsettled:{' '}
+                <strong className="text-red-600">{unpaidCount}</strong>
+              </span>
+              <span>
+                Total Records:{' '}
+                <strong className="text-gray-700">{payments?.length ?? 0}</strong>
+              </span>
+            </div>
+          }
         />
-
-        {/* Summary */}
-        {!isLoading && payments && payments.length > 0 && (
-          <div className="flex gap-6 mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500">
-            <span>
-              Paid:{' '}
-              <strong className="text-green-600">{paidCount}</strong>
-            </span>
-            <span>
-              Unsettled:{' '}
-              <strong className="text-red-600">{unpaidCount}</strong>
-            </span>
-            <span>
-              Total Records:{' '}
-              <strong className="text-gray-700">{payments.length}</strong>
-            </span>
-          </div>
-        )}
       </div>
     </div>
   )
