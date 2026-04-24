@@ -21,6 +21,7 @@ interface SettingRow extends RowDataPacket {
 
 // ── Format PH number to E.164 ─────────────────────────────
 export function formatPhoneNumber(phone: string): string {
+  if (!phone) return ''
   const cleaned = phone.replace(/\s+/g, '').trim()
 
   if (cleaned.startsWith('+63')) return cleaned
@@ -230,6 +231,7 @@ export async function sendSms(payload: SmsPayload): Promise<SmsResult> {
 
     // Format the recipient number
     const formattedTo = formatPhoneNumber(payload.to)
+    const formattedFrom = formatPhoneNumber(fromNumber)
 
     logger.info('Sending SMS', {
       provider: providerName,
@@ -239,7 +241,7 @@ export async function sendSms(payload: SmsPayload): Promise<SmsResult> {
     })
 
     const requestConfig = adapter.buildRequestConfig(payload, formattedTo, {
-       apiUrl, apiKey, phoneNumber: fromNumber, deviceId, username, password,
+       apiUrl, apiKey, phoneNumber: formattedFrom, deviceId, username, password,
        customAuthType, customAuthHeader, customPayload
     });
 
