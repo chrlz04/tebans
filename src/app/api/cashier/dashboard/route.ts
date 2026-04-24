@@ -112,7 +112,7 @@ export async function GET(req: NextRequest) {
     )
     const paidConsumers = paidConsumersRow?.count ?? 0
 
-    // 3. Not Yet Paid Consumers (Has a current month bill but no valid payment this month <= 27)
+    // 3. Not Yet Paid Consumers (All active consumers minus those who have paid this month)
     // To get the count and the list
     const notYetPaidListRow = await query<NotYetPaidConsumerRow>(
       `SELECT
@@ -120,14 +120,17 @@ export async function GET(req: NextRequest) {
         u.First_Name,
         u.Last_Name,
         c.Address,
-        b.Amount
-       FROM Bill b
-       JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
+        COALESCE((
+          SELECT b.Amount
+          FROM Bill b
+          WHERE b.Consumer_ID = c.Consumer_ID
+            AND b.Billing_Month = ?
+          LIMIT 1
+        ), 0) AS Amount
+       FROM Consumer c
        JOIN User u ON u.User_ID = c.User_ID
        WHERE c.Area_ID = ?
          AND u.Account_Status = 'Active'
-         AND b.Billing_Month = ?
-         AND b.Payment_Status != 'Paid'
          AND c.Consumer_ID NOT IN (
            SELECT p.Consumer_ID
            FROM Payment p
@@ -136,9 +139,9 @@ export async function GET(req: NextRequest) {
              AND MONTH(p.Date_Paid) = ?
              AND DAY(p.Date_Paid) <= 27
          )`,
-      [assignedAreaId, currentMonthStr, currentMonthStr, currentMonthNum]
+      [currentMonthStr, assignedAreaId, currentMonthStr, currentMonthNum]
     )
-    const notYetPaidConsumers = notYetPaidListRow.length
+    const notYetPaidConsumers = totalConsumers - paidConsumers
     const completionRate = totalConsumers > 0 ? Math.round((paidConsumers / totalConsumers) * 100) : 0
 
     const notYetPaidList = notYetPaidListRow.map((row) => ({
