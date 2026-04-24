@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
        WHERE Request_Status = 'Pending'`
     )
 
-    // Recent registrations (last 10)
+    // Recent registrations (last 5)
     const recentRegistrations = await query<RecentUser>(
       `SELECT
         User_ID,
@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
         Registration_Date
        FROM User
        ORDER BY Registration_Date DESC
-       LIMIT 10`
+       LIMIT 5`
     )
 
     // Calculate Billing Cycle Progress for current month

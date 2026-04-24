@@ -1,0 +1,11 @@
+
+> tebans@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 551ms
+
+○ Compiling /admin/dashboard ...
+ GET /admin/dashboard 200 in 5.7s (next.js: 4.8s, proxy.ts: 254ms, application-code: 605ms)
