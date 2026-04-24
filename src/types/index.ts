@@ -123,10 +123,29 @@ export interface Notification {
 }
 
 // ─── Dashboard ───────────────────────────────────────────
+export interface MeterReaderProgress {
+  meterReaderId: string
+  firstName: string
+  lastName: string
+  assignedAreaName: string
+  totalConsumers: number
+  billedConsumers: number
+  unbilledConsumers: number
+}
+
+export interface AdminBillingProgress {
+  totalConsumers: number
+  billedConsumers: number
+  unbilledConsumers: number
+  overallCompletion: number
+  meterReaderBreakdown: MeterReaderProgress[]
+}
+
 export interface AdminDashboardStats {
   totalActiveConsumers: number
   pendingDisconnections: number
   recentRegistrations: User[]
+  billingProgress: AdminBillingProgress
 }
 
 export interface CashierDashboardStats {
@@ -155,8 +174,23 @@ export interface DateRangeFilter {
   startDate: string
   endDate: string
 }
+export interface UnbilledConsumer {
+  consumerId: string
+  firstName: string
+  lastName: string
+  address: string
+}
+
+export interface MeterReaderBillingProgress {
+  totalConsumers: number
+  billedConsumers: number
+  unbilledConsumers: number
+  completionRate: number
+  unbilledList: UnbilledConsumer[]
+}
+
 export interface MeterReaderDashboardStats {
   totalConsumers: number
   paymentCollections: number
-  inactiveAccounts: number
+  billingProgress: MeterReaderBillingProgress
 }

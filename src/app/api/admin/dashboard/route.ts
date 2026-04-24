@@ -4,6 +4,8 @@ import { handleApiError } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'
 import { queryOne, query } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
+import { getManilaDateParts } from '@/lib/date-utils'
+import type { AdminBillingProgress, MeterReaderProgress } from '@/types'
 
 interface CountRow extends RowDataPacket {
   count: number
@@ -16,6 +18,14 @@ interface RecentUser extends RowDataPacket {
   User_Type:         string
   Account_Status:    string
   Registration_Date: string
+}
+
+interface MeterReaderAreaInfo extends RowDataPacket {
+  User_ID: string
+  First_Name: string
+  Last_Name: string
+  Assigned_Area_ID: string
+  Area_Name: string
 }
 
 export async function GET(req: NextRequest) {
@@ -51,6 +61,74 @@ export async function GET(req: NextRequest) {
        LIMIT 10`
     )
 
+    // Calculate Billing Cycle Progress for current month
+    const { year, month } = getManilaDateParts()
+    const currentMonthDate = new Date(year, month, 1)
+    const currentMonthStr = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+
+    const activeMeterReaders = await query<MeterReaderAreaInfo>(
+      `SELECT
+        mr.User_ID,
+        u.First_Name,
+        u.Last_Name,
+        mr.Assigned_Area_ID,
+        a.Area_Name
+       FROM MeterReader mr
+       JOIN User u ON u.User_ID = mr.User_ID
+       JOIN Area a ON a.Area_ID = mr.Assigned_Area_ID
+       WHERE u.Account_Status = 'Active'`
+    )
+
+    const meterReaderBreakdown: MeterReaderProgress[] = []
+    let globalTotalConsumers = 0
+    let globalBilledConsumers = 0
+
+    for (const mr of activeMeterReaders) {
+      const areaTotalRow = await queryOne<CountRow>(
+        `SELECT COUNT(c.Consumer_ID) AS count
+         FROM Consumer c
+         JOIN User u ON u.User_ID = c.User_ID
+         WHERE c.Area_ID = ? AND u.Account_Status = 'Active'`,
+        [mr.Assigned_Area_ID]
+      )
+
+      const areaBilledRow = await queryOne<CountRow>(
+        `SELECT COUNT(DISTINCT b.Consumer_ID) AS count
+         FROM Bill b
+         JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
+         JOIN User u ON u.User_ID = c.User_ID
+         WHERE c.Area_ID = ?
+           AND u.Account_Status = 'Active'
+           AND b.Billing_Month = ?`,
+        [mr.Assigned_Area_ID, currentMonthStr]
+      )
+
+      const totalAreaConsumers = areaTotalRow?.count ?? 0
+      const billedAreaConsumers = areaBilledRow?.count ?? 0
+      const unbilledAreaConsumers = Math.max(0, totalAreaConsumers - billedAreaConsumers)
+
+      globalTotalConsumers += totalAreaConsumers
+      globalBilledConsumers += billedAreaConsumers
+
+      meterReaderBreakdown.push({
+        meterReaderId: mr.User_ID,
+        firstName: mr.First_Name,
+        lastName: mr.Last_Name,
+        assignedAreaName: mr.Area_Name,
+        totalConsumers: totalAreaConsumers,
+        billedConsumers: billedAreaConsumers,
+        unbilledConsumers: unbilledAreaConsumers,
+      })
+    }
+
+    const billingProgress: AdminBillingProgress = {
+      totalConsumers: globalTotalConsumers,
+      billedConsumers: globalBilledConsumers,
+      unbilledConsumers: Math.max(0, globalTotalConsumers - globalBilledConsumers),
+      overallCompletion: globalTotalConsumers > 0 ? Math.round((globalBilledConsumers / globalTotalConsumers) * 100) : 0,
+      meterReaderBreakdown,
+    }
+
     return ok({
       totalActiveConsumers:  activeConsumers?.count ?? 0,
       pendingDisconnections: pendingDisconnections?.count ?? 0,
@@ -62,6 +140,7 @@ export async function GET(req: NextRequest) {
         accountStatus:    u.Account_Status,
         registrationDate: u.Registration_Date,
       })),
+      billingProgress,
     })
 
   } catch (error) {
