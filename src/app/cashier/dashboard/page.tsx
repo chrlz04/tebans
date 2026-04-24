@@ -47,7 +47,7 @@ export default function CashierDashboardPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 max-w-12xl">
         <CashierStatCard
           label="Total Collections Today"
           value={
