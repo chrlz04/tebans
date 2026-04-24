@@ -5,11 +5,25 @@ import { Users, AlertTriangle } from 'lucide-react'
 import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
 import StatCard from '@/components/shared/StatCard'
-import DataTable from '@/components/shared/DataTable'
 import Badge from '@/components/ui/Badge'
 import BillingCycleProgress from './components/BillingCycleProgress'
 import type { AdminDashboardStats, User } from '@/types'
-import type { Column } from '@/components/shared/DataTable'
+
+// Helper to get initials
+const getInitials = (firstName: string, lastName: string) => {
+  return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase()
+}
+
+// Helper to format date "Apr 10"
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+// Helper to capitalize role
+const capitalize = (str: string) => {
+  if (!str) return ''
+  return str.charAt(0).toUpperCase() + str.slice(1).replace('_', ' ')
+}
 
 export default function AdminDashboardPage() {
   const { hasAccess, isLoading: authLoading } = useRoleGuard('admin')
@@ -25,36 +39,6 @@ export default function AdminDashboardPage() {
 
   if (authLoading) return null
   if (!hasAccess) return null
-
-  const columns: Column<User>[] = [
-    {
-      key: 'userId',
-      label: 'Account ID',
-      className: 'w-40',
-    },
-    {
-      key: 'firstName',
-      label: 'Full Name',
-      render: (row) => `${row.firstName} ${row.lastName}`,
-    },
-    {
-      key: 'userType',
-      label: 'Role',
-    },
-    {
-      key: 'accountStatus',
-      label: 'Status',
-      render: (row) => <Badge status={row.accountStatus} />,
-    },
-     {
-      key: 'registrationDate', // Matches the property name in your User type
-      label: 'Date Registered',
-      render: (row) => (
-        // Access the correct property name here too
-        <span>{new Date(row.registrationDate).toLocaleDateString()}</span>
-      ),
-    },
-  ]
 
   return (
     <div className="flex flex-col gap-6">
@@ -104,15 +88,45 @@ export default function AdminDashboardPage() {
               Latest accounts added to the system
             </p>
           </div>
-          <DataTable
-            columns={columns}
-            data={data?.recentRegistrations ?? []}
-            isLoading={isLoading}
-            emptyMessage="No recent registrations found."
-            keyExtractor={(row) => row.userId}
-            totalCount={data?.recentRegistrations?.length ?? 0}
-            itemName="registrations"
-          />
+          <div className="flex flex-col">
+            {isLoading ? (
+              <div className="text-center py-8 text-sm text-gray-500">Loading registrations...</div>
+            ) : !data?.recentRegistrations || data.recentRegistrations.length === 0 ? (
+              <div className="text-center py-8 text-sm text-gray-500">No recent registrations found.</div>
+            ) : (
+              data.recentRegistrations.map((user, index) => (
+                <div
+                  key={user.userId}
+                  className={`flex flex-row items-center justify-between py-3 ${
+                    index !== 0 ? 'border-t border-gray-100' : ''
+                  }`}
+                >
+                  {/* Left Side */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-semibold">
+                      {getInitials(user.firstName, user.lastName)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {user.firstName} {user.lastName}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate mt-0.5">
+                        {user.userId} &middot; {capitalize(user.userType)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right Side */}
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-4">
+                    <Badge status={user.accountStatus} />
+                    <span className="text-xs text-gray-500">
+                      {formatDate(user.registrationDate)}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
