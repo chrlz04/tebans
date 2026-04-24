@@ -15,6 +15,7 @@ interface DataTableProps<T> {
   keyExtractor: (row: T) => string
   totalCount?: number
   itemName?: string
+  summary?: React.ReactNode
 }
 
 export default function DataTable<T>({
@@ -25,6 +26,7 @@ export default function DataTable<T>({
   keyExtractor,
   totalCount,
   itemName,
+  summary,
 }: DataTableProps<T>) {
   if (isLoading) {
     return (
@@ -97,8 +99,11 @@ export default function DataTable<T>({
 
       {/* Footer / Count Info */}
       {!isLoading && totalCount !== undefined && itemName && (
-        <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 text-sm text-gray-500">
-          Showing {data.length} of {totalCount} {itemName}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4 py-3 border-t border-gray-200 bg-gray-50 text-sm text-gray-500">
+          <div>
+            Showing {data.length} of {totalCount} {itemName}
+          </div>
+          {summary && <div>{summary}</div>}
         </div>
       )}
     </div>
