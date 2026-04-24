@@ -7,19 +7,7 @@ import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
-
-interface OverdueAccount {
-  consumerId:          string
-  firstName:           string
-  lastName:            string
-  address:             string
-  monthsOverdue:       number
-  amountDue:           number
-  scheduledDate:       string
-  contactNo:           string
-  requestStatus:       'Pending' | 'Executed' | 'Cancelled'
-  isInactive?:         boolean
-}
+import type { OverdueAccount } from '@/types'
 
 export default function DisconnectionsPage() {
   const { hasAccess, isLoading: authLoading } = useRoleGuard('meter_reader')

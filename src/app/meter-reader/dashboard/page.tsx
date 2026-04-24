@@ -5,6 +5,7 @@ import { Users, DollarSign } from 'lucide-react'
 import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
 import MeterReaderBillingProgress from './components/MeterReaderBillingProgress'
+import MeterReaderOverdueAccounts from './components/MeterReaderOverdueAccounts'
 import type { MeterReaderDashboardStats } from '@/types'
 
 function MeterReaderStatCard({ label, value, icon }: { label: string, value: string | number, icon: React.ReactNode }) {
@@ -67,8 +68,18 @@ export default function MeterReaderDashboardPage() {
         />
       </div>
 
-      {/* Billing Cycle Progress */}
-      <MeterReaderBillingProgress progress={data?.billingProgress} isLoading={isLoading} />
+      {/* Bottom Row: 2/3 Billing Progress, 1/3 Overdue Accounts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Billing Cycle Progress */}
+        <div className="lg:col-span-2">
+          <MeterReaderBillingProgress progress={data?.billingProgress} isLoading={isLoading} />
+        </div>
+
+        {/* Overdue Accounts */}
+        <div className="lg:col-span-1">
+          <MeterReaderOverdueAccounts accounts={data?.overdueAccounts} isLoading={isLoading} />
+        </div>
+      </div>
 
     </div>
   )
