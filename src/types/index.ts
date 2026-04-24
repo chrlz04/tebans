@@ -219,7 +219,7 @@ export interface OverdueAccount {
 }
 
 export interface MeterReaderDashboardStats {
-  totalConsumers: number
+  consumersPaidPercentage: number
   paymentCollections: number
   billingProgress: MeterReaderBillingProgress
   overdueAccounts: OverdueAccount[]
