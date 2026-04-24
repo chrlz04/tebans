@@ -250,37 +250,37 @@ export default function ManageAccountsPage() {
 
           {/* Table */}
           {activeTab === 'staff' ? (
-            <>
-              <DataTable
-                columns={staffColumns}
-                data={filteredStaffData ?? []}
-                isLoading={staffLoading}
-                emptyMessage="No staff accounts found."
-                keyExtractor={(row) => row.userId}
-                totalCount={staffData?.length ?? 0}
-                itemName="staff accounts"
-              />
-              <div className="flex gap-4 text-xs text-gray-500 pt-2">
-                <span>Active: <strong className="text-green-600">{activeStaff}</strong></span>
-                <span>Inactive: <strong className="text-red-600">{inactiveStaff}</strong></span>
-              </div>
-            </>
+            <DataTable
+              columns={staffColumns}
+              data={filteredStaffData ?? []}
+              isLoading={staffLoading}
+              emptyMessage="No staff accounts found."
+              keyExtractor={(row) => row.userId}
+              totalCount={staffData?.length ?? 0}
+              itemName="staff accounts"
+              summary={
+                <div className="flex gap-4 text-xs text-gray-500">
+                  <span>Active: <strong className="text-green-600">{activeStaff}</strong></span>
+                  <span>Inactive: <strong className="text-red-600">{inactiveStaff}</strong></span>
+                </div>
+              }
+            />
           ) : (
-            <>
-              <DataTable
-                columns={consumerColumns}
-                data={filteredConsumerData ?? []}
-                isLoading={consumerLoading}
-                emptyMessage="No consumer accounts found."
-                keyExtractor={(row) => row.consumerId}
-                totalCount={consumerData?.length ?? 0}
-                itemName="consumer accounts"
-              />
-              <div className="flex gap-4 text-xs text-gray-500 pt-2">
-                <span>Active: <strong className="text-green-600">{activeConsumers}</strong></span>
-                <span>Inactive: <strong className="text-red-600">{inactiveConsumers}</strong></span>
-              </div>
-            </>
+            <DataTable
+              columns={consumerColumns}
+              data={filteredConsumerData ?? []}
+              isLoading={consumerLoading}
+              emptyMessage="No consumer accounts found."
+              keyExtractor={(row) => row.consumerId}
+              totalCount={consumerData?.length ?? 0}
+              itemName="consumer accounts"
+              summary={
+                <div className="flex gap-4 text-xs text-gray-500">
+                  <span>Active: <strong className="text-green-600">{activeConsumers}</strong></span>
+                  <span>Inactive: <strong className="text-red-600">{inactiveConsumers}</strong></span>
+                </div>
+              }
+            />
           )}
         </div>
       </div>
