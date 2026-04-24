@@ -1,9 +1,10 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Users, AlertTriangle, DollarSign } from 'lucide-react'
+import { Users, DollarSign } from 'lucide-react'
 import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
+import MeterReaderBillingProgress from './components/MeterReaderBillingProgress'
 import type { MeterReaderDashboardStats } from '@/types'
 
 function MeterReaderStatCard({ label, value, icon }: { label: string, value: string | number, icon: React.ReactNode }) {
@@ -47,7 +48,7 @@ export default function MeterReaderDashboardPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-5xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
         <MeterReaderStatCard
           label="Total Consumers"
           value={isLoading ? '—' : (data?.totalConsumers ?? 0)}
@@ -64,12 +65,10 @@ export default function MeterReaderDashboardPage() {
           }
           icon={<DollarSign size={24} />}
         />
-        <MeterReaderStatCard
-          label="Inactive Accounts"
-          value={isLoading ? '—' : (data?.inactiveAccounts ?? 0)}
-          icon={<AlertTriangle size={24} />}
-        />
       </div>
+
+      {/* Billing Cycle Progress */}
+      <MeterReaderBillingProgress progress={data?.billingProgress} isLoading={isLoading} />
 
     </div>
   )

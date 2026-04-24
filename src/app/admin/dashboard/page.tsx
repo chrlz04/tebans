@@ -7,6 +7,7 @@ import { useRoleGuard } from '@/lib/use-role-guard'
 import StatCard from '@/components/shared/StatCard'
 import DataTable from '@/components/shared/DataTable'
 import Badge from '@/components/ui/Badge'
+import BillingCycleProgress from './components/BillingCycleProgress'
 import type { AdminDashboardStats, User } from '@/types'
 import type { Column } from '@/components/shared/DataTable'
 
@@ -85,6 +86,9 @@ export default function AdminDashboardPage() {
           variant="danger"
         />
       </div>
+
+      {/* Billing Cycle Progress */}
+      <BillingCycleProgress progress={data?.billingProgress} isLoading={isLoading} />
 
       {/* Recent Registrations */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
