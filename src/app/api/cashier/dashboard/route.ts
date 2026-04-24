@@ -21,6 +21,14 @@ interface RecentTransactionRow extends RowDataPacket {
   Date_Paid:   string
 }
 
+interface NotYetPaidConsumerRow extends RowDataPacket {
+  Consumer_ID: string
+  First_Name:  string
+  Last_Name:   string
+  Address:     string
+  Total_Amount: number
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { error, payload } = requireRole(req, ['cashier'])
@@ -71,15 +79,75 @@ export async function GET(req: NextRequest) {
       [startDate, endDate, assignedAreaId]
     )
 
-    // Pending consumers to pay
-    const pendingConsumers = await queryOne<SummaryRow>(
-      `SELECT COUNT(DISTINCT b.Consumer_ID) AS count
-       FROM Bill b
-       JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
-       WHERE b.Payment_Status != 'Paid'
-         AND c.Area_ID = ?`,
+    // --- Collection Progress ---
+    // 1. Total Active Consumers in assigned area
+    const totalActiveConsumersRow = await queryOne<SummaryRow>(
+      `SELECT COUNT(c.Consumer_ID) AS count
+       FROM Consumer c
+       JOIN User u ON u.User_ID = c.User_ID
+       WHERE c.Area_ID = ? AND u.Account_Status = 'Active'`,
       [assignedAreaId]
     )
+    const totalConsumers = totalActiveConsumersRow?.count ?? 0
+
+    const currentMonthDate = new Date(year, month, 1)
+    const currentMonthStr = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+    const currentMonthNum = month + 1 // 1-12
+
+    // 2. Paid Consumers (Has a payment record this month <= 27, linked to current month bill)
+    //    We check the Payment table for Date_Paid, ensuring MONTH matches current month and DAY <= 27
+    //    and verify via Bill that it's for the current month.
+    const paidConsumersRow = await queryOne<SummaryRow>(
+      `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
+       FROM Payment p
+       JOIN Bill b ON b.Bill_ID = p.Bill_ID
+       JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
+       JOIN User u ON u.User_ID = c.User_ID
+       WHERE c.Area_ID = ?
+         AND u.Account_Status = 'Active'
+         AND b.Billing_Month = ?
+         AND MONTH(p.Date_Paid) = ?
+         AND DAY(p.Date_Paid) <= 27`,
+      [assignedAreaId, currentMonthStr, currentMonthNum]
+    )
+    const paidConsumers = paidConsumersRow?.count ?? 0
+
+    // 3. Not Yet Paid Consumers (Has a current month bill but no valid payment this month <= 27)
+    // To get the count and the list
+    const notYetPaidListRow = await query<NotYetPaidConsumerRow>(
+      `SELECT
+        c.Consumer_ID,
+        u.First_Name,
+        u.Last_Name,
+        c.Address,
+        b.Total_Amount
+       FROM Bill b
+       JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
+       JOIN User u ON u.User_ID = c.User_ID
+       WHERE c.Area_ID = ?
+         AND u.Account_Status = 'Active'
+         AND b.Billing_Month = ?
+         AND b.Payment_Status != 'Paid'
+         AND c.Consumer_ID NOT IN (
+           SELECT p.Consumer_ID
+           FROM Payment p
+           JOIN Bill b2 ON b2.Bill_ID = p.Bill_ID
+           WHERE b2.Billing_Month = ?
+             AND MONTH(p.Date_Paid) = ?
+             AND DAY(p.Date_Paid) <= 27
+         )`,
+      [assignedAreaId, currentMonthStr, currentMonthStr, currentMonthNum]
+    )
+    const notYetPaidConsumers = notYetPaidListRow.length
+    const completionRate = totalConsumers > 0 ? Math.round((paidConsumers / totalConsumers) * 100) : 0
+
+    const notYetPaidList = notYetPaidListRow.map((row) => ({
+      consumerId: row.Consumer_ID,
+      firstName: row.First_Name,
+      lastName: row.Last_Name,
+      address: row.Address,
+      balance: row.Total_Amount,
+    }))
 
     // Recent transactions today
     const recentTransactions = await query<RecentTransactionRow>(
@@ -104,7 +172,13 @@ export async function GET(req: NextRequest) {
       totalCollectionsToday:  todayCollections?.total  ?? 0,
       transactionsProcessed:  todayCollections?.count  ?? 0,
       pendingCashRemittance:  pendingRemittance?.total  ?? 0,
-      pendingConsumersToPay:  pendingConsumers?.count   ?? 0,
+      collectionProgress: {
+        totalConsumers,
+        paidConsumers,
+        notYetPaidConsumers,
+        completionRate,
+        notYetPaidList,
+      },
       recentTransactions: recentTransactions.map((t) => ({
         paymentId:   t.Payment_ID,
         consumerId:  t.Consumer_ID,

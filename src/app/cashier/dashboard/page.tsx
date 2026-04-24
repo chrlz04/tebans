@@ -1,10 +1,11 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { CreditCard, User, DollarSign, TrendingUp } from 'lucide-react'
+import { CreditCard, DollarSign, TrendingUp } from 'lucide-react'
 import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
 import type { CashierDashboardStats } from '@/types'
+import CashierCollectionProgress from './components/CashierCollectionProgress'
 
 function CashierStatCard({ label, value, icon }: { label: string, value: string | number, icon: React.ReactNode }) {
   return (
@@ -47,7 +48,7 @@ export default function CashierDashboardPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 max-w-12xl">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-12xl">
         <CashierStatCard
           label="Total Collections Today"
           value={
@@ -75,15 +76,16 @@ export default function CashierDashboardPage() {
           }
           icon={<TrendingUp size={24} />}
         />
-        <CashierStatCard
-          label="Pending Consumer to Pay"
-          value={isLoading ? '—' : (data?.pendingConsumersToPay ?? 0)}
-          icon={<User size={24} />}
-        />
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Collection Progress */}
+        <div className="lg:col-span-2">
+          <CashierCollectionProgress progress={data?.collectionProgress} isLoading={isLoading} />
+        </div>
+
       {/* Recent Transactions */}
-      <div className="max-w-3xl">
+      <div className="lg:col-span-1">
         <div className="mb-4">
           <h2 className="text-lg font-bold text-gray-900">
             Recent Transactions (Today)
@@ -129,6 +131,7 @@ export default function CashierDashboardPage() {
             No transactions recorded today.
           </div>
         )}
+      </div>
       </div>
     </div>
   )
