@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
         u.First_Name,
         u.Last_Name,
         mr.Assigned_Area_ID,
-        a.Area_Name
+        a.Name AS Area_Name
        FROM MeterReader mr
        JOIN User u ON u.User_ID = mr.User_ID
        JOIN Area a ON a.Area_ID = mr.Assigned_Area_ID
