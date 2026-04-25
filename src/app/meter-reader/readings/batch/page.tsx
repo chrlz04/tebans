@@ -4,7 +4,6 @@ import { useState, useRef } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { ArrowLeft, CheckCircle, Upload, AlertCircle, FileSpreadsheet, Download, Table, X } from 'lucide-react'
 import Link from 'next/link'
-import * as XLSX from 'xlsx'
 import Papa from 'papaparse'
 
 import api from '@/lib/api'
@@ -55,36 +54,32 @@ export default function BatchRecordMeterReadingPage() {
     }
   })
 
-  const downloadTemplate = () => {
-    const ws = XLSX.utils.json_to_sheet([
-      {
-        'Account Number': 'consumer-001',
-        'Current Reading': 125.5,
-        'Amount Due': 1500.00,
-        'Reading Date': '2024-05-20',
-        'Due Date': '2024-06-05'
-      },
-      {
-        'Account Number': 'consumer-002',
-        'Current Reading': 45.2,
-        'Amount Due': 800.50,
-        'Reading Date': '2024-05-20',
-        'Due Date': '2024-06-05'
-      }
-    ])
+  const downloadTemplate = async () => {
+    const ExcelJS = (await import('exceljs')).default
+    const wb = new ExcelJS.Workbook()
+    const ws = wb.addWorksheet('Template')
 
-    // Auto-size columns to be more readable
-    ws['!cols'] = [
-      { wch: 18 }, // Account Number
-      { wch: 15 }, // Current Reading
-      { wch: 12 }, // Amount Due
-      { wch: 14 }, // Reading Date
-      { wch: 14 }, // Due Date
+    ws.columns = [
+      { header: 'Account Number', key: 'accountNo', width: 18 },
+      { header: 'Current Reading', key: 'currentReading', width: 15 },
+      { header: 'Amount Due', key: 'amountDue', width: 12 },
+      { header: 'Reading Date', key: 'readingDate', width: 14 },
+      { header: 'Due Date', key: 'dueDate', width: 14 }
     ]
 
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Template')
-    XLSX.writeFile(wb, 'batch-reading-template.xlsx')
+    ws.addRow({ accountNo: 'consumer-001', currentReading: 125.5, amountDue: 1500.00, readingDate: '2024-05-20', dueDate: '2024-06-05' })
+    ws.addRow({ accountNo: 'consumer-002', currentReading: 45.2, amountDue: 800.50, readingDate: '2024-05-20', dueDate: '2024-06-05' })
+
+    const buffer = await wb.xlsx.writeBuffer()
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'batch-reading-template.xlsx'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,19 +107,51 @@ export default function BatchRecordMeterReadingPage() {
       })
     } else if (fileExt === 'xlsx' || fileExt === 'xls') {
       const reader = new FileReader()
-      reader.onload = (evt) => {
+      reader.onload = async (evt) => {
         try {
-          const bstr = evt.target?.result
-          const wb = XLSX.read(bstr, { type: 'binary' })
-          const wsname = wb.SheetNames[0]
-          const ws = wb.Sheets[wsname]
-          const data = XLSX.utils.sheet_to_json(ws, { defval: '' })
+          const arrayBuffer = evt.target?.result as ArrayBuffer
+          const ExcelJS = (await import('exceljs')).default
+          const wb = new ExcelJS.Workbook()
+          await wb.xlsx.load(arrayBuffer)
+          const ws = wb.worksheets[0]
+
+          if (!ws) {
+            throw new Error('No worksheets found')
+          }
+
+          const data: any[] = []
+          const headers: string[] = []
+
+          ws.eachRow((row, rowNumber) => {
+            if (rowNumber === 1) {
+              row.eachCell((cell, colNumber) => {
+                headers[colNumber] = cell.text || String(cell.value || '')
+              })
+            } else {
+              const rowData: any = {}
+              headers.forEach((header, colNumber) => {
+                if (!header) return
+                let val = row.getCell(colNumber).value
+                if (val && typeof val === 'object' && 'result' in val) {
+                  val = (val as any).result
+                }
+                if (val instanceof Date) {
+                  const offset = val.getTimezoneOffset() * 60000
+                  const localDate = new Date(val.getTime() - offset)
+                  val = localDate.toISOString().split('T')[0]
+                }
+                rowData[header] = val !== null && val !== undefined ? val : ''
+              })
+              data.push(rowData)
+            }
+          })
+
           processParsedRows(data)
         } catch (error: any) {
           setParseError(`Failed to parse Excel file: ${error.message}`)
         }
       }
-      reader.readAsBinaryString(selectedFile)
+      reader.readAsArrayBuffer(selectedFile)
     } else {
       setParseError('Unsupported file type. Please upload a .csv or .xlsx file.')
     }
