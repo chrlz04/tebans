@@ -2,7 +2,35 @@
 > tebans@0.1.0 start
 > next start
 
-▲ Next.js 16.2.1
+▲ Next.js 16.2.4
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 201ms
+✓ Ready in 183ms
+{"level":"error","timestamp":"2026-04-25T01:56:14.877Z","message":"Login error:","data":{"message":"","code":"ECONNREFUSED"}}
+[API Error]: Error:
+    at n.execute (.next/server/chunks/[root-of-the-server]__0s875oo._.js:5:258431)
+    at A (.next/server/chunks/[root-of-the-server]__0s875oo._.js:5:267869)
+    at R (.next/server/chunks/[root-of-the-server]__0s875oo._.js:5:267985)
+    at A (.next/server/chunks/[root-of-the-server]__0~0qghz._.js:1:4144)
+    at async l (.next/server/chunks/[root-of-the-server]__0~0qghz._.js:14:3948)
+    at async i (.next/server/chunks/[root-of-the-server]__0~0qghz._.js:14:4989) {
+  code: 'ECONNREFUSED',
+  errno: undefined,
+  sql: undefined,
+  sqlState: undefined,
+  sqlMessage: undefined
+}
+{"level":"error","timestamp":"2026-04-25T01:56:55.616Z","message":"Login error:","data":{"message":"","code":"ECONNREFUSED"}}
+[API Error]: Error:
+    at n.execute (.next/server/chunks/[root-of-the-server]__0s875oo._.js:5:258431)
+    at A (.next/server/chunks/[root-of-the-server]__0s875oo._.js:5:267869)
+    at R (.next/server/chunks/[root-of-the-server]__0s875oo._.js:5:267985)
+    at A (.next/server/chunks/[root-of-the-server]__0~0qghz._.js:1:4144)
+    at async l (.next/server/chunks/[root-of-the-server]__0~0qghz._.js:14:3948)
+    at async i (.next/server/chunks/[root-of-the-server]__0~0qghz._.js:14:4989) {
+  code: 'ECONNREFUSED',
+  errno: undefined,
+  sql: undefined,
+  sqlState: undefined,
+  sqlMessage: undefined
+}
