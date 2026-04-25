@@ -78,6 +78,7 @@ export async function POST(req: NextRequest) {
     // Validate each row
     const validDataToInsert: any[] = []
     const smsTasks: { to: string, content: string, consumerId: string }[] = []
+    const seenBillsInCurrentUpload = new Set<string>()
 
     for (let i = 0; i < readings.length; i++) {
       const r = readings[i]
@@ -136,6 +137,25 @@ export async function POST(req: NextRequest) {
         year:  'numeric',
         month: 'long',
       })
+
+      const duplicateKey = `${r.consumerId}_${billingMonth}`
+
+      // Check for duplicate in the database
+      const existingBill = await queryOne(
+        `SELECT Bill_ID FROM Bill WHERE Consumer_ID = ? AND Billing_Month = ? LIMIT 1`,
+        [r.consumerId, billingMonth]
+      )
+
+      if (existingBill || seenBillsInCurrentUpload.has(duplicateKey)) {
+        const consumerName = `${consumer.First_Name} ${consumer.Last_Name}`
+        validationErrors.push({
+          row: rowNum,
+          errors: [`Consumer ${consumerName} (${r.consumerId}) already has a bill for ${billingMonth}. Duplicate entries are not allowed.`]
+        })
+        continue
+      }
+
+      seenBillsInCurrentUpload.add(duplicateKey)
 
       // We need to queue the data for transaction insertion
       validDataToInsert.push({

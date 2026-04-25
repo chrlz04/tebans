@@ -80,7 +80,8 @@ CREATE TABLE IF NOT EXISTS MeterReading (
   Date_Recorded        DATE           NOT NULL,
   Billing_Month        VARCHAR(20)    NOT NULL,
   FOREIGN KEY (Consumer_ID)    REFERENCES Consumer(Consumer_ID),
-  FOREIGN KEY (MeterReader_ID) REFERENCES MeterReader(MeterReader_ID)
+  FOREIGN KEY (MeterReader_ID) REFERENCES MeterReader(MeterReader_ID),
+  UNIQUE (Consumer_ID, Billing_Month)
 );
 
 -- ─── Bill ─────────────────────────────────────────────────
@@ -93,7 +94,8 @@ CREATE TABLE IF NOT EXISTS Bill (
   Payment_Status   ENUM('Paid','Unpaid') NOT NULL DEFAULT 'Unpaid',
   Billing_Month    VARCHAR(20)   NOT NULL,
   FOREIGN KEY (Consumer_ID)     REFERENCES Consumer(Consumer_ID),
-  FOREIGN KEY (MeterReading_ID) REFERENCES MeterReading(MeterReading_ID)
+  FOREIGN KEY (MeterReading_ID) REFERENCES MeterReading(MeterReading_ID),
+  UNIQUE (Consumer_ID, Billing_Month)
 );
 
 -- ─── Payment ──────────────────────────────────────────────
