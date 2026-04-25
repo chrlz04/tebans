@@ -92,6 +92,17 @@ export async function POST(req: NextRequest) {
       month: 'long',
     })
 
+    // Check if bill already exists for this billing month
+    const existingBill = await queryOne(
+      `SELECT Bill_ID FROM Bill WHERE Consumer_ID = ? AND Billing_Month = ? LIMIT 1`,
+      [consumerId, billingMonth]
+    )
+
+    if (existingBill) {
+      const consumerName = `${consumer.First_Name} ${consumer.Last_Name}`
+      return err(`Consumer ${consumerName} (${consumerId}) already has a bill for ${billingMonth}. Duplicate entries are not allowed.`, 400)
+    }
+
     // Use the user-provided due date
     const dueDateStr = dueDate
 
