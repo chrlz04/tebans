@@ -155,7 +155,9 @@ INSERT IGNORE INTO System_Settings (Setting_Key, Setting_Value) VALUES
 ('SMS_PASSWORD', ''),
 ('SMS_CUSTOM_AUTH_TYPE', ''),
 ('SMS_CUSTOM_AUTH_HEADER', ''),
-('SMS_CUSTOM_PAYLOAD', '');
+('SMS_CUSTOM_PAYLOAD', ''),
+('BILLING_CYCLE_START_DAY', '28'),
+('BILLING_CYCLE_END_DAY', '27');
 
 -- Seed default Areas
 INSERT IGNORE INTO Area (Area_ID, Name) VALUES
