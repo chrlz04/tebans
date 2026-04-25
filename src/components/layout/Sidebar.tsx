@@ -44,7 +44,6 @@ const navItems: Record<Role, NavItem[]> = {
     { label: 'Dashboard', href: '/meter-reader/dashboard', icon: <LayoutDashboard size={18} /> },
     { label: 'Consumers', href: '/meter-reader/consumers', icon: <Users size={18} /> },
     { label: 'Disconnections', href: '/meter-reader/disconnections', icon: <AlertTriangle size={18} /> },
-    { label: 'Payment Collection', href: '/meter-reader/payments', icon: <CreditCard size={18} /> },
   ],
   cashier: [
     { label: 'Dashboard', href: '/cashier/dashboard', icon: <LayoutDashboard size={18} /> },
