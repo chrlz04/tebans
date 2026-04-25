@@ -5,7 +5,8 @@ USE tebans_db;
 CREATE TABLE IF NOT EXISTS Login (
   Login_ID   VARCHAR(36)  PRIMARY KEY,
   User_name  VARCHAR(100) NOT NULL UNIQUE,
-  Password   VARCHAR(255) NOT NULL
+  Password   VARCHAR(255) NOT NULL,
+  Must_Change_Password BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- ─── User ─────────────────────────────────────────────────
