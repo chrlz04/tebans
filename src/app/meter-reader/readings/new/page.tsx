@@ -57,6 +57,15 @@ function RecordReadingForm() {
     enabled: hasAccess && search.length > 1 && !selectedConsumer,
   })
 
+  const { data: cycleSettings, isLoading: isCycleLoading } = useQuery({
+    queryKey: ['billing-cycle'],
+    queryFn: async () => {
+      const res = await api.get('/settings/billing-cycle')
+      return res.data
+    },
+    enabled: hasAccess,
+  })
+
   const {
     register,
     handleSubmit,
@@ -68,9 +77,16 @@ function RecordReadingForm() {
     defaultValues: {
       consumerId:  prefilledConsumerId,
       readingDate: getManilaDateStr(),
-      dueDate:     getFixedDueDateStr(27),
+      dueDate:     cycleSettings?.endDay ? getFixedDueDateStr(cycleSettings.endDay) : '',
     },
   })
+
+  // Update default due date once cycle settings are fetched
+  useEffect(() => {
+    if (cycleSettings?.endDay) {
+      setValue('dueDate', getFixedDueDateStr(cycleSettings.endDay))
+    }
+  }, [cycleSettings, setValue])
 
   // ── Auto-select consumer if coming from consumers page ──
   useEffect(() => {
@@ -118,7 +134,7 @@ function RecordReadingForm() {
 
 const previousReading = Number(previousReadingData?.previousReading ?? 0)
 
-  if (authLoading) return null
+  if (authLoading || isCycleLoading) return null
   if (!hasAccess)  return null
 
   // ── Success screen ────────────────────────────────────
