@@ -62,8 +62,8 @@ export async function GET(req: NextRequest) {
        FROM Payment p
        JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
        WHERE c.Area_ID = ?
-         AND p.Date_Paid >= ?
-         AND p.Date_Paid <= ?`,
+         AND DATE(p.Date_Paid) >= ?
+         AND DATE(p.Date_Paid) <= ?`,
       [assignedAreaId, startDate, endDate]
     )
 
@@ -74,11 +74,13 @@ export async function GET(req: NextRequest) {
     const paidConsumersRow = await queryOne<SummaryRow>(
       `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
        FROM Payment p
+       JOIN Bill b ON b.Bill_ID = p.Bill_ID
        JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
        WHERE c.Area_ID = ?
-         AND p.Date_Paid >= ?
-         AND p.Date_Paid <= ?`,
-      [assignedAreaId, startDate, endDate]
+         AND DATE(p.Date_Paid) >= ?
+         AND DATE(p.Date_Paid) <= ?
+         AND b.Billing_Month = ?`,
+      [assignedAreaId, startDate, endDate, currentMonthStr]
     )
     const paidConsumersCount = paidConsumersRow?.count ?? 0
 
