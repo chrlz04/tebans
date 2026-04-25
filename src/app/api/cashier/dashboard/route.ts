@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
     const currentMonthNum = month + 1 // 1-12
 
     // 2. Paid Consumers (Has a payment record this month <= 27, linked to current month bill)
-    //    We check the Payment table for Date_Paid, ensuring MONTH matches current month and DAY <= 27
+    //    We check the Payment table for Date_Paid using the 28th to 27th date boundaries
     //    and verify via Bill that it's for the current month.
     const paidConsumersRow = await queryOne<SummaryRow>(
       `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
@@ -106,9 +106,9 @@ export async function GET(req: NextRequest) {
        WHERE c.Area_ID = ?
          AND u.Account_Status = 'Active'
          AND b.Billing_Month = ?
-         AND MONTH(p.Date_Paid) = ?
-         AND DAY(p.Date_Paid) <= 27`,
-      [assignedAreaId, currentMonthStr, currentMonthNum]
+         AND DATE(p.Date_Paid) >= ?
+         AND DATE(p.Date_Paid) <= ?`,
+      [assignedAreaId, currentMonthStr, startDate, endDate]
     )
     const paidConsumers = paidConsumersRow?.count ?? 0
 
@@ -136,10 +136,10 @@ export async function GET(req: NextRequest) {
            FROM Payment p
            JOIN Bill b2 ON b2.Bill_ID = p.Bill_ID
            WHERE b2.Billing_Month = ?
-             AND MONTH(p.Date_Paid) = ?
-             AND DAY(p.Date_Paid) <= 27
+             AND DATE(p.Date_Paid) >= ?
+             AND DATE(p.Date_Paid) <= ?
          )`,
-      [currentMonthStr, assignedAreaId, currentMonthStr, currentMonthNum]
+      [currentMonthStr, assignedAreaId, currentMonthStr, startDate, endDate]
     )
     const notYetPaidConsumers = totalConsumers - paidConsumers
     const completionRate = totalConsumers > 0 ? Math.round((paidConsumers / totalConsumers) * 100) : 0
