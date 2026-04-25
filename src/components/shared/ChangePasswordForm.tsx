@@ -122,7 +122,7 @@ export default function ChangePasswordForm({ endpoint }: ChangePasswordFormProps
         </div>
         <div>
           <h2 className="text-lg font-bold text-gray-900">Account Security</h2>
-          <p className="text-sm text-gray-500">Update your admin password</p>
+          <p className="text-sm text-gray-500">Update your password</p>
         </div>
       </div>
 
@@ -182,7 +182,7 @@ export default function ChangePasswordForm({ endpoint }: ChangePasswordFormProps
           className="w-full sm:w-auto bg-[#749D47] hover:bg-[#62873B] text-white flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium transition-colors mt-2"
         >
           <ShieldCheck size={18} />
-          Update Admin Password
+          Update Password
         </Button>
       </form>
     </div>
