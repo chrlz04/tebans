@@ -45,13 +45,11 @@ const navItems: Record<Role, NavItem[]> = {
     { label: 'Consumers', href: '/meter-reader/consumers', icon: <Users size={18} /> },
     { label: 'Disconnections', href: '/meter-reader/disconnections', icon: <AlertTriangle size={18} /> },
     { label: 'Payment Collection', href: '/meter-reader/payments', icon: <CreditCard size={18} /> },
-    { label: 'Settings', href: '/meter-reader/settings', icon: <Settings size={18} /> },
   ],
   cashier: [
     { label: 'Dashboard', href: '/cashier/dashboard', icon: <LayoutDashboard size={18} /> },
     { label: 'Process Payment', href: '/cashier/payments/new', icon: <CreditCard size={18} /> },
     { label: 'Collection Reports', href: '/cashier/collections', icon: <FileText size={18} /> },
-    { label: 'Settings', href: '/cashier/settings', icon: <Settings size={18} /> },
   ],
 }
 
