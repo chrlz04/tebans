@@ -8,6 +8,7 @@ import DataTable from '@/components/shared/DataTable'
 import DateRangePicker from '@/components/shared/DateRangePicker'
 import Badge from '@/components/ui/Badge'
 import type { Column } from '@/components/shared/DataTable'
+import ConsumerTabs from '../../components/ConsumerTabs'
 
 interface PaymentCollection {
   paymentId:     string
@@ -82,6 +83,8 @@ export default function MeterReaderPaymentsPage() {
 
   return (
     <div className="flex flex-col gap-6">
+
+      <ConsumerTabs />
 
       {/* Page Header */}
       <div>
