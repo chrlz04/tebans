@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect } from 'react'
 import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
 import Input from '@/components/ui/Input'
@@ -18,7 +19,7 @@ const staffSchema = z
   .object({
     firstName:   z.string().min(1, 'First name is required'),
     lastName:    z.string().min(1, 'Last name is required'),
-    contactNo:   z.string().min(1, 'Contact number is required'),
+    contactNo:   z.string().regex(/^09\d{9}$/, 'Must be a valid 11-digit mobile number starting with 09'),
     username:    z.string().min(1, 'Username is required'),
     userType:    z.enum(['meter_reader', 'cashier']),
     assignedAreaId: z.string().optional(),
@@ -44,11 +45,20 @@ export default function StaffRegistrationPage() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<StaffFormValues>({
     resolver: zodResolver(staffSchema),
-    defaultValues: { userType: 'meter_reader' },
+    defaultValues: { userType: 'meter_reader', password: 'P@ssw0rd', confirmPassword: 'P@ssw0rd' },
   })
+
+  const firstName = watch('firstName')
+  useEffect(() => {
+    if (firstName) {
+      setValue('username', firstName.toLowerCase().replace(/\s+/g, ''), { shouldValidate: true })
+    }
+  }, [firstName, setValue])
 
   // Queries
   const { data: areas, isLoading: areasLoading } = useQuery<Area[]>({
@@ -121,10 +131,17 @@ export default function StaffRegistrationPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Contact Number"
+              type="text"
+              inputMode="numeric"
               placeholder="e.g. 09xxxxxxxxx"
               error={errors.contactNo?.message}
               required
               {...register('contactNo')}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, '').slice(0, 11);
+                setValue('contactNo', val, { shouldValidate: true });
+                e.target.value = val;
+              }}
             />
             <Input
               label="Username"
@@ -140,6 +157,22 @@ export default function StaffRegistrationPage() {
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-700">
                 Staff Role <span className="text-red-500">*</span>
+              </label>
+              <select
+                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                {...register('userType')}
+              >
+                <option value="meter_reader">Meter Reader</option>
+                <option value="cashier">Cashier</option>
+              </select>
+              {errors.userType && (
+                <p className="text-xs text-red-600">{errors.userType.message}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">
+                Service Area
               </label>
               <select
                 className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"

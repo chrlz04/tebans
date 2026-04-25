@@ -21,12 +21,33 @@ export async function PUT(
     if (error) return error
 
     const { userId }  = await params
-    const { firstName, lastName, contactNo, userType, assignedAreaId } = await req.json()
+    let { firstName, lastName, contactNo, userType, assignedAreaId } = await req.json()
+
+    const capitalize = (s: string) => s ? s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : s;
+    firstName = capitalize(firstName);
+    lastName = capitalize(lastName);
 
 
     const reqError = validateRequired({ firstName, lastName, contactNo }, ['firstName', 'lastName', 'contactNo'])
     if (reqError) {
       return err(reqError, 400)
+    }
+
+    // Check one active meter reader / cashier per service area
+    if (assignedAreaId) {
+      const activeCount = await queryOne<{ count: number } & RowDataPacket>(
+        `SELECT COUNT(*) as count FROM User u
+         LEFT JOIN MeterReader mr ON mr.User_ID = u.User_ID
+         LEFT JOIN Cashier c ON c.User_ID = u.User_ID
+         WHERE u.User_Type = ?
+           AND u.Account_Status = 'Active'
+           AND u.User_ID != ?
+           AND (mr.Assigned_Area_ID = ? OR c.Assigned_Area_ID = ?)`,
+        [userType, userId, assignedAreaId, assignedAreaId]
+      );
+      if (activeCount && activeCount.count > 0) {
+        return err(`This Service Area already has an active ${userType === 'meter_reader' ? 'Meter Reader' : 'Cashier'}.`, 409)
+      }
     }
 
     await execute(

@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     const { error } = requireRole(req, ['admin'])
     if (error) return error
 
-    const {
+    let {
       firstName,
       lastName,
       contactNo,
@@ -88,6 +88,11 @@ export async function POST(req: NextRequest) {
       assignedAreaId,
       password,
     } = await req.json()
+
+    // Capitalize first character of each word in names
+    const capitalize = (s: string) => s ? s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : s;
+    firstName = capitalize(firstName);
+    lastName = capitalize(lastName);
 
     // Validate required fields
 
@@ -103,13 +108,37 @@ export async function POST(req: NextRequest) {
       return err('Invalid user type', 400)
     }
 
+    // Check one active meter reader / cashier per service area
+    if (assignedAreaId) {
+      const activeCount = await queryOne<{ count: number } & RowDataPacket>(
+        `SELECT COUNT(*) as count FROM User u
+         LEFT JOIN MeterReader mr ON mr.User_ID = u.User_ID
+         LEFT JOIN Cashier c ON c.User_ID = u.User_ID
+         WHERE u.User_Type = ?
+           AND u.Account_Status = 'Active'
+           AND (mr.Assigned_Area_ID = ? OR c.Assigned_Area_ID = ?)`,
+        [userType, assignedAreaId, assignedAreaId]
+      );
+      if (activeCount && activeCount.count > 0) {
+        return err(`This Service Area already has an active ${userType === 'meter_reader' ? 'Meter Reader' : 'Cashier'}.`, 409)
+      }
+    }
+
     // Check if username already exists
     const existing = await queryOne(
       'SELECT Login_ID FROM Login WHERE User_name = ?',
       [username]
     )
     if (existing) {
-      return err('Username already exists', 409)
+      let suggestedName = username + '01';
+      let index = 1;
+      while (true) {
+        const check = await queryOne('SELECT Login_ID FROM Login WHERE User_name = ?', [suggestedName]);
+        if (!check) break;
+        index++;
+        suggestedName = username + index.toString().padStart(2, '0');
+      }
+      return err(`Username already exists. Suggested: ${suggestedName}`, 409)
     }
 
     // Hash password
@@ -149,7 +178,7 @@ export async function POST(req: NextRequest) {
 
     // Insert Login
     await execute(
-      'INSERT INTO Login (Login_ID, User_name, Password) VALUES (?, ?, ?)',
+      'INSERT INTO Login (Login_ID, User_name, Password, Must_Change_Password) VALUES (?, ?, ?, TRUE)',
       [loginId, username, hashedPassword]
     )
 
