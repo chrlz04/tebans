@@ -6,6 +6,7 @@ import { queryOne, query } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 import { getManilaDateParts } from '@/lib/date-utils'
 import type { MeterReaderBillingProgress, UnbilledConsumer } from '@/types'
+import { getBillingCycleSettings } from '@/lib/services/settings.service'
 
 interface SummaryRow extends RowDataPacket {
   total: number
@@ -48,13 +49,15 @@ export async function GET(req: NextRequest) {
 
     const assignedAreaId = meterReader.Assigned_Area_ID
 
-    // Calculate current billing cycle dates (28th of previous month to 27th of current month)
+    // Calculate current billing cycle dates
     const { year, month, day } = getManilaDateParts()
-    const startDateObj = new Date(year, day > 27 ? month : month - 1, 28)
-    const endDateObj = new Date(year, day > 27 ? month + 1 : month, 27)
+    const { startDay, endDay } = await getBillingCycleSettings()
 
-    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-28`
-    const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-27`
+    const startDateObj = new Date(year, day > endDay ? month : month - 1, startDay)
+    const endDateObj = new Date(year, day > endDay ? month + 1 : month, endDay)
+
+    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`
+    const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`
 
     // 1. Payment collections in assigned area for current billing cycle
     const paymentCollectionsRow = await queryOne<SummaryRow>(

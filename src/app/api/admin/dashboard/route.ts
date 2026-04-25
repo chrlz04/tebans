@@ -6,6 +6,7 @@ import { queryOne, query } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 import { getManilaDateParts } from '@/lib/date-utils'
 import type { AdminBillingProgress, MeterReaderProgress, AdminPaymentProgress, CashierProgress } from '@/types'
+import { getBillingCycleSettings } from '@/lib/services/settings.service'
 
 interface CountRow extends RowDataPacket {
   count: number
@@ -63,14 +64,16 @@ export async function GET(req: NextRequest) {
 
     // Calculate Billing Cycle Progress for current month
     const { year, month, day } = getManilaDateParts()
+    const { startDay, endDay } = await getBillingCycleSettings()
+
     const currentMonthDate = new Date(year, month, 1)
     const currentMonthStr = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
 
-    const startDateObj = new Date(year, day > 27 ? month : month - 1, 28)
-    const endDateObj = new Date(year, day > 27 ? month + 1 : month, 27)
+    const startDateObj = new Date(year, day > endDay ? month : month - 1, startDay)
+    const endDateObj = new Date(year, day > endDay ? month + 1 : month, endDay)
 
-    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-28`
-    const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-27`
+    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`
+    const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`
 
     const activeMeterReaders = await query<MeterReaderAreaInfo>(
       `SELECT
