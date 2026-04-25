@@ -60,7 +60,7 @@ export default function AdminDashboardPage() {
           label="Total Active Consumers"
           value={isLoading ? '—' : (data?.totalActiveConsumers ?? 0).toLocaleString()}
           icon={<Users size={24} />}
-          subtitle={`${data} from last month`}
+          subtitle={`Updated currently`}
           variant="success"
         />
         <StatCard

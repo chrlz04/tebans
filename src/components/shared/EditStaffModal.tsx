@@ -15,7 +15,7 @@ import type { Area } from '@/types/area'
 const editStaffSchema = z.object({
   firstName:   z.string().min(1, 'First name is required'),
   lastName:    z.string().min(1, 'Last name is required'),
-  contactNo:   z.string().min(1, 'Contact number is required'),
+  contactNo:   z.string().regex(/^09\d{9}$/, 'Must be a valid 11-digit mobile number starting with 09'),
   userType:    z.enum(['admin', 'meter_reader', 'cashier']),
   assignedAreaId: z.string().optional().or(z.literal('')),
 })
@@ -48,6 +48,7 @@ export default function EditStaffModal({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<EditStaffValues>({
     resolver: zodResolver(editStaffSchema),
@@ -98,15 +99,39 @@ export default function EditStaffModal({
 
         <Input
           label="Contact Number"
+          type="text"
+          inputMode="numeric"
           error={errors.contactNo?.message}
           required
           {...register('contactNo')}
+          onChange={(e) => {
+            const val = e.target.value.replace(/\D/g, '').slice(0, 11);
+            setValue('contactNo', val, { shouldValidate: true });
+            e.target.value = val;
+          }}
         />
 
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-700">
-              User Type <span className="text-red-500">*</span>
+              Staff Role <span className="text-red-500">*</span>
+            </label>
+            <select
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              {...register('userType')}
+            >
+              <option value="admin">Admin</option>
+              <option value="meter_reader">Meter Reader</option>
+              <option value="cashier">Cashier</option>
+            </select>
+            {errors.userType && (
+              <p className="text-xs text-red-600">{errors.userType.message}</p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">
+              Service Area
             </label>
             <select
               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
