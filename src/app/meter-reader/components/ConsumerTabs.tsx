@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Plus, List } from 'lucide-react'
+import { Plus, List, CreditCard } from 'lucide-react'
 
 export default function ConsumerTabs() {
   const pathname = usePathname()
@@ -31,6 +31,17 @@ export default function ConsumerTabs() {
       >
         <Plus size={18} />
         Register New Consumer
+      </Link>
+      <Link
+        href="/meter-reader/consumers/payments"
+        className={`flex items-center gap-2 px-6 py-2.5 text-sm font-medium transition-colors rounded-t-lg ${
+          pathname === '/meter-reader/consumers/payments'
+            ? 'bg-[#6a994e] text-white'
+            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+        }`}
+      >
+        <CreditCard size={18} />
+        Payment Collection
       </Link>
     </div>
   )
