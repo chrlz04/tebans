@@ -38,11 +38,12 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Find user by username ──
-    const user = await queryOne<LoginRow>(`
+    const user = await queryOne<LoginRow & { Must_Change_Password?: boolean }>(`
       SELECT
         l.Login_ID,
         l.User_name,
         l.Password,
+        l.Must_Change_Password,
         u.User_ID,
         u.User_Type,
         u.Account_Status,
@@ -89,6 +90,7 @@ export async function POST(req: NextRequest) {
         role: account.User_Type,
         userId: account.User_ID,
         name: fullName,
+        mustChangePassword: !!account.Must_Change_Password,
       }
     });
 
