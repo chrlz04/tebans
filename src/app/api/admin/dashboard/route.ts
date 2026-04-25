@@ -62,9 +62,15 @@ export async function GET(req: NextRequest) {
     )
 
     // Calculate Billing Cycle Progress for current month
-    const { year, month } = getManilaDateParts()
+    const { year, month, day } = getManilaDateParts()
     const currentMonthDate = new Date(year, month, 1)
     const currentMonthStr = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+
+    const startDateObj = new Date(year, day > 27 ? month : month - 1, 28)
+    const endDateObj = new Date(year, day > 27 ? month + 1 : month, 27)
+
+    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-28`
+    const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-27`
 
     const activeMeterReaders = await query<MeterReaderAreaInfo>(
       `SELECT
@@ -164,10 +170,10 @@ export async function GET(req: NextRequest) {
          JOIN User u ON u.User_ID = co.User_ID
          WHERE co.Area_ID = ?
            AND u.Account_Status = 'Active'
-           AND MONTH(p.Date_Paid) = ?
-           AND DAY(p.Date_Paid) <= 27
+           AND DATE(p.Date_Paid) >= ?
+           AND DATE(p.Date_Paid) <= ?
            AND b.Billing_Month = ?`,
-        [c.Assigned_Area_ID, month, currentMonthStr]
+        [c.Assigned_Area_ID, startDate, endDate, currentMonthStr]
       )
 
       const totalAreaConsumers = areaTotalRow?.count ?? 0
