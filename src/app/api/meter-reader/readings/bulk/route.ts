@@ -4,7 +4,7 @@ import { handleApiError } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'
 import { queryOne, query, withTransaction } from '@/lib/db-helpers'
 import { RowDataPacket, PoolConnection } from 'mysql2/promise'
-import { sendSms, buildBillingAlertMessage } from '@/lib/services/sms.service'
+import { sendSms } from '@/lib/services/sms.service'
 
 interface SettingRow extends RowDataPacket {
   Setting_Key: string
@@ -60,20 +60,19 @@ export async function POST(req: NextRequest) {
     const consumerIds = readings.map((r: any) => r.consumerId)
     // Prepare for transaction
 
-    // Fetch SMS settings
-    const settingKeys = ['SMS_MESSAGE_TEMPLATE']
-    const settingsRows = await query<SettingRow>(
-      `SELECT Setting_Key, Setting_Value FROM System_Settings WHERE Setting_Key IN (?)`,
-      [settingKeys[0]]
-    )
-    const settings: Record<string, string> = {}
-    settingsRows.forEach(r => settings[r.Setting_Key] = r.Setting_Value)
-    const smsTemplate = settings['SMS_MESSAGE_TEMPLATE'] || 'Dear {name}, your electricity bill for {month} is P{amount} (Previous: {previous_reading} kWh, Present: {current_reading} kWh) with a total of {usage} kWh used this month. Please pay on or before {due_date}. - TEBANS'
-
-
     // Validate each row
     const validDataToInsert: any[] = []
-    const smsTasks: { to: string, content: string, consumerId: string, consumerName: string, meterReadingId?: string }[] = []
+    const smsTasks: {
+      to: string,
+      consumerId: string,
+      consumerName: string,
+      meterReadingId?: string,
+      amountWithTaxEvat: number,
+      dueDate: string,
+      billingMonth: string,
+      previousReading: number,
+      currentReading: number
+    }[] = []
     const seenBillsInCurrentUpload = new Set<string>()
 
     for (let i = 0; i < readings.length; i++) {
@@ -253,16 +252,11 @@ export async function POST(req: NextRequest) {
                 consumerId: item.consumerId,
                 consumerName: `${item.consumer.firstName} ${item.consumer.lastName}`,
                 meterReadingId: meterReadingId,
-                content: buildBillingAlertMessage({
-                    template: smsTemplate,
-                    consumerName: `${item.consumer.firstName} ${item.consumer.lastName}`,
-                    billAmount: item.amountWithTaxEvat,
-                    dueDate: item.dueDate,
-                    billingMonth: item.billingMonth,
-                    accountNo: item.consumerId,
-                    previousReading: item.previousReading,
-                    currentReading: item.currentReading,
-                })
+                amountWithTaxEvat: item.amountWithTaxEvat,
+                dueDate: item.dueDate,
+                billingMonth: item.billingMonth,
+                previousReading: item.previousReading,
+                currentReading: item.currentReading,
             })
         }
       }

@@ -5,7 +5,8 @@ import { validateRequired } from '@/lib/validators'
 import { logger } from '@/lib/logger'
 import { queryOne, query, execute } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
-import { sendSms, buildBillingAlertMessage } from '@/lib/services/sms.service'
+import { sendSms } from '@/lib/services/sms.service'
+import { buildBillingAlertMessage } from '@/lib/sms-templates'
 
 interface SettingRow extends RowDataPacket {
   Setting_Key: string
