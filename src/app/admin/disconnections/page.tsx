@@ -12,12 +12,10 @@ import { useState } from 'react'
 interface AdminDisconnection {
   disconnectionId: string
   consumerId: string
-  consumerFirstName: string
-  consumerLastName: string
+  consumerName: string
   consumerAddress: string
   amountDue: number
-  meterReaderFirstName: string
-  meterReaderLastName: string
+  meterReaderName: string
   reasonForDisconnection: string
   scheduledDate: string
   requestStatus: 'Pending' | 'Executed' | 'Cancelled'
@@ -57,8 +55,7 @@ export default function AdminDisconnectionsPage() {
 
   const filteredData = disconnections?.filter(
     (d) =>
-      d.consumerFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      d.consumerLastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      d.consumerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       d.consumerId.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
@@ -69,7 +66,7 @@ export default function AdminDisconnectionsPage() {
       render: (row: AdminDisconnection) => (
         <div>
           <p className="font-medium text-foreground">
-            {row.consumerFirstName} {row.consumerLastName}
+            {row.consumerName}
           </p>
           <p className="text-xs text-muted-foreground font-mono">{row.consumerId}</p>
         </div>
@@ -102,7 +99,7 @@ export default function AdminDisconnectionsPage() {
       label: 'Requested By',
       render: (row: AdminDisconnection) => (
         <span className="text-sm">
-          {row.meterReaderFirstName} {row.meterReaderLastName}
+          {row.meterReaderName}
         </span>
       ),
     },
