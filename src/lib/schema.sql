@@ -159,6 +159,14 @@ INSERT IGNORE INTO System_Settings (Setting_Key, Setting_Value) VALUES
 ('SMS_CUSTOM_AUTH_TYPE', ''),
 ('SMS_CUSTOM_AUTH_HEADER', ''),
 ('SMS_CUSTOM_PAYLOAD', ''),
+('SMS_BATCH_SENDING_ENABLED', '0'),
+('SMS_BATCH_SIZE_LIMIT', '500'),
+('SMS_BATCH_DELAY', '1'),
+('SMS_REQUIRE_CONFIRMATION', '0'),
+('SMS_AUTO_MARK_SENT', '0'),
+('SMS_MESSAGE_TEMPLATE', 'Dear {name}, your water bill for {month} is P {amount}. Due date: {due_date}. Please pay at the nearest collection center. — TEBANS'),
+('SMS_LAST_TEST_DATE', ''),
+('SMS_LAST_TEST_STATUS', ''),
 ('BILLING_CYCLE_START_DAY', '28'),
 ('BILLING_CYCLE_END_DAY', '27');
 
