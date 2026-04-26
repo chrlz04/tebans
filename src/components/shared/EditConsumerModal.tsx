@@ -173,13 +173,13 @@ export default function EditConsumerModal({
       >
         {/* Account No — Read Only */}
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-gray-700">
+          <label className="text-sm font-medium text-foreground">
             Account Number
           </label>
           <input
             value={consumer.consumerId}
             disabled
-            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-100 text-gray-500 font-mono cursor-not-allowed"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-muted text-muted-foreground font-mono cursor-not-allowed"
           />
         </div>
 
@@ -201,16 +201,16 @@ export default function EditConsumerModal({
 
         {/* Address */}
         <div className="flex flex-col gap-4">
-          <h3 className="text-sm font-medium text-gray-900 border-b pb-2">Service Address</h3>
+          <h3 className="text-sm font-medium text-foreground border-b pb-2">Service Address</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Province */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground">
                 Province <span className="text-red-500">*</span>
               </label>
               <select
-                className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
                 {...register('provinceCode')}
                 disabled={provincesLoading}
               >
@@ -224,11 +224,11 @@ export default function EditConsumerModal({
 
             {/* Municipality */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground">
                 Municipality <span className="text-red-500">*</span>
               </label>
               <select
-                className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
                 {...register('municipalityCode')}
                 disabled={!selectedProvinceCode || municipalitiesLoading}
               >
@@ -242,11 +242,11 @@ export default function EditConsumerModal({
 
             {/* Barangay */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground">
                 Barangay <span className="text-red-500">*</span>
               </label>
               <select
-                className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
                 {...register('barangayCode')}
                 disabled={!selectedMunicipalityCode || barangaysLoading}
               >
@@ -276,11 +276,11 @@ export default function EditConsumerModal({
             {...register('contactNo')}
           />
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-foreground">
               Area Name <span className="text-red-500">*</span>
             </label>
             <select
-              className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
               {...register('areaId')}
               disabled={areasLoading}
             >

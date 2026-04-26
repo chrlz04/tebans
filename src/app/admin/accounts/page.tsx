@@ -125,7 +125,7 @@ export default function ManageAccountsPage() {
               setSelectedStaff(row)
               setIsEditModalOpen(true)
             }}
-            className="p-1.5 text-gray-400 hover:text-primary-600 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-primary-600 transition-colors"
             title="Edit"
           >
             <Edit size={16} />
@@ -204,18 +204,18 @@ export default function ManageAccountsPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Manage Accounts</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-xl font-semibold text-foreground">Manage Accounts</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             View and manage staff and consumer accounts
           </p>
         </div>
       </div>
 
       {/* Main Card */}
-      <div className="bg-white rounded-xl border border-gray-200">
+      <div className="bg-card rounded-xl border border-border">
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 px-6">
+        <div className="flex border-b border-border px-6">
           {(['staff', 'consumer'] as const).map((tab) => (
             <button
               key={tab}
@@ -226,7 +226,7 @@ export default function ManageAccountsPage() {
               className={`py-4 px-4 text-sm font-medium border-b-2 transition-colors capitalize ${
                 activeTab === tab
                   ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               {tab === 'staff' ? 'Staff Accounts' : 'Consumer Accounts'}
@@ -259,7 +259,7 @@ export default function ManageAccountsPage() {
               totalCount={staffData?.length ?? 0}
               itemName="staff accounts"
               summary={
-                <div className="flex gap-4 text-xs text-gray-500">
+                <div className="flex gap-4 text-xs text-muted-foreground">
                   <span>Active: <strong className="text-green-600">{activeStaff}</strong></span>
                   <span>Inactive: <strong className="text-red-600">{inactiveStaff}</strong></span>
                 </div>
@@ -275,7 +275,7 @@ export default function ManageAccountsPage() {
               totalCount={consumerData?.length ?? 0}
               itemName="consumer accounts"
               summary={
-                <div className="flex gap-4 text-xs text-gray-500">
+                <div className="flex gap-4 text-xs text-muted-foreground">
                   <span>Active: <strong className="text-green-600">{activeConsumers}</strong></span>
                   <span>Inactive: <strong className="text-red-600">{inactiveConsumers}</strong></span>
                 </div>

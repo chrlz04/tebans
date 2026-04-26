@@ -140,14 +140,14 @@ export default function AdminAreasSettingsPage() {
               setNameInput(row.name)
               setErrorText('')
             }}
-            className="p-1.5 text-gray-400 hover:text-primary-600 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-primary-600 transition-colors"
             title="Edit"
           >
             <Edit2 size={16} />
           </button>
           <button
             onClick={() => handleDeleteClick(row)}
-            className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-red-600 transition-colors"
             title="Delete"
           >
             <Trash2 size={16} />
@@ -164,13 +164,13 @@ export default function AdminAreasSettingsPage() {
         <div className="flex items-center gap-4">
           <Link
             href="/admin/settings"
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+            className="p-2 text-muted-foreground hover:text-muted-foreground transition-colors rounded-lg hover:bg-muted"
           >
             <ArrowLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">Manage Areas</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-xl font-semibold text-foreground">Manage Areas</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Configure available service areas (Puroks)
             </p>
           </div>
@@ -190,7 +190,7 @@ export default function AdminAreasSettingsPage() {
       </div>
 
       {/* Main Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-card rounded-xl border border-border p-6">
         <DataTable
           columns={columns}
           data={areas ?? []}
@@ -264,7 +264,7 @@ export default function AdminAreasSettingsPage() {
       >
         <div className="flex flex-col gap-4">
           {checkDependenciesMutation.isPending ? (
-            <div className="text-sm text-gray-500">Checking dependencies...</div>
+            <div className="text-sm text-muted-foreground">Checking dependencies...</div>
           ) : (
             <>
               <div className="flex gap-3 text-red-600 bg-red-50 p-4 rounded-lg border border-red-100">

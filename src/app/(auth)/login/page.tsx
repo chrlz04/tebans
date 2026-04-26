@@ -78,7 +78,7 @@ export default function LoginPage() {
       </div>
 
       {/* ── Right Panel — Login Form ── */}
-      <div className="flex flex-col justify-center w-full lg:w-1/2 px-6 sm:px-12 lg:px-16 bg-white">
+      <div className="flex flex-col justify-center w-full lg:w-1/2 px-6 sm:px-12 lg:px-16 bg-card">
         <div className="w-full max-w-md mx-auto flex flex-col items-center">
 
           {/* Logo and Brand Name */}
@@ -90,8 +90,8 @@ export default function LoginPage() {
 
           {/* Centered Heading */}
           <div className="mb-8 text-center">
-            <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
-            <p className="text-sm text-gray-500 mt-1">
+            <h2 className="text-2xl font-bold text-foreground">Welcome back</h2>
+            <p className="text-sm text-muted-foreground mt-1">
               Sign in to your account to continue
             </p>
           </div>
@@ -110,7 +110,7 @@ export default function LoginPage() {
 
             {/* Password */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground">
                 Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -120,14 +120,14 @@ export default function LoginPage() {
                   className={`w-full px-3 py-2 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent pr-10 ${
                     errors.password
                       ? 'border-red-400 bg-red-50 text-red-900'
-                      : 'border-gray-300 bg-white text-gray-900'
+                      : 'border-gray-300 bg-card text-foreground'
                   }`}
                   {...register('password')}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -157,7 +157,7 @@ export default function LoginPage() {
           </form>
 
           {/* Footer */}
-          <p className="text-xs text-gray-400 text-center mt-12">
+          <p className="text-xs text-muted-foreground text-center mt-12">
             © 2026 TEBANS. All rights reserved.
           </p>
         </div>

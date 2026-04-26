@@ -84,7 +84,7 @@ export default function ChangePasswordForm({ endpoint }: ChangePasswordFormProps
     error?: string
   }) => (
     <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-bold text-gray-900">
+      <label className="text-sm font-bold text-foreground">
         {label}
       </label>
       <div className="relative">
@@ -97,14 +97,14 @@ export default function ChangePasswordForm({ endpoint }: ChangePasswordFormProps
           className={`w-full min-h-[44px] pl-10 pr-10 py-2.5 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-[#749D47] focus:border-transparent ${
             error
               ? 'border-red-400 bg-red-50 text-red-900'
-              : 'border-gray-200 bg-white text-gray-900 placeholder:text-gray-400'
+              : 'border-border bg-background text-foreground placeholder:text-muted-foreground'
           }`}
           {...register(fieldName)}
         />
         <button
           type="button"
           onClick={onToggle}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-muted-foreground focus:outline-none"
         >
           {show ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
@@ -114,15 +114,15 @@ export default function ChangePasswordForm({ endpoint }: ChangePasswordFormProps
   )
 
   return (
-    <div className="w-full max-w-[440px] bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+    <div className="w-full max-w-[440px] bg-background border border-border rounded-2xl shadow-sm overflow-hidden">
       {/* Header Section */}
-      <div className="bg-[#FAFCF8] p-6 border-b border-gray-200 flex items-center gap-4">
+      <div className="bg-[#FAFCF8] p-6 border-b border-border flex items-center gap-4">
         <div className="w-12 h-12 bg-[#749D47] rounded-xl flex items-center justify-center text-white shrink-0">
           <ShieldCheck size={24} strokeWidth={2} />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-gray-900">Account Security</h2>
-          <p className="text-sm text-gray-500">Update your password</p>
+          <h2 className="text-lg font-bold text-foreground">Account Security</h2>
+          <p className="text-sm text-muted-foreground">Update your password</p>
         </div>
       </div>
 
@@ -157,7 +157,7 @@ export default function ChangePasswordForm({ endpoint }: ChangePasswordFormProps
         />
 
         {/* Password Requirements Note */}
-        <p className="text-sm text-gray-500 leading-relaxed mt-1">
+        <p className="text-sm text-muted-foreground leading-relaxed mt-1">
           Password must be at least 8 characters and include uppercase letters, numbers, and symbols for maximum security.
         </p>
 

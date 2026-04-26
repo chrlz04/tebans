@@ -75,17 +75,17 @@ export default function BillingCycleSettingsPage() {
       <div className="flex items-center gap-4">
         <Link
           href="/admin/settings"
-          className="p-2 -ml-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
+          className="p-2 -ml-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
         >
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Billing Cycle Settings</h1>
-          <p className="text-sm text-gray-500 mt-1">Configure the standard billing cycle dates.</p>
+          <h1 className="text-xl font-semibold text-foreground">Billing Cycle Settings</h1>
+          <p className="text-sm text-muted-foreground mt-1">Configure the standard billing cycle dates.</p>
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+      <div className="bg-card border border-border rounded-xl shadow-sm p-6">
         {isLoading ? (
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-1/4"></div>
@@ -136,7 +136,7 @@ export default function BillingCycleSettingsPage() {
                 </div>
               )}
 
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 The current active cycle ends on the <b>{cycleData?.endDay ?? 27}</b>, and starts on the <b>{cycleData?.startDay ?? 28}</b>.
               </p>
 
@@ -162,17 +162,17 @@ export default function BillingCycleSettingsPage() {
                       type="number"
                       value={startDay}
                       disabled
-                      className="bg-gray-50"
+                      className="bg-muted/50"
                       helperText="Automatically set based on the End Day."
                   />
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-end pt-4 border-t border-gray-100 gap-3">
+            <div className="flex flex-col sm:flex-row justify-end pt-4 border-t border-border/50 gap-3">
               <Button
                 type="button"
                 variant="ghost"
-                className="w-full sm:w-auto border border-gray-200"
+                className="w-full sm:w-auto border border-border"
                 onClick={() => router.push('/admin/settings')}
               >
                 Cancel

@@ -88,16 +88,16 @@ export default function MeterReaderPaymentsPage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">
+        <h1 className="text-xl font-semibold text-foreground">
           Payment Collection
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Track consumer payment records in your assigned area
         </p>
       </div>
 
       {/* Main Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-card rounded-xl border border-border p-6">
 
         {/* Filters */}
         <div className="mb-5">
@@ -119,7 +119,7 @@ export default function MeterReaderPaymentsPage() {
           totalCount={payments?.length ?? 0}
           itemName="payments"
           summary={
-            <div className="flex gap-6 text-xs text-gray-500">
+            <div className="flex gap-6 text-xs text-muted-foreground">
               <span>
                 Paid:{' '}
                 <strong className="text-green-600">{paidCount}</strong>
@@ -130,7 +130,7 @@ export default function MeterReaderPaymentsPage() {
               </span>
               <span>
                 Total Records:{' '}
-                <strong className="text-gray-700">{payments?.length ?? 0}</strong>
+                <strong className="text-foreground">{payments?.length ?? 0}</strong>
               </span>
             </div>
           }

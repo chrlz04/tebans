@@ -83,10 +83,10 @@ export default function CollectionReportsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-xl font-semibold text-foreground">
             Collection Reports
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             View and export payment collection records
           </p>
         </div>
@@ -94,9 +94,9 @@ export default function CollectionReportsPage() {
 
       {/* Summary Cards */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 bg-white rounded-xl border border-primary-500 border-l-[6px] p-6 flex flex-col shadow-sm">
-          <span className="text-sm text-gray-500 font-medium">Total Collections</span>
-          <span className="text-3xl font-bold text-gray-900 mt-1 whitespace-nowrap">
+        <div className="flex-1 bg-card rounded-xl border border-primary-500 border-l-[6px] p-6 flex flex-col shadow-sm">
+          <span className="text-sm text-muted-foreground font-medium">Total Collections</span>
+          <span className="text-3xl font-bold text-foreground mt-1 whitespace-nowrap">
             {isLoading
               ? '—'
               : `₱${totalCollections.toLocaleString('en-PH', {
@@ -104,9 +104,9 @@ export default function CollectionReportsPage() {
                 })}`}
           </span>
         </div>
-        <div className="flex-1 bg-white rounded-xl border border-primary-500 border-l-[6px] p-6 flex flex-col sm:items-end shadow-sm">
-          <span className="text-sm text-gray-500 font-medium">Total Records</span>
-          <span className="text-3xl font-bold text-gray-900 mt-1">
+        <div className="flex-1 bg-card rounded-xl border border-primary-500 border-l-[6px] p-6 flex flex-col sm:items-end shadow-sm">
+          <span className="text-sm text-muted-foreground font-medium">Total Records</span>
+          <span className="text-3xl font-bold text-foreground mt-1">
             {isLoading ? '—' : totalRecords}
           </span>
         </div>
@@ -123,12 +123,12 @@ export default function CollectionReportsPage() {
       </div>
 
       <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Collection Records</h2>
+        <h2 className="text-lg font-bold text-foreground mb-4">Collection Records</h2>
 
         {isLoading ? (
-          <div className="text-center py-8 text-gray-500">Loading records...</div>
+          <div className="text-center py-8 text-muted-foreground">Loading records...</div>
         ) : !collections || collections.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 bg-white rounded-xl border border-gray-200">
+          <div className="text-center py-8 text-muted-foreground bg-card rounded-xl border border-border">
             No collection records found.
           </div>
         ) : (
@@ -136,17 +136,17 @@ export default function CollectionReportsPage() {
             {collections.map((record) => (
               <div
                 key={record.paymentId}
-                className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                className="bg-card rounded-xl border border-border p-4 shadow-sm"
               >
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
                   <div className="flex flex-col gap-3">
                     <div>
-                      <span className="text-xs text-gray-500 block">Transaction ID</span>
-                      <span className="font-bold text-gray-900">{record.receiptNumber}</span>
+                      <span className="text-xs text-muted-foreground block">Transaction ID</span>
+                      <span className="font-bold text-foreground">{record.receiptNumber}</span>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500 block">Date & Time</span>
-                      <span className="text-gray-900">
+                      <span className="text-xs text-muted-foreground block">Date & Time</span>
+                      <span className="text-foreground">
                         {new Date(record.datePaid).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -159,8 +159,8 @@ export default function CollectionReportsPage() {
                       </span>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500 block">Consumer Name</span>
-                      <span className="font-bold text-gray-900">{record.consumerName}</span>
+                      <span className="text-xs text-muted-foreground block">Consumer Name</span>
+                      <span className="font-bold text-foreground">{record.consumerName}</span>
                     </div>
                   </div>
                   <div className="bg-primary-500 text-white text-xs font-semibold px-3 py-1 rounded-full self-start">
@@ -168,10 +168,10 @@ export default function CollectionReportsPage() {
                   </div>
                 </div>
 
-                <hr className="border-t border-gray-100 my-3" />
+                <hr className="border-t border-border/50 my-3" />
 
                 <div>
-                  <span className="text-xs text-gray-500 block">Amount Paid</span>
+                  <span className="text-xs text-muted-foreground block">Amount Paid</span>
                   <span className="text-2xl font-bold text-primary-500 mt-1 block whitespace-nowrap">
                     ₱{Number(record.amountPaid ?? 0).toLocaleString('en-PH', {
                       minimumFractionDigits: 2,

@@ -89,22 +89,22 @@ export default function StaffRegistrationPage() {
       <div className="flex items-center gap-4 mb-6">
         <Link
           href="/admin/accounts"
-          className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+          className="p-2 text-muted-foreground hover:text-muted-foreground transition-colors rounded-lg hover:bg-muted"
         >
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-xl font-semibold text-foreground">
             Register Staff Member
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Create a new Meter Reader or Cashier account
           </p>
         </div>
       </div>
 
       {/* Form Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-card rounded-xl border border-border p-6">
         <form
           onSubmit={handleSubmit((values) => mutation.mutate(values))}
           className="flex flex-col gap-5"
@@ -155,11 +155,11 @@ export default function StaffRegistrationPage() {
           {/* Role and Area */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground">
                 Staff Role <span className="text-red-500">*</span>
               </label>
               <select
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
                 {...register('userType')}
               >
                 <option value="meter_reader">Meter Reader</option>
@@ -171,11 +171,11 @@ export default function StaffRegistrationPage() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground">
                 Service Area
               </label>
               <select
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
                 {...register('assignedAreaId')}
                 disabled={areasLoading}
               >
@@ -193,7 +193,7 @@ export default function StaffRegistrationPage() {
           </div>
 
           {/* Divider */}
-          <hr className="border-gray-200" />
+          <hr className="border-border" />
 
           {/* Password */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -215,7 +215,7 @@ export default function StaffRegistrationPage() {
             />
           </div>
 
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             Password must be at least 8 characters and include an uppercase letter, a number, and a symbol.
           </p>
 
