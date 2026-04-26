@@ -21,7 +21,7 @@ export default function BillingCycleSettingsPage() {
     queryFn: async () => {
       // Let's create an endpoint that returns both current and pending settings
       const res = await api.get('/admin/settings/billing-cycle/status')
-      return res.data.data
+      return res.data
     }
   })
 
