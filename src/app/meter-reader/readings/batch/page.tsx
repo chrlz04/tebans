@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useState, useRef, useEffect } from 'react'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { ArrowLeft, CheckCircle, Upload, AlertCircle, FileSpreadsheet, Download, Table, X } from 'lucide-react'
 import Link from 'next/link'
 import Papa from 'papaparse'
@@ -19,6 +19,14 @@ interface ParsedReading {
   dueDate: string
 }
 
+interface SmsTask {
+  to: string
+  content: string
+  consumerId: string
+  consumerName: string
+  meterReadingId: string
+}
+
 export default function BatchRecordMeterReadingPage() {
   const { hasAccess, isLoading: authLoading } = useRoleGuard('meter_reader')
 
@@ -29,7 +37,22 @@ export default function BatchRecordMeterReadingPage() {
   const [isCompleted, setIsCompleted] = useState(false)
   const [successCount, setSuccessCount] = useState(0)
   const [smsQueuedCount, setSmsQueuedCount] = useState(0)
+
+  const [showSmsModal, setShowSmsModal] = useState(false)
+  const [pendingSmsTasks, setPendingSmsTasks] = useState<SmsTask[]>([])
+  const [selectedSmsConsumers, setSelectedSmsConsumers] = useState<Set<string>>(new Set())
+  const [isSendingSms, setIsSendingSms] = useState(false)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const { data: smsSettings } = useQuery({
+    queryKey: ['smsSettings'],
+    queryFn: async () => {
+      const res = await api.get('/meter-reader/sms-settings')
+      return res.data
+    },
+    enabled: hasAccess
+  })
 
   const mutation = useMutation({
     mutationFn: async (readings: ParsedReading[]) => {
@@ -38,12 +61,18 @@ export default function BatchRecordMeterReadingPage() {
     },
     onSuccess: (data) => {
       setSuccessCount(data.successCount || parsedData.length)
-      setSmsQueuedCount(data.smsQueued || 0)
-      setIsCompleted(true)
       setFile(null)
       setParsedData([])
       setValidationErrors([])
       if (fileInputRef.current) fileInputRef.current.value = ''
+
+      if (smsSettings?.SMS_BATCH_SENDING_ENABLED === '1' && data.smsTasks?.length > 0) {
+        setPendingSmsTasks(data.smsTasks)
+        setSelectedSmsConsumers(new Set(data.smsTasks.map((t: SmsTask) => t.consumerId)))
+        setShowSmsModal(true)
+      } else {
+        setIsCompleted(true)
+      }
     },
     onError: (error: any) => {
       if (error.response?.data?.validationErrors) {
@@ -53,6 +82,30 @@ export default function BatchRecordMeterReadingPage() {
       }
     }
   })
+
+  const handleSendBatchSms = async () => {
+      setIsSendingSms(true)
+      try {
+          const tasksToProcess = pendingSmsTasks.filter(t => selectedSmsConsumers.has(t.consumerId))
+          if (tasksToProcess.length > 0) {
+              const res = await api.post('/meter-reader/readings/bulk/sms', { smsTasks: tasksToProcess })
+              setSmsQueuedCount(res.data?.smsQueued || tasksToProcess.length)
+          }
+          setShowSmsModal(false)
+          setIsCompleted(true)
+      } catch (err) {
+          setParseError('Failed to dispatch SMS notifications.')
+          setShowSmsModal(false)
+          setIsCompleted(true) // Bills were still saved
+      } finally {
+          setIsSendingSms(false)
+      }
+  }
+
+  const handleSkipSms = () => {
+      setShowSmsModal(false)
+      setIsCompleted(true)
+  }
 
   const downloadTemplate = async () => {
     const ExcelJS = (await import('exceljs')).default
@@ -249,17 +302,114 @@ export default function BatchRecordMeterReadingPage() {
           <p className="text-sm text-gray-600 mt-2">
             Successfully generated <b>{successCount}</b> bills.
           </p>
-          <p className="text-sm text-gray-500 mt-1">
-            {smsQueuedCount} SMS notifications have been queued and are sending in the background.
-          </p>
+          {smsQueuedCount > 0 && (
+            <p className="text-sm text-gray-500 mt-1">
+              {smsQueuedCount} SMS notifications have been queued and are sending in the background.
+            </p>
+          )}
         </div>
         <div className="flex gap-4 mt-2">
-          <Button variant="secondary" onClick={() => setIsCompleted(false)}>
+          <Button variant="secondary" onClick={() => { setIsCompleted(false); setSmsQueuedCount(0); }}>
             Upload Another File
           </Button>
           <Button variant="primary" onClick={() => window.location.href = '/meter-reader/consumers'}>
             Back to Consumers
           </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── SMS Modal ────────────────────────────────────────────
+  if (showSmsModal) {
+    const allSelected = selectedSmsConsumers.size === pendingSmsTasks.length
+
+    const toggleAll = () => {
+      if (allSelected) {
+        setSelectedSmsConsumers(new Set())
+      } else {
+        setSelectedSmsConsumers(new Set(pendingSmsTasks.map(t => t.consumerId)))
+      }
+    }
+
+    const toggleConsumer = (consumerId: string) => {
+      const next = new Set(selectedSmsConsumers)
+      if (next.has(consumerId)) {
+        next.delete(consumerId)
+      } else {
+        next.add(consumerId)
+      }
+      setSelectedSmsConsumers(next)
+    }
+
+    return (
+      <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Send Batch SMS Notifications</h2>
+              <p className="text-sm text-gray-500 mt-1">Bills were generated successfully. Select consumers to notify.</p>
+            </div>
+            <button onClick={handleSkipSms} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="p-6 overflow-y-auto flex-1">
+            <div className="flex items-center justify-between mb-4 px-2">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleAll}
+                  className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-600"
+                />
+                <span className="text-sm font-medium text-gray-700">Select All ({pendingSmsTasks.length})</span>
+              </label>
+              <span className="text-sm text-gray-500">{selectedSmsConsumers.size} selected</span>
+            </div>
+
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="max-h-80 overflow-y-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0 z-10 border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3 w-12"></th>
+                      <th className="px-4 py-3">Account No.</th>
+                      <th className="px-4 py-3">Name</th>
+                      <th className="px-4 py-3">Phone</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {pendingSmsTasks.map(task => (
+                      <tr key={task.consumerId} className="hover:bg-gray-50 cursor-pointer" onClick={() => toggleConsumer(task.consumerId)}>
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedSmsConsumers.has(task.consumerId)}
+                            readOnly
+                            className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-600 pointer-events-none"
+                          />
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs">{task.consumerId}</td>
+                        <td className="px-4 py-3 font-medium text-gray-900">{task.consumerName}</td>
+                        <td className="px-4 py-3 text-gray-500">{task.to}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 shrink-0">
+            <Button variant="secondary" onClick={handleSkipSms} disabled={isSendingSms}>
+              Skip SMS
+            </Button>
+            <Button variant="primary" onClick={handleSendBatchSms} isLoading={isSendingSms} disabled={selectedSmsConsumers.size === 0}>
+              Send {selectedSmsConsumers.size} SMS
+            </Button>
+          </div>
         </div>
       </div>
     )

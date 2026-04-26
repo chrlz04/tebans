@@ -3,9 +3,14 @@ import { requireRole, ok, err } from '@/lib/auth-helpers'
 import { handleApiError } from '@/lib/error-handler'
 import { validateRequired } from '@/lib/validators'
 import { logger } from '@/lib/logger'
-import { queryOne, execute } from '@/lib/db-helpers'
+import { queryOne, query, execute } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 import { sendSms, buildBillingAlertMessage } from '@/lib/services/sms.service'
+
+interface SettingRow extends RowDataPacket {
+  Setting_Key: string
+  Setting_Value: string
+}
 
 interface ConsumerRow extends RowDataPacket {
   Consumer_ID:     string
@@ -176,6 +181,17 @@ export async function POST(req: NextRequest) {
       ]
     )
 
+    // Fetch SMS settings
+    const keys = ['SMS_AUTO_MARK_SENT', 'SMS_MESSAGE_TEMPLATE']
+    const rows = await query<SettingRow>(
+      `SELECT Setting_Key, Setting_Value FROM System_Settings WHERE Setting_Key IN (?, ?)`,
+      keys
+    )
+    const settings: Record<string, string> = {}
+    rows.forEach(r => settings[r.Setting_Key] = r.Setting_Value)
+    const smsTemplate = settings['SMS_MESSAGE_TEMPLATE'] || 'Dear {name}, your bill is {amount} for {month}. Due: {due_date}. - TEBANS'
+    const autoMarkSent = settings['SMS_AUTO_MARK_SENT'] === '1'
+
     // ── Bill/Disconnection/Payment is saved here ──────────────
     // Critical operation done — now attempt SMS
     let smsSent = false
@@ -185,12 +201,12 @@ export async function POST(req: NextRequest) {
       })
     } else {
       const smsMessage = buildBillingAlertMessage({
+        template:      smsTemplate,
         consumerName:  `${consumer.First_Name} ${consumer.Last_Name}`,
         billAmount:    amountWithTaxEvat,
         dueDate:       dueDateStr,
         billingMonth,
-        previousReading,
-        currentReading,
+        accountNo:     consumerId,
       })
 
       // Send SMS without blocking or failing the main operation
@@ -205,9 +221,40 @@ export async function POST(req: NextRequest) {
           consumerId: consumerId,
           reason:     smsResult.message,
         })
-      }
+      } else {
+        smsSent = true
+        if (autoMarkSent) {
+            // Add notification
+            const highestNotification = await queryOne<{ Notification_ID: string } & RowDataPacket>(
+              `SELECT Notification_ID FROM Notification WHERE Notification_ID LIKE 'notif-%' ORDER BY LENGTH(Notification_ID) DESC, Notification_ID DESC LIMIT 1`
+            )
+            let nextNotifSeq = 1
+            if (highestNotification && highestNotification.Notification_ID) {
+              const match = highestNotification.Notification_ID.match(/^notif-(\d+)$/)
+              if (match && match[1]) {
+                nextNotifSeq = parseInt(match[1], 10) + 1
+              }
+            }
+            const notifId = `notif-${nextNotifSeq.toString().padStart(3, '0')}`
 
-      smsSent = smsResult.success
+            await execute(
+                `INSERT INTO Notification (
+                  Notification_ID,
+                  Consumer_ID,
+                  MeterReading_ID,
+                  Alert_Type,
+                  Message_Content,
+                  Reference_Type
+                ) VALUES (?, ?, ?, 'Billing', ?, 'MeterReading')`,
+                [
+                    notifId,
+                    consumerId,
+                    meterReadingId,
+                    smsMessage
+                ]
+            ).catch(e => logger.error('Failed to auto mark SMS sent', e))
+        }
+      }
     }
 
     return ok({
