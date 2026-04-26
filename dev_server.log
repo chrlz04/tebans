@@ -1,0 +1,14 @@
+
+> tebans@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 514ms
+
+○ Compiling /login ...
+ GET /login 200 in 5.2s (next.js: 4.6s, proxy.ts: 7ms, application-code: 584ms)
+ GET /login 200 in 96ms (next.js: 7ms, proxy.ts: 7ms, application-code: 82ms)
+ GET /admin/disconnections 200 in 1172ms (next.js: 972ms, proxy.ts: 8ms, application-code: 192ms)
+ GET /api/admin/disconnections 401 in 926ms (next.js: 892ms, proxy.ts: 8ms, application-code: 26ms)
