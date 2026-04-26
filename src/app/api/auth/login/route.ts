@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
     {
         userId: account.User_ID,
         role:   account.User_Type,
+        mustChangePassword: !!account.Must_Change_Password,
     },
     process.env.JWT_SECRET as string,
     { expiresIn: '1d' } as jwt.SignOptions

@@ -13,6 +13,7 @@ interface AuthUser {
   role: Role
   token: string
   name: string
+  mustChangePassword?: boolean
 }
 
 interface AuthContextType {
@@ -42,11 +43,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const role = Cookies.get('role') as Role | undefined
     const userId = Cookies.get('userId')
     const name = Cookies.get('name')
+    const mustChangePassword = Cookies.get('mustChangePassword') === 'true'
 
     // Only hydrate if we have metadata - token is HttpOnly now
     if (role && userId && name) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setUser({ token: '', role, userId, name })
+      setUser({ token: '', role, userId, name, mustChangePassword })
     }
 
     setIsLoading(false)
@@ -58,11 +60,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     Cookies.set('userId', data.userId, { expires: 1 })
     Cookies.set('name', data.name, { expires: 1 })
 
-    // token field is now empty on the client side
-    setUser({ token: '', role: data.role, userId: data.userId, name: data.name })
+    if (data.mustChangePassword) {
+      Cookies.set('mustChangePassword', 'true', { expires: 1 })
+    } else {
+      Cookies.remove('mustChangePassword')
+    }
 
-    // Redirect to role-specific home page
-    router.push(roleHomePages[data.role])
+    // token field is now empty on the client side
+    setUser({
+      token: '',
+      role: data.role,
+      userId: data.userId,
+      name: data.name,
+      mustChangePassword: data.mustChangePassword
+    })
+
+    // Redirect to role-specific home page or change password
+    if (data.mustChangePassword) {
+      router.push('/change-password')
+    } else {
+      router.push(roleHomePages[data.role])
+    }
   }
 
   const logout = async () => {
@@ -74,6 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     Cookies.remove('role')
     Cookies.remove('userId')
     Cookies.remove('name')
+    Cookies.remove('mustChangePassword')
     setUser(null)
     queryClient.clear()
     window.location.replace('/login')
