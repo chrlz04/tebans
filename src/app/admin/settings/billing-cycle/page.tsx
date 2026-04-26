@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, CalendarClock, Info, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
@@ -16,35 +16,41 @@ export default function BillingCycleSettingsPage() {
   const [errorMsg, setErrorMsg] = useState('')
   const timeoutRef = useRef<NodeJS.Timeout>(null)
 
-  const { data: cycle, isLoading } = useQuery({
-    queryKey: ['billing-cycle'],
+  const { data: cycleData, isLoading } = useQuery({
+    queryKey: ['billing-cycle-full'],
     queryFn: async () => {
-      const res = await api.get('/settings/billing-cycle')
-      return res.data
+      // Let's create an endpoint that returns both current and pending settings
+      const res = await api.get('/admin/settings/billing-cycle/status')
+      return res.data.data
     }
   })
 
   const [endDay, setEndDay] = useState(27)
 
-  // Wait for data to set initial state
-  if (!isLoading && cycle && endDay === 27 && cycle.endDay !== 27) {
-      setEndDay(cycle.endDay)
-  }
+  // Sync state with fetched data
+  useEffect(() => {
+    if (cycleData && cycleData.pendingEndDay) {
+        setEndDay(cycleData.pendingEndDay)
+    } else if (cycleData && cycleData.endDay) {
+        setEndDay(cycleData.endDay)
+    }
+  }, [cycleData])
 
   const mutation = useMutation({
     mutationFn: async (newEndDay: number) => {
       const res = await api.put('/admin/settings/billing-cycle', { endDay: newEndDay })
       return res.data
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['billing-cycle-full'] })
       queryClient.invalidateQueries({ queryKey: ['billing-cycle'] })
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] })
-      setSuccessMsg('Billing cycle updated successfully.')
+      setSuccessMsg(data.message || 'Billing cycle update scheduled successfully.')
       setErrorMsg('')
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
       timeoutRef.current = setTimeout(() => {
         setSuccessMsg('')
-      }, 3000)
+      }, 5000)
     },
     onError: (err: any) => {
       setErrorMsg(err.response?.data?.error || 'Failed to update billing cycle.')
@@ -88,25 +94,55 @@ export default function BillingCycleSettingsPage() {
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-6" method="POST">
              {errorMsg && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-                  {errorMsg}
+                <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm flex items-start gap-2">
+                  <Info size={16} className="mt-0.5 shrink-0" />
+                  <span>{errorMsg}</span>
                 </div>
               )}
               {successMsg && (
-                <div className="p-3 bg-green-50 border border-green-200 text-green-600 rounded-lg text-sm">
-                  {successMsg}
+                <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-start gap-2">
+                  <CalendarClock size={16} className="mt-0.5 shrink-0" />
+                  <span>{successMsg}</span>
                 </div>
               )}
 
             <div>
+              <div className="bg-blue-50 text-blue-800 p-4 rounded-lg text-sm mb-6 border border-blue-100 flex items-start gap-3">
+                 <Info className="shrink-0 mt-0.5" size={18} />
+                 <div>
+                    <p className="font-medium mb-1">How billing cycle updates work:</p>
+                    <p>To preserve data integrity for the current month's reporting and billing progress, changing the billing cycle dates will not affect the currently active cycle. The new dates will automatically take effect on the first day of the <strong>next</strong> billing cycle.</p>
+                 </div>
+              </div>
+
+              {cycleData?.pendingEndDay && (
+                <div className="mb-6 p-4 border border-amber-200 bg-amber-50 rounded-lg">
+                  <div className="flex items-center gap-2 text-amber-800 font-medium mb-2">
+                    <CalendarClock size={18} />
+                    <span>Scheduled Change Pending</span>
+                  </div>
+                  <p className="text-sm text-amber-700">
+                    A change to end the cycle on the <strong>{cycleData.pendingEndDay}</strong> has been scheduled and will take effect automatically on <strong>{cycleData.effectiveDate}</strong>.
+                  </p>
+
+                  {endDay !== cycleData.pendingEndDay && (
+                    <div className="mt-3 p-2 bg-amber-100/50 rounded flex items-start gap-2 border border-amber-200/50">
+                      <AlertTriangle size={16} className="text-amber-600 mt-0.5 shrink-0" />
+                      <p className="text-sm text-amber-800">
+                        Warning: Saving a new end day will <strong>overwrite</strong> the currently scheduled pending change.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <p className="text-sm text-gray-600 mb-4">
-                The billing cycle sets the timeframe used to calculate active bills, generate dashboards metrics, and determine due dates.
-                The system currently uses an end date of the <b>{endDay}</b>, which means the cycle starts on the <b>{startDay}</b>.
+                The current active cycle ends on the <b>{cycleData?.endDay ?? 27}</b>, and starts on the <b>{cycleData?.startDay ?? 28}</b>.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
-                      label="Cycle End Day / Due Date"
+                      label="New Cycle End Day / Due Date"
                       type="number"
                       min={1}
                       max={28}
@@ -145,6 +181,7 @@ export default function BillingCycleSettingsPage() {
                 type="submit"
                 className="w-full sm:w-auto flex items-center justify-center gap-2"
                 isLoading={mutation.isPending}
+                disabled={endDay === cycleData?.pendingEndDay || (!cycleData?.pendingEndDay && endDay === cycleData?.endDay)}
               >
                 <Save size={18} />
                 Save Settings
