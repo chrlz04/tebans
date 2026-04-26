@@ -209,7 +209,7 @@ export default function SendSmsPage() {
     {
       key: 'consumerName',
       label: 'Name',
-      render: (row) => <span className="font-medium text-gray-900">{row.consumerName}</span>,
+      render: (row) => <span className="font-medium text-foreground">{row.consumerName}</span>,
     },
     {
       key: 'amount',
@@ -220,9 +220,9 @@ export default function SendSmsPage() {
       key: 'smsStatus',
       label: 'SMS Status',
       render: (row) => {
-        let badgeColor = 'bg-gray-100 text-gray-800'
+        let badgeColor = 'bg-muted text-foreground'
         if (row.smsStatus === 'Unsent') badgeColor = 'bg-yellow-100 text-yellow-800'
-        if (row.smsStatus === 'Sent') badgeColor = 'bg-gray-100 text-gray-600'
+        if (row.smsStatus === 'Sent') badgeColor = 'bg-muted text-muted-foreground'
         if (row.smsStatus === 'Sending...') badgeColor = 'bg-blue-100 text-blue-800'
         if (row.smsStatus === 'Failed') badgeColor = 'bg-red-100 text-red-800'
 
@@ -242,8 +242,8 @@ export default function SendSmsPage() {
           <MessageSquare className="text-primary-600" size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Send SMS Notifications</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Send SMS Notifications</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Select consumers to notify &mdash; {smsData?.billingMonth ? `${smsData.billingMonth} billing cycle` : 'Loading...'}
           </p>
         </div>
@@ -264,9 +264,9 @@ export default function SendSmsPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
         {/* Toolbar */}
-        <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -276,18 +276,18 @@ export default function SendSmsPage() {
                 disabled={isSendingSms || selectableVisibleCount === 0}
                 className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-600 disabled:opacity-50"
               />
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-foreground">
                 Select All
               </span>
             </label>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               ({selectedIds.size} of {selectableVisibleCount} unsent selected)
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
               <select
                 className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-primary-500 focus:border-primary-500"
                 value={filterStatus}

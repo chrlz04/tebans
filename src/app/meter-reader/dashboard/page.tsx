@@ -10,13 +10,13 @@ import type { MeterReaderDashboardStats } from '@/types'
 
 function MeterReaderStatCard({ label, value, icon }: { label: string, value: string | number, icon: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-4 bg-white rounded-2xl border border-[#81A858] border-l-[12px] p-4 shadow-sm h-full">
+    <div className="flex items-center gap-4 bg-card rounded-2xl border border-[#81A858] border-l-[12px] p-4 shadow-sm h-full">
       <div className="bg-[#81A858] text-white p-3 rounded-xl shrink-0">
         {icon}
       </div>
       <div className="flex-1">
-        <p className="text-sm text-gray-500 mb-0.5">{label}</p>
-        <p className="text-2xl font-bold text-gray-900 whitespace-nowrap">{value}</p>
+        <p className="text-sm text-muted-foreground mb-0.5">{label}</p>
+        <p className="text-2xl font-bold text-foreground whitespace-nowrap">{value}</p>
       </div>
     </div>
   )
@@ -42,8 +42,8 @@ export default function MeterReaderDashboardPage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           Summary of consumers and activity in your assigned area
         </p>
       </div>

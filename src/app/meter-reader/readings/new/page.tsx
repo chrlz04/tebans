@@ -145,18 +145,18 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
           <CheckCircle size={48} className="text-primary-500" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-foreground">
             Bill Generated Successfully
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             The bill has been generated and an SMS notification has been
             sent to the consumer.
           </p>
         </div>
         {generatedBillAmount !== null && (
-          <div className="bg-white rounded-xl border border-gray-200 px-8 py-5 w-full">
-            <p className="text-sm text-gray-500">Bill Amount</p>
-            <p className="text-4xl font-bold text-gray-900 mt-1">
+          <div className="bg-card rounded-xl border border-border px-8 py-5 w-full">
+            <p className="text-sm text-muted-foreground">Bill Amount</p>
+            <p className="text-4xl font-bold text-foreground mt-1">
               ₱{generatedBillAmount.toLocaleString('en-PH', {
                 minimumFractionDigits: 2,
               })}
@@ -188,15 +188,15 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
       <div className="flex items-center gap-4 mb-6">
         <Link
           href="/meter-reader/consumers"
-          className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+          className="p-2 text-muted-foreground hover:text-muted-foreground transition-colors rounded-lg hover:bg-muted"
         >
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-xl font-semibold text-foreground">
             Record Meter Reading
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Input meter reading data to generate a bill
           </p>
         </div>
@@ -208,8 +208,8 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
       >
 
         {/* ── Consumer Selection ── */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-4">
-          <h2 className="text-sm font-semibold text-gray-900">
+        <div className="bg-card rounded-xl border border-border p-6 flex flex-col gap-4">
+          <h2 className="text-sm font-semibold text-foreground">
             Consumer
           </h2>
 
@@ -257,7 +257,7 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
 
               {/* Search Results */}
               {consumers && consumers.length > 0 && (
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="border border-border rounded-lg overflow-hidden">
                   {consumers.map((consumer) => (
                     <button
                       key={consumer.consumerId}
@@ -269,17 +269,17 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
                           `${consumer.firstName} ${consumer.lastName}`
                         )
                       }}
-                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-primary-50 transition-colors text-left border-b border-gray-100 last:border-0"
+                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-primary-50 transition-colors text-left border-b border-border/50 last:border-0"
                     >
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-foreground">
                           {consumer.firstName} {consumer.lastName}
                         </p>
-                        <p className="text-xs text-gray-500 font-mono">
+                        <p className="text-xs text-muted-foreground font-mono">
                           {consumer.consumerId} — {consumer.areaName}
                         </p>
                       </div>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-muted-foreground">
                         {consumer.meterSerialNo}
                       </span>
                     </button>
@@ -295,18 +295,18 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
         </div>
 
         {/* ── Reading Details ── */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-4">
-        <h2 className="text-sm font-semibold text-gray-900">
+        <div className="bg-card rounded-xl border border-border p-6 flex flex-col gap-4">
+        <h2 className="text-sm font-semibold text-foreground">
             Reading Details
         </h2>
 
         {/* Previous Reading — read only display */}
         {selectedConsumer && (
             <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-foreground">
                 Previous Reading (kWh)
             </label>
-            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-600">
+            <div className="px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm font-mono text-muted-foreground">
                 {previousReading.toFixed(2)}
             </div>
             </div>
@@ -359,7 +359,7 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
             {...register('amountWithTaxEvat', { valueAsNumber: true })}
         />
 
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-muted-foreground">
             Enter the amount as computed from the BOHECO billing sheet.
             Previous reading is auto-filled from the last recorded reading.
         </p>
@@ -404,7 +404,7 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
 // ── Wrapper with Suspense (required for useSearchParams) ──
 export default function RecordMeterReadingPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-gray-500">Loading...</div>}>
+    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading...</div>}>
       <RecordReadingForm />
     </Suspense>
   )

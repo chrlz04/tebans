@@ -104,7 +104,7 @@ export default function Sidebar({ role, isMobileOpen, onCloseMobile }: SidebarPr
       {/* Sidebar Content */}
       <aside
         className={clsx(
-          "fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-gray-200 py-6 transition-all duration-300 md:relative md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex flex-col bg-card border-r border-border py-6 transition-all duration-300 md:relative md:translate-x-0",
           isCollapsed ? "w-[var(--sidebar-width-collapsed)] px-3" : "w-[var(--sidebar-width)] px-4",
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
@@ -122,7 +122,7 @@ export default function Sidebar({ role, isMobileOpen, onCloseMobile }: SidebarPr
               <Zap size={16} />
             </div>
             {!isCollapsed && (
-              <h1 className="text-xl font-bold text-gray-900 leading-none tracking-tight">
+              <h1 className="text-xl font-bold text-foreground leading-none tracking-tight">
                 TEBANS
               </h1>
             )}
@@ -132,7 +132,7 @@ export default function Sidebar({ role, isMobileOpen, onCloseMobile }: SidebarPr
         {/* Toggle Button (Desktop Only) */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden md:flex absolute -right-3 top-7 bg-white border border-gray-200 rounded-full p-1 text-gray-500 hover:text-gray-900 shadow-sm z-10"
+          className="hidden md:flex absolute -right-3 top-7 bg-card border border-border rounded-full p-1 text-muted-foreground hover:text-foreground shadow-sm z-10"
         >
           {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
@@ -149,7 +149,7 @@ export default function Sidebar({ role, isMobileOpen, onCloseMobile }: SidebarPr
               isCollapsed ? 'justify-center py-2.5 px-0' : 'gap-3 px-3 py-2.5',
               pathname === item.href
                 ? 'bg-primary-50 text-primary-700 font-medium'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             )}
           >
             <div className="shrink-0">{item.icon}</div>

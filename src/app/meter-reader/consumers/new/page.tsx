@@ -109,16 +109,16 @@ export default function RegisterConsumerPage() {
 
       {/* Page Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-foreground">
           Register New Consumer
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Create a new consumer account in the system
         </p>
       </div>
 
       {/* Form Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-card rounded-xl border border-border p-6">
         <form
           onSubmit={handleSubmit((values) => mutation.mutate(values))}
           className="flex flex-col gap-5"
@@ -143,16 +143,16 @@ export default function RegisterConsumerPage() {
 
           {/* Address */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-medium text-gray-900 border-b pb-2">Service Address</h3>
+            <h3 className="text-sm font-medium text-foreground border-b pb-2">Service Address</h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Province */}
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-foreground">
                   Province <span className="text-red-500">*</span>
                 </label>
                 <select
-                  className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
                   {...register('provinceCode')}
                   disabled={provincesLoading}
                 >
@@ -166,11 +166,11 @@ export default function RegisterConsumerPage() {
 
               {/* Municipality */}
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-foreground">
                   Municipality <span className="text-red-500">*</span>
                 </label>
                 <select
-                  className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
                   {...register('municipalityCode')}
                   disabled={!selectedProvinceCode || municipalitiesLoading}
                 >
@@ -184,11 +184,11 @@ export default function RegisterConsumerPage() {
 
               {/* Barangay */}
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-foreground">
                   Barangay <span className="text-red-500">*</span>
                 </label>
                 <select
-                  className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
                   {...register('barangayCode')}
                   disabled={!selectedMunicipalityCode || barangaysLoading}
                 >
@@ -219,11 +219,11 @@ export default function RegisterConsumerPage() {
               {...register('meterSerialNo')}
             />
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground">
                 Area Name <span className="text-red-500">*</span>
               </label>
               <select
-                className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
                 {...register('areaId')}
                 disabled={areasLoading}
               >

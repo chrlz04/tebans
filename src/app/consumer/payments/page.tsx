@@ -86,14 +86,14 @@ export default function PaymentHistoryPage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Payment History</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-xl font-semibold text-foreground">Payment History</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           Complete record of your payment transactions
         </p>
       </div>
 
       {/* Main Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-card rounded-xl border border-border p-6">
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-5">
@@ -107,7 +107,7 @@ export default function PaymentHistoryPage() {
           <select
             value={year}
             onChange={(e) => setYear(e.target.value)}
-            className="w-full sm:w-auto min-h-[44px] px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full sm:w-auto min-h-[44px] px-3 py-2 text-sm border border-gray-300 rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             {yearOptions.map((y) => (
               <option key={y} value={String(y)}>
@@ -130,10 +130,10 @@ export default function PaymentHistoryPage() {
 
         {/* Summary */}
         {!isLoading && filteredPayments && filteredPayments.length > 0 && (
-          <div className="flex justify-end mt-4 pt-4 border-t border-gray-100">
-            <div className="text-sm text-gray-600">
+          <div className="flex justify-end mt-4 pt-4 border-t border-border/50">
+            <div className="text-sm text-muted-foreground">
               Total Paid:{' '}
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-foreground">
                 ₱{totalPaid.toLocaleString('en-PH', {
                   minimumFractionDigits: 2,
                 })}
