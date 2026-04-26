@@ -9,6 +9,7 @@ export interface AuthResponse {
   role: 'admin' | 'consumer' | 'meter_reader' | 'cashier'
   userId: string
   name: string
+  mustChangePassword?: boolean
 }
 
 export interface ChangePasswordPayload {
