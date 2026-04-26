@@ -164,7 +164,7 @@ INSERT IGNORE INTO System_Settings (Setting_Key, Setting_Value) VALUES
 ('SMS_BATCH_DELAY', '1'),
 ('SMS_REQUIRE_CONFIRMATION', '0'),
 ('SMS_AUTO_MARK_SENT', '0'),
-('SMS_MESSAGE_TEMPLATE', 'Dear {name}, your water bill for {month} is P {amount}. Due date: {due_date}. Please pay at the nearest collection center. — TEBANS'),
+('SMS_MESSAGE_TEMPLATE', 'Dear {name}, your electricity bill for {month} is P{amount} (Previous: {previous_reading} kWh, Present: {current_reading} kWh) with a total of {usage} kWh used this month. Please pay on or before {due_date}. - TEBANS'),
 ('SMS_LAST_TEST_DATE', ''),
 ('SMS_LAST_TEST_STATUS', ''),
 ('BILLING_CYCLE_START_DAY', '28'),

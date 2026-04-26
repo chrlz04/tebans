@@ -492,7 +492,7 @@ export default function SmsSettingsForm() {
             {errors.SMS_MESSAGE_TEMPLATE && <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.SMS_MESSAGE_TEMPLATE.message}</p>}
 
             <div className="mt-4 flex flex-wrap gap-2">
-              {['{name}', '{amount}', '{month}', '{due_date}', '{account_no}'].map((tag) => (
+              {['{name}', '{amount}', '{month}', '{due_date}', '{account_no}', '{previous_reading}', '{current_reading}', '{usage}'].map((tag) => (
                 <span
                   key={tag}
                   className="px-3 py-1.5 rounded-md text-sm font-mono border bg-gray-100 border-gray-300 text-gray-500 dark:bg-[#232323] dark:border-[#4A4A4A] dark:text-gray-400"
