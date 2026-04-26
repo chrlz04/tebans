@@ -10,7 +10,7 @@ import {
   FileText,
   CreditCard,
   Zap,
-  AlertTriangle,
+  AlertTriangle, MessageSquare,
   User,
   Settings,
   UserPlus,
@@ -44,6 +44,7 @@ const navItems: Record<Role, NavItem[]> = {
     { label: 'Dashboard', href: '/meter-reader/dashboard', icon: <LayoutDashboard size={18} /> },
     { label: 'Consumers', href: '/meter-reader/consumers', icon: <Users size={18} /> },
     { label: 'Disconnections', href: '/meter-reader/disconnections', icon: <AlertTriangle size={18} /> },
+    { label: 'Send SMS', href: '/meter-reader/sms', icon: <MessageSquare size={18} /> },
   ],
   cashier: [
     { label: 'Dashboard', href: '/cashier/dashboard', icon: <LayoutDashboard size={18} /> },
