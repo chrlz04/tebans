@@ -12,7 +12,7 @@ export default function DueDateBadge() {
 
   if (isLoading) {
       return (
-          <div className="bg-[#f2efe6] text-gray-800 text-sm font-medium px-4 py-1.5 rounded-full inline-block animate-pulse w-32 h-7" />
+          <div className="bg-[#f2efe6] text-foreground text-sm font-medium px-4 py-1.5 rounded-full inline-block animate-pulse w-32 h-7" />
       )
   }
 
@@ -43,7 +43,7 @@ export default function DueDateBadge() {
   }
 
   return (
-    <div className="bg-[#f2efe6] text-gray-800 text-sm font-medium px-4 py-1.5 rounded-full inline-block">
+    <div className="bg-[#f2efe6] text-foreground text-sm font-medium px-4 py-1.5 rounded-full inline-block">
       {dueDateText}
     </div>
   )

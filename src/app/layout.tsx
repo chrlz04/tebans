@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/lib/auth-context'
+import { ThemeProvider } from '@/components/shared/ThemeProvider'
 import { useState } from 'react'
 import './globals.css'
 
@@ -20,13 +21,15 @@ export default function RootLayout({
   }))
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </QueryClientProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

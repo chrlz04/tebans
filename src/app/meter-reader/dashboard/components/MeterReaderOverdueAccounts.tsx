@@ -15,27 +15,27 @@ interface Props {
 
 export default function MeterReaderOverdueAccounts({ accounts, isLoading }: Props) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 h-full flex flex-col">
+    <div className="bg-card rounded-xl border border-border p-6 h-full flex flex-col">
       <div className="mb-4">
-        <h2 className="text-base font-semibold text-gray-900">
+        <h2 className="text-base font-semibold text-foreground">
           Overdue Accounts
         </h2>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <p className="text-sm text-muted-foreground mt-0.5">
           Accounts requiring disconnection notices
         </p>
       </div>
       <div className="flex flex-col flex-1">
         {isLoading ? (
-          <div className="text-center py-8 text-sm text-gray-500">Loading overdue accounts...</div>
+          <div className="text-center py-8 text-sm text-muted-foreground">Loading overdue accounts...</div>
         ) : !accounts || accounts.length === 0 ? (
-          <div className="text-center py-8 text-sm text-gray-500">No overdue accounts found.</div>
+          <div className="text-center py-8 text-sm text-muted-foreground">No overdue accounts found.</div>
         ) : (
           <div className="flex flex-col flex-1 overflow-y-auto pr-2 -mr-2" style={{ maxHeight: '400px' }}>
             {accounts.map((account, index) => (
               <div
                 key={account.consumerId}
                 className={`flex flex-row items-center justify-between py-3 ${
-                  index !== 0 ? 'border-t border-gray-100' : ''
+                  index !== 0 ? 'border-t border-border/50' : ''
                 }`}
               >
                 {/* Left Side */}
@@ -44,10 +44,10 @@ export default function MeterReaderOverdueAccounts({ accounts, isLoading }: Prop
                     {getInitials(account.firstName, account.lastName)}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {account.firstName} {account.lastName}
                     </p>
-                    <p className="text-xs text-gray-500 truncate mt-0.5">
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
                       {account.consumerId} &middot; {account.monthsOverdue} mo{account.monthsOverdue !== 1 ? 's' : ''} overdue
                     </p>
                   </div>
@@ -55,7 +55,7 @@ export default function MeterReaderOverdueAccounts({ accounts, isLoading }: Prop
 
                 {/* Right Side */}
                 <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-4">
-                  <span className="text-sm font-semibold text-gray-900">
+                  <span className="text-sm font-semibold text-foreground">
                     ₱{Number(account.amountDue).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                   </span>
                 </div>

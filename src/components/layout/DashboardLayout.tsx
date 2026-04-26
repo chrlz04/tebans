@@ -27,7 +27,7 @@ export default function DashboardLayout({ role, children }: DashboardLayoutProps
   }, [isMobileSidebarOpen])
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-muted/50 overflow-hidden">
       <Sidebar
         role={role}
         isMobileOpen={isMobileSidebarOpen}

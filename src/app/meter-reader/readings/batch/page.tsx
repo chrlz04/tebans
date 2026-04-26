@@ -323,7 +323,7 @@ export default function BatchRecordMeterReadingPage() {
   }
 
   if (authLoading) {
-    return <div className="p-6 text-sm text-gray-500">Loading batch processing...</div>
+    return <div className="p-6 text-sm text-muted-foreground">Loading batch processing...</div>
   }
 
   if (!hasAccess) return null
@@ -336,12 +336,12 @@ export default function BatchRecordMeterReadingPage() {
           <CheckCircle size={48} className="text-green-500" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Batch Processing Complete</h2>
-          <p className="text-sm text-gray-600 mt-2">
+          <h2 className="text-xl font-semibold text-foreground">Batch Processing Complete</h2>
+          <p className="text-sm text-muted-foreground mt-2">
             Successfully generated <b>{successCount}</b> bills.
           </p>
           {smsQueuedCount > 0 && (
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               {smsQueuedCount} SMS notifications have been queued and are sending in the background.
             </p>
           )}
@@ -382,13 +382,13 @@ export default function BatchRecordMeterReadingPage() {
 
     return (
       <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
-          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+        <div className="bg-card rounded-xl shadow-xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="p-6 border-b border-border/50 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Send Batch SMS Notifications</h2>
-              <p className="text-sm text-gray-500 mt-1">Bills were generated successfully for {pendingSmsTasks[0]?.billingMonth}. Select consumers to notify.</p>
+              <h2 className="text-xl font-bold text-foreground">Send Batch SMS Notifications</h2>
+              <p className="text-sm text-muted-foreground mt-1">Bills were generated successfully for {pendingSmsTasks[0]?.billingMonth}. Select consumers to notify.</p>
             </div>
-            <button onClick={handleCloseSmsModal} disabled={isSendingSms} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            <button onClick={handleCloseSmsModal} disabled={isSendingSms} className="p-2 text-muted-foreground hover:text-muted-foreground hover:bg-muted rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
               <X size={20} />
             </button>
           </div>
@@ -403,17 +403,17 @@ export default function BatchRecordMeterReadingPage() {
                   disabled={isSendingSms}
                   className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-600 disabled:opacity-50"
                 />
-                <span className="text-sm font-medium text-gray-700">Select All ({pendingSmsTasks.length})</span>
+                <span className="text-sm font-medium text-foreground">Select All ({pendingSmsTasks.length})</span>
               </label>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted-foreground">
                 {pendingSmsTasks.filter(t => t.status === 'Unsent').length} unsent &middot; {pendingSmsTasks.filter(t => t.status === 'Sent').length} already sent
               </span>
             </div>
 
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="border border-border rounded-lg overflow-hidden">
               <div className="max-h-80 overflow-y-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0 z-10 border-b border-gray-200">
+                  <thead className="text-xs text-foreground uppercase bg-muted/50 sticky top-0 z-10 border-b border-border">
                     <tr>
                       <th className="px-4 py-3 w-12"></th>
                       <th className="px-4 py-3">Account No.</th>
@@ -425,7 +425,7 @@ export default function BatchRecordMeterReadingPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {pendingSmsTasks.map(task => (
-                      <tr key={task.consumerId} className="hover:bg-gray-50 cursor-pointer" onClick={() => !isSendingSms && toggleConsumer(task.consumerId)}>
+                      <tr key={task.consumerId} className="hover:bg-muted/50 cursor-pointer" onClick={() => !isSendingSms && toggleConsumer(task.consumerId)}>
                         <td className="px-4 py-3">
                           <input
                             type="checkbox"
@@ -436,15 +436,15 @@ export default function BatchRecordMeterReadingPage() {
                           />
                         </td>
                         <td className="px-4 py-3 font-mono text-xs">{task.consumerId}</td>
-                        <td className="px-4 py-3 font-medium text-gray-900">{task.consumerName}</td>
+                        <td className="px-4 py-3 font-medium text-foreground">{task.consumerName}</td>
                         <td className="px-4 py-3">₱{task.amountWithTaxEvat.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                        <td className="px-4 py-3 text-gray-500">{task.to}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{task.to}</td>
                         <td className="px-4 py-3">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                             task.status === 'Sent' ? 'bg-green-100 text-green-800' :
                             task.status === 'Failed' ? 'bg-red-100 text-red-800' :
                             task.status === 'Sending...' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
+                            'bg-muted text-foreground'
                           }`}>
                             {task.status || 'Unsent'}
                           </span>
@@ -457,7 +457,7 @@ export default function BatchRecordMeterReadingPage() {
             </div>
           </div>
 
-          <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 shrink-0">
+          <div className="p-6 border-t border-border/50 bg-muted/50 flex justify-end gap-3 shrink-0">
             <Button variant="secondary" onClick={handleCloseSmsModal} disabled={isSendingSms}>
               {smsQueuedCount > 0 && !isSendingSms ? 'Close' : 'Cancel'}
             </Button>
@@ -503,13 +503,13 @@ export default function BatchRecordMeterReadingPage() {
         <div className="flex items-center gap-4">
           <Link
             href="/meter-reader/consumers"
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+            className="p-2 text-muted-foreground hover:text-muted-foreground transition-colors rounded-lg hover:bg-muted"
           >
             <ArrowLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Batch Meter Reading</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-2xl font-bold text-foreground">Batch Meter Reading</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Upload an Excel or CSV file to process multiple readings at once.
             </p>
           </div>
@@ -523,19 +523,19 @@ export default function BatchRecordMeterReadingPage() {
       </div>
 
       {/* Main Upload Area */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
 
         {/* Upload State */}
         {!file && (
           <div
-            className="p-12 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 m-6 rounded-xl hover:border-primary-400 transition-colors cursor-pointer bg-gray-50"
+            className="p-12 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 m-6 rounded-xl hover:border-primary-400 transition-colors cursor-pointer bg-muted/50"
             onClick={handleUploadClick}
           >
-            <div className="bg-white p-4 rounded-full shadow-sm border border-gray-200 mb-4">
+            <div className="bg-card p-4 rounded-full shadow-sm border border-border mb-4">
               <FileSpreadsheet size={32} className="text-primary-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">Upload Data File</h3>
-            <p className="text-sm text-gray-500 mb-6 text-center max-w-md">
+            <h3 className="text-lg font-semibold text-foreground mb-1">Upload Data File</h3>
+            <p className="text-sm text-muted-foreground mb-6 text-center max-w-md">
               Select an .xlsx or .csv file containing your meter readings. Make sure to use the exact template format.
             </p>
             <Button variant="primary" type="button" onClick={(e) => { e.stopPropagation(); handleUploadClick(); }}>
@@ -554,21 +554,21 @@ export default function BatchRecordMeterReadingPage() {
 
         {/* Selected File State */}
         {file && (
-          <div className="p-6 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+          <div className="p-6 border-b border-border bg-muted/50 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="bg-primary-100 p-3 rounded-lg">
                 <FileSpreadsheet size={24} className="text-primary-700" />
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">{file.name}</h3>
-                <p className="text-xs text-gray-500">
+                <h3 className="font-medium text-foreground">{file.name}</h3>
+                <p className="text-xs text-muted-foreground">
                   {(file.size / 1024).toFixed(2)} KB • {parsedData.length} valid rows found
                 </p>
               </div>
             </div>
             <button
               onClick={clearFile}
-              className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50"
+              className="p-2 text-muted-foreground hover:text-red-600 transition-colors rounded-lg hover:bg-red-50"
               title="Remove file"
             >
               <X size={20} />
@@ -599,9 +599,9 @@ export default function BatchRecordMeterReadingPage() {
                 </p>
               </div>
             </div>
-            <div className="bg-white border border-red-100 rounded-md max-h-60 overflow-y-auto mt-4">
+            <div className="bg-card border border-red-100 rounded-md max-h-60 overflow-y-auto mt-4">
               <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+                <thead className="text-xs text-foreground uppercase bg-muted/50 border-b">
                   <tr>
                     <th className="px-4 py-2 w-20">Row</th>
                     <th className="px-4 py-2">Errors</th>
@@ -609,8 +609,8 @@ export default function BatchRecordMeterReadingPage() {
                 </thead>
                 <tbody>
                   {validationErrors.map((err, i) => (
-                    <tr key={i} className="border-b last:border-0 hover:bg-gray-50">
-                      <td className="px-4 py-2 font-mono text-gray-600">#{err.row}</td>
+                    <tr key={i} className="border-b last:border-0 hover:bg-muted/50">
+                      <td className="px-4 py-2 font-mono text-muted-foreground">#{err.row}</td>
                       <td className="px-4 py-2 text-red-600">
                         <ul className="list-disc pl-4 space-y-1">
                           {err.errors.map((msg, j) => (
@@ -630,8 +630,8 @@ export default function BatchRecordMeterReadingPage() {
         {parsedData.length > 0 && !parseError && validationErrors.length === 0 && (
           <div className="p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Table size={18} className="text-gray-500" />
-              <h3 className="text-sm font-medium text-gray-900">Data Preview</h3>
+              <Table size={18} className="text-muted-foreground" />
+              <h3 className="text-sm font-medium text-foreground">Data Preview</h3>
             </div>
 
             <DataTable
@@ -641,7 +641,7 @@ export default function BatchRecordMeterReadingPage() {
               emptyMessage="No data to preview."
             />
 
-            <div className="mt-8 flex justify-end gap-3 border-t pt-6 border-gray-100">
+            <div className="mt-8 flex justify-end gap-3 border-t pt-6 border-border/50">
               <Button variant="secondary" onClick={clearFile} disabled={mutation.isPending}>
                 Cancel
               </Button>

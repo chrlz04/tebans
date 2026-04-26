@@ -99,38 +99,38 @@ export default function ProcessPaymentPage() {
           <CreditCard size={48} className="text-primary-500" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-foreground">
             Payment Recorded Successfully
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             The payment has been recorded and the billing status has been updated.
           </p>
         </div>
 
         {/* Receipt Summary */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 w-full text-left">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">
+        <div className="bg-card rounded-xl border border-border p-6 w-full text-left">
+          <h3 className="text-sm font-semibold text-foreground mb-4">
             Receipt Summary
           </h3>
           <div className="flex flex-col gap-3">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Receipt No.</span>
-              <span className="font-mono font-medium text-gray-900">
+              <span className="text-muted-foreground">Receipt No.</span>
+              <span className="font-mono font-medium text-foreground">
                 {receiptData.receiptNumber}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Consumers</span>
-              <span className="text-gray-900 text-right">
+              <span className="text-muted-foreground">Consumers</span>
+              <span className="text-foreground text-right">
                 {receiptData.consumerNames.join(', ')}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Payment Method</span>
-              <span className="text-gray-900">{paymentMethod}</span>
+              <span className="text-muted-foreground">Payment Method</span>
+              <span className="text-foreground">{paymentMethod}</span>
             </div>
-            <div className="border-t border-gray-100 pt-3 flex justify-between">
-              <span className="font-semibold text-gray-900">Total Amount</span>
+            <div className="border-t border-border/50 pt-3 flex justify-between">
+              <span className="font-semibold text-foreground">Total Amount</span>
               <span className="font-bold text-lg text-primary-600">
                 ₱{receiptData.totalAmount.toLocaleString('en-PH', {
                   minimumFractionDigits: 2,
@@ -165,10 +165,10 @@ export default function ProcessPaymentPage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-foreground">
           Process Payment
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Select consumer bills to record a payment transaction
         </p>
       </div>
@@ -192,7 +192,7 @@ export default function ProcessPaymentPage() {
             <button
               type="button"
               onClick={toggleAll}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-1 transition-colors w-fit"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-1 transition-colors w-fit"
             >
               {selectedBillIds.length === unpaidBills.length ? (
                 <div className="w-5 h-5 rounded border bg-primary-500 border-primary-500 flex items-center justify-center">
@@ -209,7 +209,7 @@ export default function ProcessPaymentPage() {
           {isLoading ? (
             <div className="flex flex-col gap-4 animate-pulse">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-100 rounded-xl" />
+                <div key={i} className="h-32 bg-muted rounded-xl" />
               ))}
             </div>
           ) : unpaidBills && unpaidBills.length > 0 ? (
@@ -224,7 +224,7 @@ export default function ProcessPaymentPage() {
                     className={`w-full flex items-start gap-4 p-5 rounded-xl border transition-all text-left ${
                       isSelected
                         ? 'border-primary-500 shadow-sm'
-                        : 'border-gray-200 hover:border-gray-300'
+                        : 'border-border hover:border-gray-300'
                     }`}
                   >
                     <div className="pt-1 shrink-0">
@@ -239,22 +239,22 @@ export default function ProcessPaymentPage() {
 
                     <div className="flex-1 flex flex-col gap-3">
                       <div>
-                        <p className="text-xs text-gray-500 mb-0.5">Consumer Name</p>
-                        <p className="text-base font-semibold text-gray-900">
+                        <p className="text-xs text-muted-foreground mb-0.5">Consumer Name</p>
+                        <p className="text-base font-semibold text-foreground">
                           {bill.consumerName}
                         </p>
                       </div>
 
                       <div>
-                        <p className="text-xs text-gray-500 mb-0.5">Billing Period</p>
-                        <p className="text-sm text-gray-900">
+                        <p className="text-xs text-muted-foreground mb-0.5">Billing Period</p>
+                        <p className="text-sm text-foreground">
                           {bill.billingPeriod}
                         </p>
                       </div>
 
-                      <div className="border-t border-gray-100 pt-3 mt-1">
-                         <p className="text-xs text-gray-500 mb-0.5">Total Amount Due</p>
-                         <p className="text-xl font-bold text-gray-900">
+                      <div className="border-t border-border/50 pt-3 mt-1">
+                         <p className="text-xs text-muted-foreground mb-0.5">Total Amount Due</p>
+                         <p className="text-xl font-bold text-foreground">
                           ₱{Number(bill.amount ?? 0).toLocaleString('en-PH', {
                             minimumFractionDigits: 2,
                           })}
@@ -266,24 +266,24 @@ export default function ProcessPaymentPage() {
               })}
             </div>
           ) : (
-            <div className="py-10 text-center text-sm text-gray-400">
+            <div className="py-10 text-center text-sm text-muted-foreground">
               No unpaid bills found.
             </div>
           )}
         </div>
 
         {/* Fixed Footer */}
-        <div className="fixed bottom-0 left-0 right-0 md:left-[var(--sidebar-width)] px-4 sm:px-6 py-4 sm:py-6 bg-white border-t border-gray-200 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="fixed bottom-0 left-0 right-0 md:left-[var(--sidebar-width)] px-4 sm:px-6 py-4 sm:py-6 bg-card border-t border-border z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
           <div className="max-w-3xl mx-auto flex flex-col gap-4">
 
             <div className="flex flex-col">
-               <p className="text-sm text-gray-500">Total Selected Amount</p>
-               <p className="text-3xl font-bold text-gray-900">
+               <p className="text-sm text-muted-foreground">Total Selected Amount</p>
+               <p className="text-3xl font-bold text-foreground">
                   ₱{totalSelected.toLocaleString('en-PH', {
                     minimumFractionDigits: 2,
                   })}
                </p>
-               <p className="text-xs text-gray-500 mt-1">
+               <p className="text-xs text-muted-foreground mt-1">
                  {selectedBillIds.length} invoices selected
                </p>
             </div>

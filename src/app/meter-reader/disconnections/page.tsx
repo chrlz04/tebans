@@ -65,8 +65,8 @@ export default function DisconnectionsPage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Disconnections</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-xl font-semibold text-foreground">Disconnections</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           Manage overdue accounts and send disconnection notifications
         </p>
       </div>
@@ -77,10 +77,10 @@ export default function DisconnectionsPage() {
         <div className="flex flex-col gap-6">
 
           {/* Overdue Accounts List */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center gap-2 mb-4">
             <AlertTriangle size={18} className="text-red-500" />
-            <h2 className="text-base font-semibold text-gray-900">
+            <h2 className="text-base font-semibold text-foreground">
               Overdue Accounts
             </h2>
           </div>
@@ -88,7 +88,7 @@ export default function DisconnectionsPage() {
             {isLoading ? (
               <div className="flex flex-col gap-3 animate-pulse">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-24 bg-gray-100 rounded-lg" />
+                  <div key={i} className="h-24 bg-muted rounded-lg" />
                 ))}
               </div>
             ) : overdueAccounts && overdueAccounts.length > 0 ? (
@@ -101,15 +101,15 @@ export default function DisconnectionsPage() {
                     className={`w-full text-left p-4 rounded-lg border transition-colors ${
                       selectedConsumer?.consumerId === account.consumerId
                         ? 'border-primary-400 bg-primary-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        : 'border-border hover:border-gray-300 hover:bg-muted/50'
                     }`}
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-foreground">
                           {account.firstName} {account.lastName}
                         </p>
-                        <p className="text-xs font-mono text-gray-500 mt-0.5">
+                        <p className="text-xs font-mono text-muted-foreground mt-0.5">
                           {account.consumerId}
                         </p>
                         <p className="text-xs text-red-600 mt-1 font-medium">
@@ -117,7 +117,7 @@ export default function DisconnectionsPage() {
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <span className="text-sm font-bold text-gray-900">
+                        <span className="text-sm font-bold text-foreground">
                           ₱{account.amountDue.toLocaleString('en-PH', {
                             minimumFractionDigits: 2,
                           })}
@@ -125,7 +125,7 @@ export default function DisconnectionsPage() {
                         <Badge status={account.requestStatus} />
                       </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-muted-foreground mt-2">
                       Scheduled:{' '}
                       {new Date(account.scheduledDate).toLocaleDateString('en-PH', {
                         year: 'numeric',
@@ -137,7 +137,7 @@ export default function DisconnectionsPage() {
                 ))}
               </div>
             ) : (
-              <div className="py-10 text-center text-sm text-gray-400">
+              <div className="py-10 text-center text-sm text-muted-foreground">
                 No overdue accounts found.
               </div>
             )}
@@ -149,7 +149,7 @@ export default function DisconnectionsPage() {
 
           {/* Consumer Summary Card */}
           {selectedConsumer && (
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
               <div className="bg-[#688E3E] px-6 py-4">
                 <h2 className="text-lg font-semibold text-white">
                   Consumer Summary
@@ -157,35 +157,35 @@ export default function DisconnectionsPage() {
               </div>
 
               <div className="p-6 flex flex-col gap-6">
-                <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                  <span className="text-sm text-gray-700">Status:</span>
+                <div className="flex items-center justify-between border-b border-border/50 pb-4">
+                  <span className="text-sm text-foreground">Status:</span>
                   <Badge status={selectedConsumer.requestStatus} />
                 </div>
 
                 <div className="flex flex-col gap-4">
                   <div>
-                    <p className="text-xs text-gray-500">Account Number</p>
-                    <p className="text-base font-semibold text-gray-900 font-mono mt-0.5">{selectedConsumer.consumerId}</p>
+                    <p className="text-xs text-muted-foreground">Account Number</p>
+                    <p className="text-base font-semibold text-foreground font-mono mt-0.5">{selectedConsumer.consumerId}</p>
                   </div>
 
                   <div>
-                    <p className="text-xs text-gray-500">Consumer Name</p>
-                    <p className="text-base font-medium text-gray-900 mt-0.5">{selectedConsumer.firstName} {selectedConsumer.lastName}</p>
+                    <p className="text-xs text-muted-foreground">Consumer Name</p>
+                    <p className="text-base font-medium text-foreground mt-0.5">{selectedConsumer.firstName} {selectedConsumer.lastName}</p>
                   </div>
 
                   <div>
-                    <p className="text-xs text-gray-500">Service Address</p>
-                    <p className="text-sm text-gray-800 mt-0.5">{selectedConsumer.address}</p>
+                    <p className="text-xs text-muted-foreground">Service Address</p>
+                    <p className="text-sm text-foreground mt-0.5">{selectedConsumer.address}</p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs text-gray-500">Mobile Number</p>
-                      <p className="text-sm font-medium text-gray-900 mt-0.5">{selectedConsumer.contactNo}</p>
+                      <p className="text-xs text-muted-foreground">Mobile Number</p>
+                      <p className="text-sm font-medium text-foreground mt-0.5">{selectedConsumer.contactNo}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Scheduled Date</p>
-                      <p className="text-sm font-medium text-gray-900 mt-0.5">
+                      <p className="text-xs text-muted-foreground">Scheduled Date</p>
+                      <p className="text-sm font-medium text-foreground mt-0.5">
                         {new Date(selectedConsumer.scheduledDate).toLocaleDateString('en-PH', {
                           year: 'numeric',
                           month: 'long',
@@ -197,13 +197,13 @@ export default function DisconnectionsPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs text-gray-500">Months Overdue</p>
+                      <p className="text-xs text-muted-foreground">Months Overdue</p>
                       <p className="text-sm font-medium text-red-600 mt-0.5">
                         {selectedConsumer.monthsOverdue} month{selectedConsumer.monthsOverdue > 1 ? 's' : ''}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Total Amount Due</p>
+                      <p className="text-xs text-muted-foreground">Total Amount Due</p>
                       <p className="text-sm font-bold text-red-600 mt-0.5">
                         ₱{selectedConsumer.amountDue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                       </p>
@@ -216,16 +216,16 @@ export default function DisconnectionsPage() {
           )}
 
           {/* SMS Action Panel */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center gap-2 mb-4">
               <Send size={18} className="text-primary-500" />
-              <h2 className="text-base font-semibold text-gray-900">
+              <h2 className="text-base font-semibold text-foreground">
                 Automated SMS Action
               </h2>
             </div>
 
             {!selectedConsumer ? (
-              <div className="py-10 text-center text-sm text-gray-400">
+              <div className="py-10 text-center text-sm text-muted-foreground">
                 Select an overdue account on the left to view summary and send a disconnection notification.
               </div>
             ) : (
@@ -233,16 +233,16 @@ export default function DisconnectionsPage() {
 
                 {/* SMS Message */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-foreground">
                     SMS Message
                   </label>
                   <textarea
                     value={smsMessage}
                     onChange={(e) => setSmsMessage(e.target.value)}
                     rows={6}
-                    className="w-full px-3 py-2 text-sm text-gray-900 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                    className="w-full px-3 py-2 text-sm text-foreground rounded-lg border border-gray-300 bg-card focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
                   />
-                  <p className="text-xs text-gray-400 text-right">
+                  <p className="text-xs text-muted-foreground text-right">
                     {smsMessage.length} characters
                   </p>
                 </div>

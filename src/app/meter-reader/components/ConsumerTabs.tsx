@@ -9,13 +9,13 @@ export default function ConsumerTabs() {
 
   // Match the screenshot design where active tab is solid green and inactive is text
   return (
-    <div className="flex border-b border-gray-200 mb-6">
+    <div className="flex border-b border-border mb-6">
       <Link
         href="/meter-reader/consumers"
         className={`flex items-center gap-2 px-6 py-2.5 text-sm font-medium transition-colors rounded-t-lg ${
           pathname === '/meter-reader/consumers'
             ? 'bg-[#6a994e] text-white' // Specific green from the screenshot
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
         }`}
       >
         <List size={18} />
@@ -26,7 +26,7 @@ export default function ConsumerTabs() {
         className={`flex items-center gap-2 px-6 py-2.5 text-sm font-medium transition-colors rounded-t-lg ${
           pathname === '/meter-reader/consumers/new'
             ? 'bg-[#6a994e] text-white'
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
         }`}
       >
         <Plus size={18} />
@@ -37,7 +37,7 @@ export default function ConsumerTabs() {
         className={`flex items-center gap-2 px-6 py-2.5 text-sm font-medium transition-colors rounded-t-lg ${
           pathname === '/meter-reader/consumers/payments'
             ? 'bg-[#6a994e] text-white'
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
         }`}
       >
         <CreditCard size={18} />

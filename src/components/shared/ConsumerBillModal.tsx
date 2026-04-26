@@ -125,38 +125,38 @@ export default function ConsumerBillModal({
             </div>
 
             {/* Consumer info */}
-            <div className="border border-gray-100 rounded-xl bg-gray-50 p-4">
+            <div className="border border-border/50 rounded-xl bg-muted/50 p-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
                 Consumer Information
               </p>
               <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
                 <div>
                   <span className="text-gray-400">Account #</span>
-                  <p className="font-mono text-gray-800 mt-0.5">
+                  <p className="font-mono text-foreground mt-0.5">
                     {consumer.consumerId}
                   </p>
                 </div>
                 <div>
                   <span className="text-gray-400">Consumer</span>
-                  <p className="font-medium text-gray-800 mt-0.5">
+                  <p className="font-medium text-foreground mt-0.5">
                     {consumer.firstName} {consumer.lastName}
                   </p>
                 </div>
                 <div>
                   <span className="text-gray-400">Meter #</span>
-                  <p className="font-mono text-gray-800 mt-0.5">
+                  <p className="font-mono text-foreground mt-0.5">
                     {consumer.meterSerialNo}
                   </p>
                 </div>
                 <div>
                   <span className="text-gray-400">Contact</span>
-                  <p className="font-mono text-gray-800 mt-0.5">
+                  <p className="font-mono text-foreground mt-0.5">
                     {consumer.contactNo}
                   </p>
                 </div>
                 <div className="col-span-2">
                   <span className="text-gray-400">Service Address</span>
-                  <p className="text-gray-800 mt-0.5">{consumer.address}</p>
+                  <p className="text-foreground mt-0.5">{consumer.address}</p>
                 </div>
                 <div>
                   <span className="text-gray-400">Account Status</span>
@@ -193,21 +193,21 @@ export default function ConsumerBillModal({
                 Meter Reading
               </p>
               <div className="grid grid-cols-3 gap-3">
-                <div className="text-center bg-gray-50 rounded-lg px-3 py-3 border border-gray-200">
+                <div className="text-center bg-muted/50 rounded-lg px-3 py-3 border border-gray-200">
                   <p className="text-[11px] text-gray-400 mb-1">Previous</p>
                   <p className="text-lg font-bold text-gray-900">
                     {selectedBill.previousReading.toLocaleString()}
                   </p>
                   <p className="text-[11px] text-gray-400">kWh</p>
                 </div>
-                <div className="text-center bg-gray-50 rounded-lg px-3 py-3 border border-gray-200">
+                <div className="text-center bg-muted/50 rounded-lg px-3 py-3 border border-gray-200">
                   <p className="text-[11px] text-gray-400 mb-1">Current</p>
                   <p className="text-lg font-bold text-gray-900">
                     {selectedBill.currentReading.toLocaleString()}
                   </p>
                   <p className="text-[11px] text-gray-400">kWh</p>
                 </div>
-                <div className="text-center bg-gray-50 rounded-lg px-3 py-3 border border-gray-200">
+                <div className="text-center bg-muted/50 rounded-lg px-3 py-3 border border-gray-200">
                   <p className="text-[11px] text-gray-400 mb-1">Consumption</p>
                   <p className="text-lg font-bold text-primary-600">
                     {selectedBill.consumption.toLocaleString()}
@@ -251,7 +251,7 @@ export default function ConsumerBillModal({
         {isLoading ? (
           <div className="flex flex-col gap-3 animate-pulse">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-100 rounded-lg" />
+              <div key={i} className="h-16 bg-muted rounded-lg" />
             ))}
           </div>
         ) : sortedBills.length > 0 ? (
@@ -260,13 +260,13 @@ export default function ConsumerBillModal({
               {consumerName} · {sortedBills.length} record{sortedBills.length !== 1 ? 's' : ''}
               {sortedBills.length > visibleCount && ` (showing ${visibleCount} most recent)`}
             </p>
-            <div className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden">
+            <div className="divide-y divide-gray-100 border border-border/50 rounded-xl overflow-hidden">
               {visibleBills.map((bill) => (
                 <button
                   key={bill.billId}
                   onClick={() => setSelectedBill(bill)}
                   className="w-full flex items-center gap-4 px-5 py-4 text-left
-                    hover:bg-gray-50 transition-colors group"
+                    hover:bg-muted/50 transition-colors group"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900">
