@@ -1,5 +1,7 @@
 import mysql from 'mysql2/promise'
 
+const useSSL = process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production';
+
 const pool = mysql.createPool({
   host:            process.env.DB_HOST,
   port:            Number(process.env.DB_PORT) || 3306,
@@ -9,6 +11,12 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit:      0,
+  ...(useSSL && {
+    ssl: {
+      minVersion: 'TLSv1.2',
+      rejectUnauthorized: true,
+    },
+  }),
 })
 
 export default pool
