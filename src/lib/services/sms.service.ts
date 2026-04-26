@@ -282,19 +282,19 @@ export async function sendSms(payload: SmsPayload): Promise<SmsResult> {
 
 // ── Build billing alert message ───────────────────────────
 export function buildBillingAlertMessage({
+  template,
   consumerName,
   billAmount,
   dueDate,
   billingMonth,
-  previousReading,
-  currentReading,
+  accountNo,
 }: {
+  template:      string
   consumerName:  string
   billAmount:    number
   dueDate:       string
   billingMonth:  string
-  previousReading: number
-  currentReading:  number
+  accountNo:     string
 }): string {
   const formattedAmount = billAmount.toLocaleString('en-PH', {
     minimumFractionDigits: 2,
@@ -304,14 +304,15 @@ export function buildBillingAlertMessage({
     month: 'long',
     day:   'numeric',
   })
-  const totalKwh = currentReading - previousReading
 
-  return (
-    `Dear ${consumerName}, your electricity bill for ` +
-    `${billingMonth} is P${formattedAmount} (Previous: ${previousReading} kWh, Present: ${currentReading} kWh) with a total of ${totalKwh} kWh used this month. ` +
-    `Please pay on or before ${formattedDate}.\n\n` +
-    `- TEBANS`
-  )
+  let msg = template
+  msg = msg.replace(/\{name\}/g, consumerName)
+  msg = msg.replace(/\{amount\}/g, formattedAmount)
+  msg = msg.replace(/\{month\}/g, billingMonth)
+  msg = msg.replace(/\{due_date\}/g, formattedDate)
+  msg = msg.replace(/\{account_no\}/g, accountNo)
+
+  return msg
 }
 
 // ── Build disconnection alert message ────────────────────
