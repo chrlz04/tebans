@@ -28,9 +28,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch SMS settings
-    const keys = ['SMS_BATCH_SIZE_LIMIT', 'SMS_BATCH_DELAY', 'SMS_AUTO_MARK_SENT', 'SMS_MESSAGE_TEMPLATE']
+    const keys = ['SMS_BATCH_SIZE_LIMIT', 'SMS_BATCH_DELAY', 'SMS_MESSAGE_TEMPLATE']
     const rows = await query<SettingRow>(
-      `SELECT Setting_Key, Setting_Value FROM System_Settings WHERE Setting_Key IN (?, ?, ?, ?)`,
+      `SELECT Setting_Key, Setting_Value FROM System_Settings WHERE Setting_Key IN (?, ?, ?)`,
       keys
     )
     const settings: Record<string, string> = {}
@@ -38,7 +38,6 @@ export async function POST(req: NextRequest) {
 
     const limit = settings['SMS_BATCH_SIZE_LIMIT'] ? parseInt(settings['SMS_BATCH_SIZE_LIMIT'], 10) : 500
     const delay = settings['SMS_BATCH_DELAY'] ? parseInt(settings['SMS_BATCH_DELAY'], 10) : 1
-    const autoMarkSent = settings['SMS_AUTO_MARK_SENT'] === '1'
     const smsTemplate = settings['SMS_MESSAGE_TEMPLATE'] || 'Dear {name}, your electricity bill for {month} is P{amount} (Previous: {previous_reading} kWh, Present: {current_reading} kWh) with a total of {usage} kWh used this month. Please pay on or before {due_date}. - TEBANS'
 
     const tasksToProcess = smsTasks.slice(0, limit)
@@ -68,46 +67,32 @@ export async function POST(req: NextRequest) {
               currentReading: task.currentReading,
             })
 
+            // Find the pending notification that was generated during the bulk reading
+            const notification = await queryOne<{ Notification_ID: string } & RowDataPacket>(
+              `SELECT Notification_ID FROM Notification WHERE Consumer_ID = ? AND MeterReading_ID = ? AND Alert_Type = 'Billing' ORDER BY Date_Sent DESC LIMIT 1`,
+              [task.consumerId, task.meterReadingId]
+            )
+
             const smsResult = await sendSms({ to: task.to, content })
 
-            if (!smsResult.success) {
-              logger.warn('Bulk SMS notification failed', {
-                consumerId: task.consumerId,
-                reason: smsResult.message,
-              })
-              sendEvent({ consumerId: task.consumerId, status: 'Failed' })
-            } else {
-              if (autoMarkSent) {
-                const highestNotification = await queryOne<{ Notification_ID: string } & RowDataPacket>(
-                  `SELECT Notification_ID FROM Notification WHERE Notification_ID LIKE 'notif-%' ORDER BY LENGTH(Notification_ID) DESC, Notification_ID DESC LIMIT 1`
-                )
-                let nextNotifSeq = 1
-                if (highestNotification && highestNotification.Notification_ID) {
-                  const match = highestNotification.Notification_ID.match(/^notif-(\d+)$/)
-                  if (match && match[1]) {
-                    nextNotifSeq = parseInt(match[1], 10) + 1
-                  }
-                }
-                const notifId = `notif-${nextNotifSeq.toString().padStart(3, '0')}`
-
-                await execute(
-                  `INSERT INTO Notification (
-                    Notification_ID,
-                    Consumer_ID,
-                    MeterReading_ID,
-                    Alert_Type,
-                    Message_Content,
-                    Reference_Type
-                  ) VALUES (?, ?, ?, 'Billing', ?, 'MeterReading')`,
-                  [
-                    notifId,
-                    task.consumerId,
-                    task.meterReadingId,
-                    content
-                  ]
-                ).catch(e => logger.error('Failed to auto mark SMS sent in batch', e))
+            if (notification) {
+              if (!smsResult.success) {
+                logger.warn('Bulk SMS notification failed', {
+                  consumerId: task.consumerId,
+                  reason: smsResult.message,
+                })
+                await execute(`UPDATE Notification SET Status = 'Failed' WHERE Notification_ID = ?`, [notification.Notification_ID])
+                sendEvent({ consumerId: task.consumerId, status: 'Failed' })
+              } else {
+                await execute(`UPDATE Notification SET Status = 'Sent' WHERE Notification_ID = ?`, [notification.Notification_ID])
+                sendEvent({ consumerId: task.consumerId, status: 'Sent' })
               }
-              sendEvent({ consumerId: task.consumerId, status: 'Sent' })
+            } else {
+              if (!smsResult.success) {
+                sendEvent({ consumerId: task.consumerId, status: 'Failed' })
+              } else {
+                sendEvent({ consumerId: task.consumerId, status: 'Sent' })
+              }
             }
           } catch (e) {
             logger.error('Bulk SMS send error', e)

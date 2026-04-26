@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger'
 import { queryOne, query, withTransaction } from '@/lib/db-helpers'
 import { RowDataPacket, PoolConnection } from 'mysql2/promise'
 import { sendSms } from '@/lib/services/sms.service'
+import { buildBillingAlertMessage } from '@/lib/sms-templates'
 
 interface SettingRow extends RowDataPacket {
   Setting_Key: string
@@ -42,6 +43,16 @@ export async function POST(req: NextRequest) {
     if (readings.length === 0) {
       return err('No readings provided', 400)
     }
+
+    // Fetch SMS settings for template
+    const keys = ['SMS_MESSAGE_TEMPLATE']
+    const rows = await query<SettingRow>(
+      `SELECT Setting_Key, Setting_Value FROM System_Settings WHERE Setting_Key IN (?)`,
+      keys
+    )
+    const settings: Record<string, string> = {}
+    rows.forEach(r => settings[r.Setting_Key] = r.Setting_Value)
+    const smsTemplate = settings['SMS_MESSAGE_TEMPLATE'] || 'Dear {name}, your electricity bill for {month} is P{amount} (Previous: {previous_reading} kWh, Present: {current_reading} kWh) with a total of {usage} kWh used this month. Please pay on or before {due_date}. - TEBANS'
 
     // First validate the whole file
     const validationErrors: { row: number, errors: string[] }[] = []
@@ -246,6 +257,50 @@ export async function POST(req: NextRequest) {
             ]
         )
 
+        const smsMessageContent = buildBillingAlertMessage({
+          template: smsTemplate,
+          consumerName: `${item.consumer.firstName} ${item.consumer.lastName}`,
+          billAmount: item.amountWithTaxEvat,
+          dueDate: item.dueDate,
+          billingMonth: item.billingMonth,
+          accountNo: item.consumerId,
+          previousReading: item.previousReading,
+          currentReading: item.currentReading,
+        })
+
+        const [highestNotifRows]: any = await conn.execute(
+            `SELECT Notification_ID FROM Notification WHERE Notification_ID LIKE 'notif-%' ORDER BY LENGTH(Notification_ID) DESC, Notification_ID DESC LIMIT 1`
+        )
+        const highestNotification = highestNotifRows[0]
+
+        let nextNotifSeq = 1
+        if (highestNotification && highestNotification.Notification_ID) {
+            const match = highestNotification.Notification_ID.match(/^notif-(\d+)$/)
+            if (match && match[1]) {
+                nextNotifSeq = parseInt(match[1], 10) + 1
+            }
+        }
+        const notifId = `notif-${nextNotifSeq.toString().padStart(3, '0')}`
+
+        await conn.execute(
+            `INSERT INTO Notification (
+              Notification_ID,
+              Consumer_ID,
+              MeterReading_ID,
+              Alert_Type,
+              Message_Content,
+              Reference_Type,
+              Status
+            ) VALUES (?, ?, ?, 'Billing', ?, 'MeterReading', 'Pending')`,
+            [
+              notifId,
+              item.consumerId,
+              meterReadingId,
+              smsMessageContent
+            ]
+        )
+
+        // Only add to smsTasks to return to frontend if they have a contact number
         if (item.consumer.contactNo) {
             smsTasks.push({
                 to: item.consumer.contactNo,
@@ -258,6 +313,9 @@ export async function POST(req: NextRequest) {
                 previousReading: item.previousReading,
                 currentReading: item.currentReading,
             })
+        } else {
+            // If they don't have a contact number, automatically mark this pending notification as Failed
+            await conn.execute(`UPDATE Notification SET Status = 'Failed' WHERE Notification_ID = ?`, [notifId])
         }
       }
     })
