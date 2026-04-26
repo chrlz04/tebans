@@ -33,6 +33,7 @@ const navItems: Record<Role, NavItem[]> = {
     { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={18} /> },
     { label: 'Manage Accounts', href: '/admin/accounts', icon: <Users size={18} /> },
     { label: 'Create Staff', href: '/admin/staff/new', icon: <UserPlus size={18} /> },
+    { label: 'Disconnections', href: '/admin/disconnections', icon: <AlertTriangle size={18} /> },
     { label: 'Settings', href: '/admin/settings', icon: <Settings size={18} /> },
   ],
   consumer: [
