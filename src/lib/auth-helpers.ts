@@ -6,6 +6,7 @@ export type Role = 'admin' | 'consumer' | 'meter_reader' | 'cashier'
 export interface JwtPayload {
   userId: string
   role:   Role
+  mustChangePassword?: boolean
 }
 
 // ─── Verify JWT from cookies ──────────────────────────────
@@ -37,6 +38,20 @@ export function requireRole(
       error: NextResponse.json(
         { success: false, message: 'Unauthorized' },
         { status: 401 }
+      ),
+      payload: null,
+    }
+  }
+
+  // Force password change check
+  const isChangePasswordRoute = req.nextUrl.pathname === '/api/auth/change-password'
+  const isLogoutRoute = req.nextUrl.pathname === '/api/auth/logout'
+
+  if (payload.mustChangePassword && !isChangePasswordRoute && !isLogoutRoute) {
+    return {
+      error: NextResponse.json(
+        { success: false, message: 'PASSWORD_CHANGE_REQUIRED' },
+        { status: 403 }
       ),
       payload: null,
     }

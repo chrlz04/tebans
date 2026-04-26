@@ -25,6 +25,19 @@ export function proxy(req: NextRequest) {
 
   const token = req.cookies.get('token')?.value
   const role  = req.cookies.get('role')?.value
+  const mustChangePassword = req.cookies.get('mustChangePassword')?.value === 'true'
+
+  // If token, role, and mustChangePassword is true, force redirect to /change-password
+  // unless they are already on /change-password.
+  if (token && role && mustChangePassword && pathname !== '/change-password') {
+    return NextResponse.redirect(new URL('/change-password', req.url))
+  }
+
+  // If mustChangePassword is false/not set but they try to access /change-password,
+  // redirect them to their home page.
+  if (token && role && !mustChangePassword && pathname === '/change-password') {
+    return NextResponse.redirect(new URL(roleHomePages[role] || '/', req.url))
+  }
 
   // Allow public routes
   if (pathname === '/login' || pathname === '/') {
@@ -36,7 +49,14 @@ export function proxy(req: NextRequest) {
 
   // No token — redirect to login
   if (!token || !role) {
+    // If they were trying to access /change-password without token, send to /login
     return NextResponse.redirect(new URL('/login', req.url))
+  }
+
+  // At this point, we know they have token and role, and are not forced to change password (unless they are on /change-password, which is handled).
+  // If they are on /change-password, let them pass.
+  if (pathname === '/change-password') {
+    return NextResponse.next()
   }
 
   // Check role permissions
