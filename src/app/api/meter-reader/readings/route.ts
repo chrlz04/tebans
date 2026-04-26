@@ -183,35 +183,67 @@ export async function POST(req: NextRequest) {
     )
 
     // Fetch SMS settings
-    const keys = ['SMS_AUTO_MARK_SENT', 'SMS_MESSAGE_TEMPLATE']
+    const keys = ['SMS_MESSAGE_TEMPLATE']
     const rows = await query<SettingRow>(
-      `SELECT Setting_Key, Setting_Value FROM System_Settings WHERE Setting_Key IN (?, ?)`,
+      `SELECT Setting_Key, Setting_Value FROM System_Settings WHERE Setting_Key IN (?)`,
       keys
     )
     const settings: Record<string, string> = {}
     rows.forEach(r => settings[r.Setting_Key] = r.Setting_Value)
     const smsTemplate = settings['SMS_MESSAGE_TEMPLATE'] || 'Dear {name}, your electricity bill for {month} is P{amount} (Previous: {previous_reading} kWh, Present: {current_reading} kWh) with a total of {usage} kWh used this month. Please pay on or before {due_date}. - TEBANS'
-    const autoMarkSent = settings['SMS_AUTO_MARK_SENT'] === '1'
 
-    // ── Bill/Disconnection/Payment is saved here ──────────────
-    // Critical operation done — now attempt SMS
+    // Prepare SMS message content regardless of whether there's a phone number
+    const smsMessage = buildBillingAlertMessage({
+      template:      smsTemplate,
+      consumerName:  `${consumer.First_Name} ${consumer.Last_Name}`,
+      billAmount:    amountWithTaxEvat,
+      dueDate:       dueDateStr,
+      billingMonth,
+      accountNo:     consumerId,
+      previousReading: previousReading,
+      currentReading:  currentReading,
+    })
+
+    // ── Generate Notification Record ──────────────
+    const highestNotification = await queryOne<{ Notification_ID: string } & RowDataPacket>(
+      `SELECT Notification_ID FROM Notification WHERE Notification_ID LIKE 'notif-%' ORDER BY LENGTH(Notification_ID) DESC, Notification_ID DESC LIMIT 1`
+    )
+    let nextNotifSeq = 1
+    if (highestNotification && highestNotification.Notification_ID) {
+      const match = highestNotification.Notification_ID.match(/^notif-(\d+)$/)
+      if (match && match[1]) {
+        nextNotifSeq = parseInt(match[1], 10) + 1
+      }
+    }
+    const notifId = `notif-${nextNotifSeq.toString().padStart(3, '0')}`
+
+    // Always insert a pending notification
+    await execute(
+      `INSERT INTO Notification (
+        Notification_ID,
+        Consumer_ID,
+        MeterReading_ID,
+        Alert_Type,
+        Message_Content,
+        Reference_Type,
+        Status
+      ) VALUES (?, ?, ?, 'Billing', ?, 'MeterReading', 'Pending')`,
+      [
+        notifId,
+        consumerId,
+        meterReadingId,
+        smsMessage
+      ]
+    )
+
+    // ── Attempt SMS and Update Notification Status ──────────────
     let smsSent = false
     if (!consumer.Contact_No) {
       logger.warn('SMS skipped — no contact number', {
         consumerId,
       })
+      await execute(`UPDATE Notification SET Status = 'Failed' WHERE Notification_ID = ?`, [notifId])
     } else {
-      const smsMessage = buildBillingAlertMessage({
-        template:      smsTemplate,
-        consumerName:  `${consumer.First_Name} ${consumer.Last_Name}`,
-        billAmount:    amountWithTaxEvat,
-        dueDate:       dueDateStr,
-        billingMonth,
-        accountNo:     consumerId,
-        previousReading: previousReading,
-        currentReading:  currentReading,
-      })
-
       // Send SMS without blocking or failing the main operation
       const smsResult = await sendSms({
         to:      consumer.Contact_No,
@@ -224,39 +256,10 @@ export async function POST(req: NextRequest) {
           consumerId: consumerId,
           reason:     smsResult.message,
         })
+        await execute(`UPDATE Notification SET Status = 'Failed' WHERE Notification_ID = ?`, [notifId])
       } else {
         smsSent = true
-        if (autoMarkSent) {
-            // Add notification
-            const highestNotification = await queryOne<{ Notification_ID: string } & RowDataPacket>(
-              `SELECT Notification_ID FROM Notification WHERE Notification_ID LIKE 'notif-%' ORDER BY LENGTH(Notification_ID) DESC, Notification_ID DESC LIMIT 1`
-            )
-            let nextNotifSeq = 1
-            if (highestNotification && highestNotification.Notification_ID) {
-              const match = highestNotification.Notification_ID.match(/^notif-(\d+)$/)
-              if (match && match[1]) {
-                nextNotifSeq = parseInt(match[1], 10) + 1
-              }
-            }
-            const notifId = `notif-${nextNotifSeq.toString().padStart(3, '0')}`
-
-            await execute(
-                `INSERT INTO Notification (
-                  Notification_ID,
-                  Consumer_ID,
-                  MeterReading_ID,
-                  Alert_Type,
-                  Message_Content,
-                  Reference_Type
-                ) VALUES (?, ?, ?, 'Billing', ?, 'MeterReading')`,
-                [
-                    notifId,
-                    consumerId,
-                    meterReadingId,
-                    smsMessage
-                ]
-            ).catch(e => logger.error('Failed to auto mark SMS sent', e))
-        }
+        await execute(`UPDATE Notification SET Status = 'Sent' WHERE Notification_ID = ?`, [notifId])
       }
     }
 
