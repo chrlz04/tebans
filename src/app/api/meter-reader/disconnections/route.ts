@@ -84,6 +84,44 @@ export async function POST(req: NextRequest) {
       [consumerId]
     )
 
+    // ── Generate Notification Record ──────────────
+    const smsContent = buildDisconnectionMessage({
+      consumerName:  `${consumer?.First_Name} ${consumer?.Last_Name}`,
+      scheduledDate: scheduledDateStr,
+      reason:        reason,
+    })
+
+    const highestNotification = await queryOne<{ Notification_ID: string } & RowDataPacket>(
+      `SELECT Notification_ID FROM Notification WHERE Notification_ID LIKE 'notif-%' ORDER BY LENGTH(Notification_ID) DESC, Notification_ID DESC LIMIT 1`
+    )
+    let nextNotifSeq = 1
+    if (highestNotification && highestNotification.Notification_ID) {
+      const match = highestNotification.Notification_ID.match(/^notif-(\d+)$/)
+      if (match && match[1]) {
+        nextNotifSeq = parseInt(match[1], 10) + 1
+      }
+    }
+    const notifId = `notif-${nextNotifSeq.toString().padStart(3, '0')}`
+
+    // Always insert a pending notification
+    await execute(
+      `INSERT INTO Notification (
+        Notification_ID,
+        Consumer_ID,
+        DisconnectionRequest_ID,
+        Alert_Type,
+        Message_Content,
+        Reference_Type,
+        Status
+      ) VALUES (?, ?, ?, 'Disconnection', ?, 'DisconnectionRequest', 'Pending')`,
+      [
+        notifId,
+        consumerId,
+        disconnectionId,
+        smsContent
+      ]
+    )
+
     // ── Bill/Disconnection/Payment is saved here ──────────────
     // Critical operation done — now attempt SMS
     let smsSent = false
@@ -91,13 +129,8 @@ export async function POST(req: NextRequest) {
       logger.warn('SMS skipped — no contact number', {
         consumerId,
       })
+      await execute(`UPDATE Notification SET Status = 'Failed' WHERE Notification_ID = ?`, [notifId])
     } else {
-      const smsContent = buildDisconnectionMessage({
-        consumerName:  `${consumer.First_Name} ${consumer.Last_Name}`,
-        scheduledDate: scheduledDateStr,
-        reason:        reason,
-      })
-
       // Send SMS without blocking or failing the main operation
       const smsResult = await sendSms({
         to:      consumer.Contact_No,
@@ -110,6 +143,9 @@ export async function POST(req: NextRequest) {
           consumerId: consumerId,
           reason:     smsResult.message,
         })
+        await execute(`UPDATE Notification SET Status = 'Failed' WHERE Notification_ID = ?`, [notifId])
+      } else {
+        await execute(`UPDATE Notification SET Status = 'Sent' WHERE Notification_ID = ?`, [notifId])
       }
 
       smsSent = smsResult.success

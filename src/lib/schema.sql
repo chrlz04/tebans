@@ -136,6 +136,7 @@ CREATE TABLE IF NOT EXISTS Notification (
   Message_Content         TEXT        NOT NULL,
   Date_Sent               DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   Reference_Type          ENUM('MeterReading','DisconnectionRequest') NOT NULL,
+  Status                  ENUM('Pending','Sent','Failed') NOT NULL DEFAULT 'Pending',
   FOREIGN KEY (Consumer_ID)             REFERENCES Consumer(Consumer_ID),
   FOREIGN KEY (MeterReading_ID)         REFERENCES MeterReading(MeterReading_ID),
   FOREIGN KEY (DisconnectionRequest_ID) REFERENCES DisconnectionRequest(DisconnectionRequest_ID)
