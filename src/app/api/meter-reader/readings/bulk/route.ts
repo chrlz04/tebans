@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     )
     const settings: Record<string, string> = {}
     settingsRows.forEach(r => settings[r.Setting_Key] = r.Setting_Value)
-    const smsTemplate = settings['SMS_MESSAGE_TEMPLATE'] || 'Dear {name}, your bill is {amount} for {month}. Due: {due_date}. - TEBANS'
+    const smsTemplate = settings['SMS_MESSAGE_TEMPLATE'] || 'Dear {name}, your electricity bill for {month} is P{amount} (Previous: {previous_reading} kWh, Present: {current_reading} kWh) with a total of {usage} kWh used this month. Please pay on or before {due_date}. - TEBANS'
 
 
     // Validate each row
@@ -260,6 +260,8 @@ export async function POST(req: NextRequest) {
                     dueDate: item.dueDate,
                     billingMonth: item.billingMonth,
                     accountNo: item.consumerId,
+                    previousReading: item.previousReading,
+                    currentReading: item.currentReading,
                 })
             })
         }

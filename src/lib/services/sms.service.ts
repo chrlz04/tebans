@@ -288,6 +288,8 @@ export function buildBillingAlertMessage({
   dueDate,
   billingMonth,
   accountNo,
+  previousReading,
+  currentReading,
 }: {
   template:      string
   consumerName:  string
@@ -295,6 +297,8 @@ export function buildBillingAlertMessage({
   dueDate:       string
   billingMonth:  string
   accountNo:     string
+  previousReading: number
+  currentReading:  number
 }): string {
   const formattedAmount = billAmount.toLocaleString('en-PH', {
     minimumFractionDigits: 2,
@@ -311,6 +315,11 @@ export function buildBillingAlertMessage({
   msg = msg.replace(/\{month\}/g, billingMonth)
   msg = msg.replace(/\{due_date\}/g, formattedDate)
   msg = msg.replace(/\{account_no\}/g, accountNo)
+  msg = msg.replace(/\{previous_reading\}/g, previousReading.toString())
+  msg = msg.replace(/\{current_reading\}/g, currentReading.toString())
+
+  const usage = Math.max(0, currentReading - previousReading)
+  msg = msg.replace(/\{usage\}/g, usage.toString())
 
   return msg
 }
