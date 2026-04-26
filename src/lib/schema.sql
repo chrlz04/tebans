@@ -1,179 +1,248 @@
-CREATE DATABASE IF NOT EXISTS tebans_db;
-USE tebans_db;
+-- =============================================================
+-- TEBANS Database Schema
+-- Generated: 2026-04-26
+-- MySQL 8.0+
+-- =============================================================
 
--- ─── Login ────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS Login (
-  Login_ID   VARCHAR(36)  PRIMARY KEY,
-  User_name  VARCHAR(100) NOT NULL UNIQUE,
-  Password   VARCHAR(255) NOT NULL,
-  Must_Change_Password BOOLEAN NOT NULL DEFAULT FALSE
-);
+CREATE DATABASE IF NOT EXISTS `tebans_db`
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_0900_ai_ci;
 
--- ─── User ─────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS User (
-  User_ID        VARCHAR(36)  PRIMARY KEY,
-  First_Name     VARCHAR(100) NOT NULL,
-  Last_Name      VARCHAR(100) NOT NULL,
-  Contact_No     VARCHAR(20)  NOT NULL,
-  User_Type      ENUM('admin','meter_reader','cashier','consumer') NOT NULL,
-  Account_Status ENUM('Active','Inactive') NOT NULL DEFAULT 'Active',
-  Registration_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  Login_ID       VARCHAR(36)  UNIQUE,
-  FOREIGN KEY (Login_ID) REFERENCES Login(Login_ID)
-);
+USE `tebans_db`;
 
--- ─── Admin ────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS Admin (
-  Admin_ID        VARCHAR(36) PRIMARY KEY,
-  Clearance_Level INT         NOT NULL DEFAULT 1,
-  Login_ID        VARCHAR(36) NOT NULL UNIQUE,
-  User_ID         VARCHAR(36) NOT NULL UNIQUE,
-  FOREIGN KEY (Login_ID) REFERENCES Login(Login_ID),
-  FOREIGN KEY (User_ID)  REFERENCES User(User_ID)
-);
+SET FOREIGN_KEY_CHECKS = 0;
 
--- ─── Area ─────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS Area (
-  Area_ID VARCHAR(36) PRIMARY KEY,
-  Name    VARCHAR(100) NOT NULL UNIQUE
-);
+-- =============================================================
+-- TABLE: login
+-- Stores authentication credentials for all system users.
+-- No foreign key dependencies.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `login` (
+  `Login_ID`             VARCHAR(36)  NOT NULL,
+  `User_name`            VARCHAR(100) NOT NULL,
+  `Password`             VARCHAR(255) NOT NULL,
+  `Must_Change_Password` TINYINT(1)   NOT NULL DEFAULT '0',
+  PRIMARY KEY (`Login_ID`),
+  UNIQUE KEY `User_name` (`User_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ─── MeterReader ──────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS MeterReader (
-  MeterReader_ID VARCHAR(36)  PRIMARY KEY,
-  Assigned_Area_ID VARCHAR(36),
-  User_ID        VARCHAR(36)  NOT NULL UNIQUE,
-  FOREIGN KEY (User_ID) REFERENCES User(User_ID),
-  FOREIGN KEY (Assigned_Area_ID) REFERENCES Area(Area_ID) ON DELETE SET NULL
-);
+-- =============================================================
+-- TABLE: area
+-- Defines geographic service areas (e.g., Centro, Kabugnayan).
+-- No foreign key dependencies.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `area` (
+  `Area_ID` VARCHAR(36)  NOT NULL,
+  `Name`    VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`Area_ID`),
+  UNIQUE KEY `Name` (`Name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ─── Cashier ──────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS Cashier (
-  Cashier_ID    VARCHAR(36)  PRIMARY KEY,
-  Assigned_Area_ID VARCHAR(36),
-  User_ID       VARCHAR(36)  NOT NULL UNIQUE,
-  FOREIGN KEY (User_ID) REFERENCES User(User_ID),
-  FOREIGN KEY (Assigned_Area_ID) REFERENCES Area(Area_ID) ON DELETE SET NULL
-);
+-- =============================================================
+-- TABLE: user
+-- Central user table for all roles (admin, meter_reader,
+-- cashier, consumer). References login for credentials.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `user` (
+  `User_ID`           VARCHAR(36)                                        NOT NULL,
+  `First_Name`        VARCHAR(100)                                       NOT NULL,
+  `Last_Name`         VARCHAR(100)                                       NOT NULL,
+  `Contact_No`        VARCHAR(20)                                        NOT NULL,
+  `User_Type`         ENUM('admin','meter_reader','cashier','consumer')  NOT NULL,
+  `Account_Status`    ENUM('Active','Inactive')                          NOT NULL DEFAULT 'Active',
+  `Registration_Date` DATETIME                                           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `Login_ID`          VARCHAR(36)                                        DEFAULT NULL,
+  PRIMARY KEY (`User_ID`),
+  UNIQUE KEY `Login_ID` (`Login_ID`),
+  CONSTRAINT `user_ibfk_1` FOREIGN KEY (`Login_ID`) REFERENCES `login` (`Login_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ─── Consumer ─────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS Consumer (
-  Consumer_ID    VARCHAR(36)  PRIMARY KEY,
-  Address        TEXT         NOT NULL,
-  Province       VARCHAR(100),
-  Municipality   VARCHAR(100),
-  Barangay       VARCHAR(100),
-  Area_ID        VARCHAR(36),
-  Meter_Serial_No VARCHAR(100) NOT NULL UNIQUE,
-  User_ID        VARCHAR(36)  NOT NULL UNIQUE,
-  FOREIGN KEY (User_ID) REFERENCES User(User_ID),
-  FOREIGN KEY (Area_ID) REFERENCES Area(Area_ID) ON DELETE SET NULL
-);
+-- =============================================================
+-- TABLE: admin
+-- Admin role records. References user.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `admin` (
+  `Admin_ID`       VARCHAR(36) NOT NULL,
+  `Clearance_Level` INT        NOT NULL DEFAULT '1',
+  `User_ID`        VARCHAR(50) DEFAULT NULL,
+  PRIMARY KEY (`Admin_ID`),
+  KEY `admin_ibfk_2` (`User_ID`),
+  CONSTRAINT `admin_ibfk_2` FOREIGN KEY (`User_ID`) REFERENCES `user` (`User_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ─── MeterReading ─────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS MeterReading (
-  MeterReading_ID      VARCHAR(36)    PRIMARY KEY,
-  Consumer_ID          VARCHAR(36)    NOT NULL,
-  MeterReader_ID       VARCHAR(36)    NOT NULL,
-  Previous_Reading     DECIMAL(10,2)  NOT NULL DEFAULT 0,
-  Current_Reading      DECIMAL(10,2)  NOT NULL,
-  Date_Recorded        DATE           NOT NULL,
-  Billing_Month        VARCHAR(20)    NOT NULL,
-  FOREIGN KEY (Consumer_ID)    REFERENCES Consumer(Consumer_ID),
-  FOREIGN KEY (MeterReader_ID) REFERENCES MeterReader(MeterReader_ID),
-  UNIQUE (Consumer_ID, Billing_Month)
-);
+-- =============================================================
+-- TABLE: cashier
+-- Cashier role records. References user and area.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `cashier` (
+  `Cashier_ID`       VARCHAR(36) NOT NULL,
+  `Assigned_Area_ID` VARCHAR(36) DEFAULT NULL,
+  `User_ID`          VARCHAR(36) NOT NULL,
+  PRIMARY KEY (`Cashier_ID`),
+  UNIQUE KEY `User_ID` (`User_ID`),
+  KEY `cashier_ibfk_area` (`Assigned_Area_ID`),
+  CONSTRAINT `cashier_ibfk_1`    FOREIGN KEY (`User_ID`)          REFERENCES `user` (`User_ID`),
+  CONSTRAINT `cashier_ibfk_area` FOREIGN KEY (`Assigned_Area_ID`) REFERENCES `area` (`Area_ID`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ─── Bill ─────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS Bill (
-  Bill_ID          VARCHAR(36)   PRIMARY KEY,
-  Consumer_ID      VARCHAR(36)   NOT NULL,
-  MeterReading_ID  VARCHAR(36)   NOT NULL UNIQUE,
-  Amount           DECIMAL(10,2) NOT NULL,
-  Due_Date         DATE          NOT NULL,
-  Payment_Status   ENUM('Paid','Unpaid') NOT NULL DEFAULT 'Unpaid',
-  Billing_Month    VARCHAR(20)   NOT NULL,
-  FOREIGN KEY (Consumer_ID)     REFERENCES Consumer(Consumer_ID),
-  FOREIGN KEY (MeterReading_ID) REFERENCES MeterReading(MeterReading_ID),
-  UNIQUE (Consumer_ID, Billing_Month)
-);
+-- =============================================================
+-- TABLE: meterreader
+-- Meter reader role records. References user and area.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `meterreader` (
+  `MeterReader_ID`   VARCHAR(36) NOT NULL,
+  `Assigned_Area_ID` VARCHAR(36) DEFAULT NULL,
+  `User_ID`          VARCHAR(36) NOT NULL,
+  PRIMARY KEY (`MeterReader_ID`),
+  UNIQUE KEY `User_ID` (`User_ID`),
+  KEY `meterreader_ibfk_area` (`Assigned_Area_ID`),
+  CONSTRAINT `meterreader_ibfk_1`    FOREIGN KEY (`User_ID`)          REFERENCES `user` (`User_ID`),
+  CONSTRAINT `meterreader_ibfk_area` FOREIGN KEY (`Assigned_Area_ID`) REFERENCES `area` (`Area_ID`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ─── Payment ──────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS Payment (
-  Payment_ID     VARCHAR(36)   PRIMARY KEY,
-  Bill_ID        VARCHAR(36)   NOT NULL,
-  Cashier_ID     VARCHAR(36)   NOT NULL,
-  Consumer_ID    VARCHAR(36)   NOT NULL,
-  Amount_Paid    DECIMAL(10,2) NOT NULL,
-  Date_Paid      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  Payment_Method ENUM('Cash') NOT NULL,
-  Receipt_Number VARCHAR(50)   NOT NULL UNIQUE,
-  FOREIGN KEY (Bill_ID)     REFERENCES Bill(Bill_ID),
-  FOREIGN KEY (Cashier_ID)  REFERENCES Cashier(Cashier_ID),
-  FOREIGN KEY (Consumer_ID) REFERENCES Consumer(Consumer_ID)
-);
+-- =============================================================
+-- TABLE: consumer
+-- Consumer (electricity account holder) records.
+-- References user and area.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `consumer` (
+  `Consumer_ID`    VARCHAR(36)  NOT NULL,
+  `Address`        TEXT         NOT NULL,
+  `Province`       VARCHAR(100) DEFAULT NULL,
+  `Municipality`   VARCHAR(100) DEFAULT NULL,
+  `Barangay`       VARCHAR(100) DEFAULT NULL,
+  `Area_ID`        VARCHAR(36)  DEFAULT NULL,
+  `Meter_Serial_No` VARCHAR(100) NOT NULL,
+  `User_ID`        VARCHAR(36)  NOT NULL,
+  PRIMARY KEY (`Consumer_ID`),
+  UNIQUE KEY `Meter_Serial_No` (`Meter_Serial_No`),
+  UNIQUE KEY `User_ID` (`User_ID`),
+  KEY `consumer_ibfk_area` (`Area_ID`),
+  CONSTRAINT `consumer_ibfk_1`    FOREIGN KEY (`User_ID`)  REFERENCES `user` (`User_ID`),
+  CONSTRAINT `consumer_ibfk_area` FOREIGN KEY (`Area_ID`)  REFERENCES `area` (`Area_ID`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ─── DisconnectionRequest ─────────────────────────────────
-CREATE TABLE IF NOT EXISTS DisconnectionRequest (
-  DisconnectionRequest_ID VARCHAR(36)  PRIMARY KEY,
-  Consumer_ID             VARCHAR(36)  NOT NULL,
-  MeterReader_ID          VARCHAR(36)  NOT NULL,
-  Reason_for_Disconnection TEXT        NOT NULL,
-  Scheduled_Date          DATE         NOT NULL,
-  Request_Status          ENUM('Pending','Executed','Cancelled') NOT NULL DEFAULT 'Pending',
-  Date_Requested          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (Consumer_ID)    REFERENCES Consumer(Consumer_ID),
-  FOREIGN KEY (MeterReader_ID) REFERENCES MeterReader(MeterReader_ID)
-);
+-- =============================================================
+-- TABLE: meterreading
+-- Records monthly meter readings per consumer.
+-- References consumer and meterreader.
+-- Enforces one reading per consumer per billing month.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `meterreading` (
+  `MeterReading_ID`  VARCHAR(36)   NOT NULL,
+  `Consumer_ID`      VARCHAR(36)   NOT NULL,
+  `MeterReader_ID`   VARCHAR(36)   NOT NULL,
+  `Previous_Reading` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+  `Current_Reading`  DECIMAL(10,2) NOT NULL,
+  `Date_Recorded`    DATE          NOT NULL,
+  `Billing_Month`    VARCHAR(20)   NOT NULL,
+  PRIMARY KEY (`MeterReading_ID`),
+  UNIQUE KEY `unique_consumer_billing_month_reading` (`Consumer_ID`, `Billing_Month`),
+  KEY `MeterReader_ID` (`MeterReader_ID`),
+  CONSTRAINT `meterreading_ibfk_1` FOREIGN KEY (`Consumer_ID`)    REFERENCES `consumer`    (`Consumer_ID`),
+  CONSTRAINT `meterreading_ibfk_2` FOREIGN KEY (`MeterReader_ID`) REFERENCES `meterreader` (`MeterReader_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ─── Notification ─────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS Notification (
-  Notification_ID         VARCHAR(36) PRIMARY KEY,
-  Consumer_ID             VARCHAR(36) NOT NULL,
-  MeterReading_ID         VARCHAR(36),
-  DisconnectionRequest_ID VARCHAR(36),
-  Alert_Type              ENUM('Billing','Disconnection') NOT NULL,
-  Message_Content         TEXT        NOT NULL,
-  Date_Sent               DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  Reference_Type          ENUM('MeterReading','DisconnectionRequest') NOT NULL,
-  Status                  ENUM('Pending','Sent','Failed') NOT NULL DEFAULT 'Pending',
-  FOREIGN KEY (Consumer_ID)             REFERENCES Consumer(Consumer_ID),
-  FOREIGN KEY (MeterReading_ID)         REFERENCES MeterReading(MeterReading_ID),
-  FOREIGN KEY (DisconnectionRequest_ID) REFERENCES DisconnectionRequest(DisconnectionRequest_ID)
-);
--- ─── System Settings ──────────────────────────────────────
-CREATE TABLE IF NOT EXISTS System_Settings (
-  Setting_Key   VARCHAR(100) PRIMARY KEY,
-  Setting_Value TEXT NOT NULL,
-  Updated_At    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+-- =============================================================
+-- TABLE: bill
+-- Billing records generated from meter readings.
+-- References consumer and meterreading.
+-- Enforces one bill per consumer per billing month.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `bill` (
+  `Bill_ID`        VARCHAR(36)                         NOT NULL,
+  `Consumer_ID`    VARCHAR(36)                         NOT NULL,
+  `MeterReading_ID` VARCHAR(36)                        NOT NULL,
+  `Amount`         DECIMAL(10,2)                       NOT NULL,
+  `Due_Date`       DATE                                NOT NULL,
+  `Payment_Status` ENUM('Paid','Unpaid','Partial')     NOT NULL DEFAULT 'Unpaid',
+  `Billing_Month`  VARCHAR(20)                         NOT NULL,
+  PRIMARY KEY (`Bill_ID`),
+  UNIQUE KEY `MeterReading_ID` (`MeterReading_ID`),
+  UNIQUE KEY `unique_consumer_billing_month_bill` (`Consumer_ID`, `Billing_Month`),
+  CONSTRAINT `bill_ibfk_1` FOREIGN KEY (`Consumer_ID`)     REFERENCES `consumer`     (`Consumer_ID`),
+  CONSTRAINT `bill_ibfk_2` FOREIGN KEY (`MeterReading_ID`) REFERENCES `meterreading` (`MeterReading_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Seed default SMS settings
-INSERT IGNORE INTO System_Settings (Setting_Key, Setting_Value) VALUES
-('SMS_PROVIDER', 'httpsms'),
-('SMS_API_URL', 'https://api.httpsms.com/v1/messages/send'),
-('SMS_API_KEY', ''),
-('SMS_PHONE_NUMBER', ''),
-('SMS_DEVICE_ID', ''),
-('SMS_USERNAME', ''),
-('SMS_PASSWORD', ''),
-('SMS_CUSTOM_AUTH_TYPE', ''),
-('SMS_CUSTOM_AUTH_HEADER', ''),
-('SMS_CUSTOM_PAYLOAD', ''),
-('SMS_BATCH_SENDING_ENABLED', '0'),
-('SMS_BATCH_SIZE_LIMIT', '500'),
-('SMS_BATCH_DELAY', '1'),
-('SMS_REQUIRE_CONFIRMATION', '0'),
-('SMS_AUTO_MARK_SENT', '0'),
-('SMS_MESSAGE_TEMPLATE', 'Dear {name}, your electricity bill for {month} is P{amount} (Previous: {previous_reading} kWh, Present: {current_reading} kWh) with a total of {usage} kWh used this month. Please pay on or before {due_date}. - TEBANS'),
-('SMS_LAST_TEST_DATE', ''),
-('SMS_LAST_TEST_STATUS', ''),
-('BILLING_CYCLE_START_DAY', '28'),
-('BILLING_CYCLE_END_DAY', '27');
+-- =============================================================
+-- TABLE: payment
+-- Tracks payments made by consumers for their bills.
+-- References bill, cashier, and consumer.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `payment` (
+  `Payment_ID`     VARCHAR(36)   NOT NULL,
+  `Bill_ID`        VARCHAR(36)   NOT NULL,
+  `Cashier_ID`     VARCHAR(36)   NOT NULL,
+  `Consumer_ID`    VARCHAR(36)   NOT NULL,
+  `Amount_Paid`    DECIMAL(10,2) NOT NULL,
+  `Date_Paid`      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `Payment_Method` ENUM('Cash')  NOT NULL,
+  `Receipt_Number` VARCHAR(50)   NOT NULL,
+  PRIMARY KEY (`Payment_ID`),
+  UNIQUE KEY `Receipt_Number` (`Receipt_Number`),
+  KEY `Bill_ID`     (`Bill_ID`),
+  KEY `Cashier_ID`  (`Cashier_ID`),
+  KEY `Consumer_ID` (`Consumer_ID`),
+  CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`Bill_ID`)     REFERENCES `bill`     (`Bill_ID`),
+  CONSTRAINT `payment_ibfk_2` FOREIGN KEY (`Cashier_ID`)  REFERENCES `cashier`  (`Cashier_ID`),
+  CONSTRAINT `payment_ibfk_3` FOREIGN KEY (`Consumer_ID`) REFERENCES `consumer` (`Consumer_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Seed default Areas
-INSERT IGNORE INTO Area (Area_ID, Name) VALUES
-('area-001', 'Centro'),
-('area-002', 'Kabugnayan'),
-('area-003', 'Ukay'),
-('area-004', 'Molave');
+-- =============================================================
+-- TABLE: disconnectionrequest
+-- Tracks disconnection requests issued against consumers.
+-- References consumer and meterreader.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `disconnectionrequest` (
+  `DisconnectionRequest_ID`  VARCHAR(36)                          NOT NULL,
+  `Consumer_ID`              VARCHAR(36)                          NOT NULL,
+  `MeterReader_ID`           VARCHAR(36)                          NOT NULL,
+  `Reason_for_Disconnection` TEXT                                 NOT NULL,
+  `Scheduled_Date`           DATE                                 NOT NULL,
+  `Request_Status`           ENUM('Pending','Executed','Cancelled') NOT NULL DEFAULT 'Pending',
+  `Date_Requested`           DATETIME                             NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`DisconnectionRequest_ID`),
+  KEY `Consumer_ID`    (`Consumer_ID`),
+  KEY `MeterReader_ID` (`MeterReader_ID`),
+  CONSTRAINT `disconnectionrequest_ibfk_1` FOREIGN KEY (`Consumer_ID`)    REFERENCES `consumer`    (`Consumer_ID`),
+  CONSTRAINT `disconnectionrequest_ibfk_2` FOREIGN KEY (`MeterReader_ID`) REFERENCES `meterreader` (`MeterReader_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- =============================================================
+-- TABLE: notification
+-- Stores billing and disconnection alerts sent to consumers.
+-- References consumer, meterreading, and disconnectionrequest.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `notification` (
+  `Notification_ID`         VARCHAR(36)                              NOT NULL,
+  `Consumer_ID`             VARCHAR(36)                              NOT NULL,
+  `MeterReading_ID`         VARCHAR(36)                              DEFAULT NULL,
+  `DisconnectionRequest_ID` VARCHAR(36)                              DEFAULT NULL,
+  `Alert_Type`              ENUM('Billing','Disconnection')          NOT NULL,
+  `Message_Content`         TEXT                                     NOT NULL,
+  `Date_Sent`               DATETIME                                 NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `Reference_Type`          ENUM('MeterReading','DisconnectionRequest') NOT NULL,
+  `Status`                  ENUM('Pending','Sent','Failed')          NOT NULL DEFAULT 'Pending',
+  PRIMARY KEY (`Notification_ID`),
+  KEY `Consumer_ID`             (`Consumer_ID`),
+  KEY `MeterReading_ID`         (`MeterReading_ID`),
+  KEY `DisconnectionRequest_ID` (`DisconnectionRequest_ID`),
+  CONSTRAINT `notification_ibfk_1` FOREIGN KEY (`Consumer_ID`)             REFERENCES `consumer`             (`Consumer_ID`),
+  CONSTRAINT `notification_ibfk_2` FOREIGN KEY (`MeterReading_ID`)         REFERENCES `meterreading`         (`MeterReading_ID`),
+  CONSTRAINT `notification_ibfk_3` FOREIGN KEY (`DisconnectionRequest_ID`) REFERENCES `disconnectionrequest` (`DisconnectionRequest_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- =============================================================
+-- TABLE: system_settings
+-- Key-value store for configurable system parameters
+-- (e.g., SMS provider settings, templates).
+-- No foreign key dependencies.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS `system_settings` (
+  `Setting_Key`   VARCHAR(100) NOT NULL,
+  `Setting_Value` TEXT         NOT NULL,
+  `Updated_At`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`Setting_Key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;
