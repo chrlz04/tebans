@@ -6,7 +6,8 @@ import { logger } from '@/lib/logger'
 import { execute, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 import { generateSequentialId } from '@/lib/services/billing.service'
-import { sendSms, buildDisconnectionMessage } from '@/lib/services/sms.service'
+import { sendSms } from '@/lib/services/sms.service'
+import { buildDisconnectionMessage } from '@/lib/sms-templates'
 
 interface MeterReaderRow extends RowDataPacket {
   MeterReader_ID: string

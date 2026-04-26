@@ -21,10 +21,15 @@ interface ParsedReading {
 
 interface SmsTask {
   to: string
-  content: string
   consumerId: string
   consumerName: string
   meterReadingId: string
+  amountWithTaxEvat: number
+  dueDate: string
+  billingMonth: string
+  previousReading: number
+  currentReading: number
+  status?: 'Unsent' | 'Sending...' | 'Sent' | 'Failed'
 }
 
 export default function BatchRecordMeterReadingPage() {
@@ -67,8 +72,10 @@ export default function BatchRecordMeterReadingPage() {
       if (fileInputRef.current) fileInputRef.current.value = ''
 
       if (smsSettings?.SMS_BATCH_SENDING_ENABLED === '1' && data.smsTasks?.length > 0) {
-        setPendingSmsTasks(data.smsTasks)
-        setSelectedSmsConsumers(new Set(data.smsTasks.map((t: SmsTask) => t.consumerId)))
+        // Initialize status to 'Unsent'
+        const tasksWithStatus = data.smsTasks.map((t: SmsTask) => ({ ...t, status: 'Unsent' }))
+        setPendingSmsTasks(tasksWithStatus)
+        setSelectedSmsConsumers(new Set(tasksWithStatus.map((t: SmsTask) => t.consumerId)))
         setShowSmsModal(true)
       } else {
         setIsCompleted(true)
@@ -88,21 +95,52 @@ export default function BatchRecordMeterReadingPage() {
       try {
           const tasksToProcess = pendingSmsTasks.filter(t => selectedSmsConsumers.has(t.consumerId))
           if (tasksToProcess.length > 0) {
-              const res = await api.post('/meter-reader/readings/bulk/sms', { smsTasks: tasksToProcess })
-              setSmsQueuedCount(res.data?.smsQueued || tasksToProcess.length)
+              const response = await fetch('/api/meter-reader/readings/bulk/sms/stream', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ smsTasks: tasksToProcess })
+              })
+
+              if (!response.body) throw new Error('ReadableStream not supported')
+
+              const reader = response.body.getReader()
+              const decoder = new TextDecoder('utf-8')
+              let done = false
+
+              while (!done) {
+                  const { value, done: readerDone } = await reader.read()
+                  done = readerDone
+                  if (value) {
+                      const chunk = decoder.decode(value, { stream: true })
+                      const lines = chunk.split('\n')
+                      for (const line of lines) {
+                          if (line.startsWith('data: ')) {
+                              try {
+                                  const data = JSON.parse(line.slice(6))
+                                  setPendingSmsTasks(prev => prev.map(t =>
+                                      t.consumerId === data.consumerId ? { ...t, status: data.status } : t
+                                  ))
+                              } catch (e) {
+                                  console.error('Failed to parse SSE line', line)
+                              }
+                          }
+                      }
+                  }
+              }
+
+              const finalTasks = pendingSmsTasks.filter(t => selectedSmsConsumers.has(t.consumerId))
+              setSmsQueuedCount(finalTasks.length) // Represent the processed items
           }
-          setShowSmsModal(false)
-          setIsCompleted(true)
+          // Intentionally kept open to let users see the completion state.
+          // They can close it manually which will trigger setIsCompleted(true)
       } catch (err) {
           setParseError('Failed to dispatch SMS notifications.')
-          setShowSmsModal(false)
-          setIsCompleted(true) // Bills were still saved
       } finally {
           setIsSendingSms(false)
       }
   }
 
-  const handleSkipSms = () => {
+  const handleCloseSmsModal = () => {
       setShowSmsModal(false)
       setIsCompleted(true)
   }
@@ -344,13 +382,13 @@ export default function BatchRecordMeterReadingPage() {
 
     return (
       <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
           <div className="p-6 border-b border-gray-100 flex items-center justify-between">
             <div>
               <h2 className="text-xl font-bold text-gray-900">Send Batch SMS Notifications</h2>
-              <p className="text-sm text-gray-500 mt-1">Bills were generated successfully. Select consumers to notify.</p>
+              <p className="text-sm text-gray-500 mt-1">Bills were generated successfully for {pendingSmsTasks[0]?.billingMonth}. Select consumers to notify.</p>
             </div>
-            <button onClick={handleSkipSms} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+            <button onClick={handleCloseSmsModal} disabled={isSendingSms} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
               <X size={20} />
             </button>
           </div>
@@ -362,11 +400,14 @@ export default function BatchRecordMeterReadingPage() {
                   type="checkbox"
                   checked={allSelected}
                   onChange={toggleAll}
-                  className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-600"
+                  disabled={isSendingSms}
+                  className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-600 disabled:opacity-50"
                 />
                 <span className="text-sm font-medium text-gray-700">Select All ({pendingSmsTasks.length})</span>
               </label>
-              <span className="text-sm text-gray-500">{selectedSmsConsumers.size} selected</span>
+              <span className="text-sm text-gray-500">
+                {pendingSmsTasks.filter(t => t.status === 'Unsent').length} unsent &middot; {pendingSmsTasks.filter(t => t.status === 'Sent').length} already sent
+              </span>
             </div>
 
             <div className="border border-gray-200 rounded-lg overflow-hidden">
@@ -377,23 +418,37 @@ export default function BatchRecordMeterReadingPage() {
                       <th className="px-4 py-3 w-12"></th>
                       <th className="px-4 py-3">Account No.</th>
                       <th className="px-4 py-3">Name</th>
+                      <th className="px-4 py-3">Amount</th>
                       <th className="px-4 py-3">Phone</th>
+                      <th className="px-4 py-3">SMS Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {pendingSmsTasks.map(task => (
-                      <tr key={task.consumerId} className="hover:bg-gray-50 cursor-pointer" onClick={() => toggleConsumer(task.consumerId)}>
+                      <tr key={task.consumerId} className="hover:bg-gray-50 cursor-pointer" onClick={() => !isSendingSms && toggleConsumer(task.consumerId)}>
                         <td className="px-4 py-3">
                           <input
                             type="checkbox"
                             checked={selectedSmsConsumers.has(task.consumerId)}
+                            disabled={isSendingSms}
                             readOnly
-                            className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-600 pointer-events-none"
+                            className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-600 pointer-events-none disabled:opacity-50"
                           />
                         </td>
                         <td className="px-4 py-3 font-mono text-xs">{task.consumerId}</td>
                         <td className="px-4 py-3 font-medium text-gray-900">{task.consumerName}</td>
+                        <td className="px-4 py-3">₱{task.amountWithTaxEvat.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                         <td className="px-4 py-3 text-gray-500">{task.to}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                            task.status === 'Sent' ? 'bg-green-100 text-green-800' :
+                            task.status === 'Failed' ? 'bg-red-100 text-red-800' :
+                            task.status === 'Sending...' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {task.status || 'Unsent'}
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -403,11 +458,11 @@ export default function BatchRecordMeterReadingPage() {
           </div>
 
           <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 shrink-0">
-            <Button variant="secondary" onClick={handleSkipSms} disabled={isSendingSms}>
-              Skip SMS
+            <Button variant="secondary" onClick={handleCloseSmsModal} disabled={isSendingSms}>
+              {smsQueuedCount > 0 && !isSendingSms ? 'Close' : 'Cancel'}
             </Button>
-            <Button variant="primary" onClick={handleSendBatchSms} isLoading={isSendingSms} disabled={selectedSmsConsumers.size === 0}>
-              Send {selectedSmsConsumers.size} SMS
+            <Button variant="primary" onClick={handleSendBatchSms} isLoading={isSendingSms} disabled={selectedSmsConsumers.size === 0 || isSendingSms || (smsQueuedCount > 0 && smsQueuedCount === selectedSmsConsumers.size)}>
+              {isSendingSms ? 'Sending...' : 'Send SMS'}
             </Button>
           </div>
         </div>
