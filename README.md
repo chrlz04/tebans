@@ -81,6 +81,7 @@ Browser
 - View system dashboard (total active consumers, pending disconnections, recent registrations)
 - Manage staff accounts (Meter Readers and Cashiers) — create, edit, activate, deactivate
 - View and manage consumer accounts — activate, deactivate
+- Manage system settings (billing cycle, areas, and SMS configurations)
 - Change account password
 
 ### Meter Reader
@@ -96,7 +97,7 @@ Browser
 ### Cashier
 - View daily dashboard (total collections, transactions processed, pending remittance, pending consumers)
 - Process consumer payments (single or multiple bills)
-- View collection reports with date range filter and CSV export
+- View collection reports with date range filter
 - Change account password
 
 ### Consumer
@@ -110,259 +111,263 @@ Browser
 
 ## Project Structure
 
-```
-tebans/
-├── src/
-│   ├── app/
-│   │   ├── (auth)/
-│   │   │   ├── change-password/
-│   │   │   │   └── page.tsx
-│   │   │   ├── layout.tsx
-│   │   │   └── login/
-│   │   │       └── page.tsx
-│   │   ├── admin/
-│   │   │   ├── accounts/
-│   │   │   │   └── page.tsx
-│   │   │   ├── dashboard/
-│   │   │   │   ├── components/
-│   │   │   │   │   ├── BillingCycleProgress.tsx
-│   │   │   │   │   └── PaymentCollectionProgress.tsx
-│   │   │   │   └── page.tsx
-│   │   │   ├── layout.tsx
-│   │   │   ├── profile/
-│   │   │   │   └── page.tsx
-│   │   │   ├── settings/
-│   │   │   │   ├── areas/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   ├── billing-cycle/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   ├── page.tsx
-│   │   │   │   └── sms/
-│   │   │   │       └── page.tsx
-│   │   │   └── staff/
-│   │   │       └── new/
-│   │   │           └── page.tsx
-│   │   ├── api/
-│   │   │   ├── admin/
-│   │   │   │   ├── areas/
-│   │   │   │   │   ├── [areaId]/
-│   │   │   │   │   │   ├── dependencies/
-│   │   │   │   │   │   │   └── route.ts
-│   │   │   │   │   │   └── route.ts
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── auth/
-│   │   │   │   │   └── change-password/
-│   │   │   │   │       └── route.ts
-│   │   │   │   ├── consumers/
-│   │   │   │   │   ├── [consumerId]/
-│   │   │   │   │   │   └── status/
-│   │   │   │   │   │       └── route.ts
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── dashboard/
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── profile/
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── settings/
-│   │   │   │   │   └── billing-cycle/
-│   │   │   │   │       ├── route.ts
-│   │   │   │   │       └── status/
-│   │   │   │   │           └── route.ts
-│   │   │   │   ├── sms-settings/
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── sms-test/
-│   │   │   │   │   └── route.ts
-│   │   │   │   └── staff/
-│   │   │   │       ├── [userId]/
-│   │   │   │       │   ├── route.ts
-│   │   │   │       │   └── status/
-│   │   │   │       │       └── route.ts
-│   │   │   │       └── route.ts
-│   │   │   ├── areas/
-│   │   │   │   └── route.ts
-│   │   │   ├── auth/
-│   │   │   │   ├── change-password/
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── login/
-│   │   │   │   │   └── route.ts
-│   │   │   │   └── logout/
-│   │   │   │       └── route.ts
-│   │   │   ├── cashier/
-│   │   │   │   ├── auth/
-│   │   │   │   │   └── change-password/
-│   │   │   │   │       └── route.ts
-│   │   │   │   ├── bills/
-│   │   │   │   │   └── unpaid/
-│   │   │   │   │       └── route.ts
-│   │   │   │   ├── collections/
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── dashboard/
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── payments/
-│   │   │   │   │   └── route.ts
-│   │   │   │   └── profile/
-│   │   │   │       └── route.ts
-│   │   │   ├── consumer/
-│   │   │   │   ├── auth/
-│   │   │   │   │   └── change-password/
-│   │   │   │   │       └── route.ts
-│   │   │   │   ├── bills/
-│   │   │   │   │   ├── current/
-│   │   │   │   │   │   └── route.ts
-│   │   │   │   │   ├── history/
-│   │   │   │   │   │   └── route.ts
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── payments/
-│   │   │   │   │   └── route.ts
-│   │   │   │   └── profile/
-│   │   │   │       └── route.ts
-│   │   │   ├── debug/
-│   │   │   │   └── route.ts
-│   │   │   ├── hash/
-│   │   │   │   └── route.ts
-│   │   │   ├── health/
-│   │   │   │   └── route.ts
-│   │   │   ├── meter-reader/
-│   │   │   │   ├── auth/
-│   │   │   │   │   └── change-password/
-│   │   │   │   │       └── route.ts
-│   │   │   │   ├── consumers/
-│   │   │   │   │   ├── [consumerId]/
-│   │   │   │   │   │   ├── bill/
-│   │   │   │   │   │   │   └── route.ts
-│   │   │   │   │   │   ├── previous-reading/
-│   │   │   │   │   │   │   └── route.ts
-│   │   │   │   │   │   └── route.ts
-│   │   │   │   │   ├── batch/
-│   │   │   │   │   │   └── route.ts
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── dashboard/
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── disconnections/
-│   │   │   │   │   ├── overdue/
-│   │   │   │   │   │   └── route.ts
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── payments/
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── profile/
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── readings/
-│   │   │   │   │   ├── bulk/
-│   │   │   │   │   │   ├── route.ts
-│   │   │   │   │   │   └── sms/
-│   │   │   │   │   │       ├── route.ts
-│   │   │   │   │   │       └── stream/
-│   │   │   │   │   │           └── route.ts
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── sms/
-│   │   │   │   │   └── route.ts
-│   │   │   │   └── sms-settings/
-│   │   │   │       └── route.ts
-│   │   │   ├── settings/
-│   │   │   │   └── billing-cycle/
-│   │   │   │       └── route.ts
-│   │   │   └── test-sms/
-│   │   │       └── route.ts
-│   │   ├── cashier/
-│   │   │   ├── collections/
-│   │   │   │   └── page.tsx
-│   │   │   ├── dashboard/
-│   │   │   │   ├── components/
-│   │   │   │   │   └── CashierCollectionProgress.tsx
-│   │   │   │   └── page.tsx
-│   │   │   ├── layout.tsx
-│   │   │   ├── payments/
-│   │   │   │   └── new/
-│   │   │   │       └── page.tsx
-│   │   │   └── profile/
-│   │   │       └── page.tsx
-│   │   ├── consumer/
-│   │   │   ├── bills/
-│   │   │   │   └── page.tsx
-│   │   │   ├── layout.tsx
-│   │   │   ├── payments/
-│   │   │   │   └── page.tsx
-│   │   │   └── profile/
-│   │   │       └── page.tsx
-│   │   ├── favicon.ico
-│   │   ├── globals.css
-│   │   ├── layout.tsx
-│   │   ├── meter-reader/
-│   │   │   ├── components/
-│   │   │   │   └── ConsumerTabs.tsx
-│   │   │   ├── consumers/
-│   │   │   │   ├── new/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   ├── page.tsx
-│   │   │   │   └── payments/
-│   │   │   │       └── page.tsx
-│   │   │   ├── dashboard/
-│   │   │   │   ├── components/
-│   │   │   │   │   ├── MeterReaderBillingProgress.tsx
-│   │   │   │   │   └── MeterReaderOverdueAccounts.tsx
-│   │   │   │   └── page.tsx
-│   │   │   ├── disconnections/
-│   │   │   │   └── page.tsx
-│   │   │   ├── layout.tsx
-│   │   │   ├── profile/
-│   │   │   │   └── page.tsx
-│   │   │   ├── readings/
-│   │   │   │   ├── batch/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   ├── new/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   └── page.tsx
-│   │   │   └── sms/
-│   │   │       └── page.tsx
-│   │   └── page.tsx
-│   ├── components/
-│   │   ├── admin/
-│   │   │   └── SmsSettingsForm.tsx
-│   │   ├── layout/
-│   │   │   ├── DashboardLayout.tsx
-│   │   │   ├── Header.tsx
-│   │   │   ├── Sidebar.tsx
-│   │   │   └── TopBar.tsx
-│   │   ├── shared/
-│   │   │   ├── ChangePasswordForm.tsx
-│   │   │   ├── ConsumerBillModal.tsx
-│   │   │   ├── DataTable.tsx
-│   │   │   ├── DateRangePicker.tsx
-│   │   │   ├── EditConsumerModal.tsx
-│   │   │   ├── EditStaffModal.tsx
-│   │   │   ├── SearchBar.tsx
-│   │   │   ├── StatCard.tsx
-│   │   │   ├── ThemeProvider.tsx
-│   │   │   └── ThemeToggle.tsx
-│   │   └── ui/
-│   │       ├── Avatar.tsx
-│   │       ├── Badge.tsx
-│   │       ├── Button.tsx
-│   │       ├── DueDateBadge.tsx
-│   │       ├── Input.tsx
-│   │       └── Modal.tsx
-│   └── lib/
-│       ├── api.ts
-│       ├── auth-context.tsx
-│       ├── auth-helpers.ts
-│       ├── date-utils.ts
-│       ├── db-helpers.ts
-│       ├── db.ts
-│       ├── error-handler.ts
-│       ├── logger.ts
-│       ├── psgc.ts
-│       ├── rate-limiter.ts
-│       ├── schema.sql
-│       ├── seed.sql
-│       ├── services/
-│       │   ├── billing.service.ts
-│       │   ├── payment.service.ts
-│       │   ├── settings.service.ts
-│       │   └── sms.service.ts
-│       ├── sms-templates.ts
-│       ├── use-role-guard.ts
-│       └── validators.ts
+```text
+src
+├── app
+│   ├── (auth)
+│   │   ├── change-password
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   └── login
+│   │       └── page.tsx
+│   ├── admin
+│   │   ├── accounts
+│   │   │   └── page.tsx
+│   │   ├── dashboard
+│   │   │   ├── components
+│   │   │   │   ├── BillingCycleProgress.tsx
+│   │   │   │   └── PaymentCollectionProgress.tsx
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── profile
+│   │   │   └── page.tsx
+│   │   ├── settings
+│   │   │   ├── areas
+│   │   │   │   └── page.tsx
+│   │   │   ├── billing-cycle
+│   │   │   │   └── page.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── sms
+│   │   │       └── page.tsx
+│   │   └── staff
+│   │       └── new
+│   │           └── page.tsx
+│   ├── api
+│   │   ├── admin
+│   │   │   ├── areas
+│   │   │   │   ├── [areaId]
+│   │   │   │   │   ├── dependencies
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── auth
+│   │   │   │   └── change-password
+│   │   │   │       └── route.ts
+│   │   │   ├── consumers
+│   │   │   │   ├── [consumerId]
+│   │   │   │   │   └── status
+│   │   │   │   │       └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── dashboard
+│   │   │   │   └── route.ts
+│   │   │   ├── profile
+│   │   │   │   └── route.ts
+│   │   │   ├── settings
+│   │   │   │   └── billing-cycle
+│   │   │   │       ├── route.ts
+│   │   │   │       └── status
+│   │   │   │           └── route.ts
+│   │   │   ├── sms-settings
+│   │   │   │   └── route.ts
+│   │   │   ├── sms-test
+│   │   │   │   └── route.ts
+│   │   │   └── staff
+│   │   │       ├── [userId]
+│   │   │       │   ├── route.ts
+│   │   │       │   └── status
+│   │   │       │       └── route.ts
+│   │   │       └── route.ts
+│   │   ├── areas
+│   │   │   └── route.ts
+│   │   ├── auth
+│   │   │   ├── change-password
+│   │   │   │   └── route.ts
+│   │   │   ├── login
+│   │   │   │   └── route.ts
+│   │   │   └── logout
+│   │   │       └── route.ts
+│   │   ├── cashier
+│   │   │   ├── auth
+│   │   │   │   └── change-password
+│   │   │   │       └── route.ts
+│   │   │   ├── bills
+│   │   │   │   └── unpaid
+│   │   │   │       └── route.ts
+│   │   │   ├── collections
+│   │   │   │   └── route.ts
+│   │   │   ├── dashboard
+│   │   │   │   └── route.ts
+│   │   │   ├── payments
+│   │   │   │   └── route.ts
+│   │   │   └── profile
+│   │   │       └── route.ts
+│   │   ├── consumer
+│   │   │   ├── auth
+│   │   │   │   └── change-password
+│   │   │   │       └── route.ts
+│   │   │   ├── bills
+│   │   │   │   ├── current
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── history
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── payments
+│   │   │   │   └── route.ts
+│   │   │   └── profile
+│   │   │       └── route.ts
+│   │   ├── debug
+│   │   │   └── route.ts
+│   │   ├── hash
+│   │   │   └── route.ts
+│   │   ├── health
+│   │   │   └── route.ts
+│   │   ├── meter-reader
+│   │   │   ├── auth
+│   │   │   │   └── change-password
+│   │   │   │       └── route.ts
+│   │   │   ├── consumers
+│   │   │   │   ├── [consumerId]
+│   │   │   │   │   ├── bill
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── previous-reading
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── batch
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── dashboard
+│   │   │   │   └── route.ts
+│   │   │   ├── disconnections
+│   │   │   │   ├── overdue
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── payments
+│   │   │   │   └── route.ts
+│   │   │   ├── profile
+│   │   │   │   └── route.ts
+│   │   │   ├── readings
+│   │   │   │   ├── bulk
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   └── sms
+│   │   │   │   │       ├── route.ts
+│   │   │   │   │       └── stream
+│   │   │   │   │           └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── sms
+│   │   │   │   └── route.ts
+│   │   │   └── sms-settings
+│   │   │       └── route.ts
+│   │   ├── settings
+│   │   │   └── billing-cycle
+│   │   │       └── route.ts
+│   │   └── test-sms
+│   │       └── route.ts
+│   ├── cashier
+│   │   ├── collections
+│   │   │   └── page.tsx
+│   │   ├── dashboard
+│   │   │   ├── components
+│   │   │   │   └── CashierCollectionProgress.tsx
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── payments
+│   │   │   └── new
+│   │   │       └── page.tsx
+│   │   └── profile
+│   │       └── page.tsx
+│   ├── consumer
+│   │   ├── bills
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── payments
+│   │   │   └── page.tsx
+│   │   └── profile
+│   │       └── page.tsx
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   ├── meter-reader
+│   │   ├── components
+│   │   │   └── ConsumerTabs.tsx
+│   │   ├── consumers
+│   │   │   ├── new
+│   │   │   │   └── page.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── payments
+│   │   │       └── page.tsx
+│   │   ├── dashboard
+│   │   │   ├── components
+│   │   │   │   ├── MeterReaderBillingProgress.tsx
+│   │   │   │   └── MeterReaderOverdueAccounts.tsx
+│   │   │   └── page.tsx
+│   │   ├── disconnections
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── profile
+│   │   │   └── page.tsx
+│   │   ├── readings
+│   │   │   ├── batch
+│   │   │   │   └── page.tsx
+│   │   │   ├── new
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
+│   │   └── sms
+│   │       └── page.tsx
+│   └── page.tsx
+├── components
+│   ├── admin
+│   │   └── SmsSettingsForm.tsx
+│   ├── layout
+│   │   ├── DashboardLayout.tsx
+│   │   ├── Header.tsx
+│   │   ├── Sidebar.tsx
+│   │   └── TopBar.tsx
+│   ├── shared
+│   │   ├── ChangePasswordForm.tsx
+│   │   ├── ConsumerBillModal.tsx
+│   │   ├── DataTable.tsx
+│   │   ├── DateRangePicker.tsx
+│   │   ├── EditConsumerModal.tsx
+│   │   ├── EditStaffModal.tsx
+│   │   ├── SearchBar.tsx
+│   │   ├── StatCard.tsx
+│   │   ├── ThemeProvider.tsx
+│   │   └── ThemeToggle.tsx
+│   └── ui
+│       ├── Avatar.tsx
+│       ├── Badge.tsx
+│       ├── Button.tsx
+│       ├── DueDateBadge.tsx
+│       ├── Input.tsx
+│       └── Modal.tsx
+├── lib
+│   ├── api.ts
+│   ├── auth-context.tsx
+│   ├── auth-helpers.ts
+│   ├── date-utils.ts
+│   ├── db-helpers.ts
+│   ├── db.ts
+│   ├── error-handler.ts
+│   ├── logger.ts
+│   ├── psgc.ts
+│   ├── rate-limiter.ts
+│   ├── schema.sql
+│   ├── seed.sql
+│   ├── services
+│   │   ├── billing.service.ts
+│   │   ├── payment.service.ts
+│   │   ├── settings.service.ts
+│   │   └── sms.service.ts
+│   ├── sms-templates.ts
+│   ├── use-role-guard.ts
+│   └── validators.ts
+├── proxy.ts
+└── types
+    ├── area.ts
+    ├── index.ts
+    └── psgc.ts
 
-
+115 directories, 139 files
 ```
 
 ---
@@ -501,74 +506,78 @@ All endpoints are prefixed with `/api`. Protected endpoints require a valid JWT 
 | PUT | `/api/consumer/auth/change-password` | Consumer | Change consumer password |
 | PUT | `/api/meter-reader/auth/change-password` | Meter Reader | Change meter reader password |
 | PUT | `/api/cashier/auth/change-password` | Cashier | Change cashier password |
+
 ### Admin
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/admin/dashboard` | Dashboard stats |
-| GET | `/api/admin/profile` | Get admin profile |
-| GET | `/api/admin/staff` | List all staff |
-| POST | `/api/admin/staff` | Create staff account |
-| PUT | `/api/admin/staff/[userId]` | Update staff account |
-| PATCH | `/api/admin/staff/[userId]/status` | Toggle staff status |
+| GET/POST | `/api/admin/areas` | Manage sub-barangay areas |
+| GET/PUT/DELETE | `/api/admin/areas/[areaId]` | Manage specific area |
+| GET | `/api/admin/areas/[areaId]/dependencies` | Check dependencies for area |
 | GET | `/api/admin/consumers` | List all consumers |
 | PATCH | `/api/admin/consumers/[consumerId]/status` | Toggle consumer status |
-| GET/POST | `/api/admin/areas` | Manage sub-barangay areas |
-| GET/PUT/DEL| `/api/admin/areas/[areaId]` | Update/delete specific area |
-| GET | `/api/admin/areas/[areaId]/dependencies` | Check dependencies for area |
-| GET/PUT | `/api/admin/settings/billing-cycle` | Manage billing cycle bounds |
+| GET | `/api/admin/dashboard` | Dashboard stats |
+| GET | `/api/admin/profile` | Get admin profile |
+| GET/PUT | `/api/admin/settings/billing-cycle` | Manage billing cycle |
 | PATCH | `/api/admin/settings/billing-cycle/status` | Toggle automatic cycle updates |
-| GET/PUT | `/api/admin/sms-settings` | Manage global SMS credentials |
+| GET/PUT | `/api/admin/sms-settings` | Manage SMS configuration |
 | POST | `/api/admin/sms-test` | Send a test SMS to verify provider |
-### Consumer
+| GET/POST | `/api/admin/staff` | Manage staff accounts |
+| PUT | `/api/admin/staff/[userId]` | Update staff account |
+| PATCH | `/api/admin/staff/[userId]/status` | Toggle staff status |
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/consumer/profile` | Get own profile |
-| GET | `/api/consumer/bills` | Get all bills |
-| GET | `/api/consumer/bills/current` | Get current balance |
-| GET | `/api/consumer/bills/history` | Get billing history |
-| GET | `/api/consumer/payments` | Get payment history |
-### Meter Reader
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/meter-reader/profile` | Get own profile |
-| GET | `/api/meter-reader/dashboard` | Dashboard stats |
-| GET | `/api/meter-reader/consumers` | List consumers |
-| GET | `/api/meter-reader/consumers/batch` | List consumers in batch mode |
-| POST | `/api/meter-reader/consumers` | Register new consumer |
-| GET/PUT | `/api/meter-reader/consumers/[consumerId]` | View/Update consumer |
-| GET | `/api/meter-reader/consumers/[consumerId]/bill` | View consumer bills |
-| GET | `/api/meter-reader/consumers/[consumerId]/previous-reading` | Get last reading |
-| GET | `/api/meter-reader/readings` | List meter readings |
-| POST | `/api/meter-reader/readings` | Record meter reading + generate bill |
-| POST | `/api/meter-reader/readings/bulk` | Import bulk readings |
-| POST | `/api/meter-reader/readings/bulk/sms` | Send bulk SMS for readings |
-| GET | `/api/meter-reader/readings/bulk/sms/stream` | SSE stream for batch SMS |
-| GET | `/api/meter-reader/disconnections` | List standard disconnections |
-| POST | `/api/meter-reader/disconnections` | Submit disconnection request |
-| GET | `/api/meter-reader/disconnections/overdue` | List overdue accounts |
-| GET | `/api/meter-reader/payments` | View payment collection |
-| GET/PUT | `/api/meter-reader/sms-settings` | Manage SMS configuration |
-| GET | `/api/meter-reader/sms` | SMS log / history |
 ### Cashier
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/cashier/profile` | Get own profile |
-| GET | `/api/cashier/dashboard` | Dashboard stats |
 | GET | `/api/cashier/bills/unpaid` | List unpaid bills |
-| POST | `/api/cashier/payments` | Process payment |
 | GET | `/api/cashier/collections` | Collection reports |
+| GET | `/api/cashier/dashboard` | Dashboard stats |
+| POST | `/api/cashier/payments` | Process payment |
+| GET | `/api/cashier/profile` | Get cashier profile |
+
+### Consumer
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/consumer/bills` | Get all bills |
+| GET | `/api/consumer/bills/current` | Get current balance |
+| GET | `/api/consumer/bills/history` | Get billing history |
+| GET | `/api/consumer/payments` | Get payment history |
+| GET | `/api/consumer/profile` | Get consumer profile |
+
+### Meter Reader
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/meter-reader/consumers` | List assigned consumers |
+| POST | `/api/meter-reader/consumers` | Register new consumer |
+| GET | `/api/meter-reader/consumers/batch` | List consumers in batch mode |
+| GET/PUT | `/api/meter-reader/consumers/[consumerId]` | View/Update consumer |
+| GET | `/api/meter-reader/consumers/[consumerId]/bill` | View consumer bills |
+| GET | `/api/meter-reader/consumers/[consumerId]/previous-reading` | Get last reading |
+| GET | `/api/meter-reader/dashboard` | Dashboard stats |
+| GET | `/api/meter-reader/disconnections` | List standard disconnections |
+| POST | `/api/meter-reader/disconnections` | Submit disconnection request |
+| GET | `/api/meter-reader/disconnections/overdue` | List overdue accounts |
+| GET | `/api/meter-reader/payments` | View payment collections |
+| GET | `/api/meter-reader/profile` | Get meter reader profile |
+| GET | `/api/meter-reader/readings` | List meter readings |
+| POST | `/api/meter-reader/readings` | Record meter reading |
+| POST | `/api/meter-reader/readings/bulk` | Import bulk readings |
+| POST | `/api/meter-reader/readings/bulk/sms` | Send bulk SMS for readings |
+| GET | `/api/meter-reader/readings/bulk/sms/stream` | SSE stream for batch SMS |
+| GET | `/api/meter-reader/sms` | SMS log / history |
+| GET/PUT | `/api/meter-reader/sms-settings` | Manage SMS configuration |
+
 ### Other
 
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
 | GET | `/api/areas` | Protected | Get list of available areas |
-| GET | `/api/health` | Public | API health check endpoint |
-| GET | `/api/hash` | Dev | Password hashing utility endpoint |
 | GET | `/api/debug` | Dev | Debugging utility endpoint |
+| GET | `/api/hash` | Dev | Password hashing utility endpoint |
+| GET | `/api/health` | Public | API health check endpoint |
 | GET | `/api/settings/billing-cycle` | System | Active cycle sync |
 | POST | `/api/test-sms` | Dev | SMS gateway test endpoint |
 ---
