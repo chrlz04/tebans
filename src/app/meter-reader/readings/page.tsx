@@ -81,18 +81,18 @@ export default function RecordMeterReadingPage() {
           <CheckCircle size={48} className="text-primary-500" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-foreground">
             Bill Generated Successfully
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             The bill has been generated and an SMS notification has been sent to
             the consumer.
           </p>
         </div>
         {generatedBillAmount !== null && (
-          <div className="bg-white rounded-xl border border-gray-200 px-8 py-5 w-full">
-            <p className="text-sm text-gray-500">Bill Amount</p>
-            <p className="text-4xl font-bold text-gray-900 mt-1">
+          <div className="bg-card rounded-xl border border-border px-8 py-5 w-full">
+            <p className="text-sm text-muted-foreground">Bill Amount</p>
+            <p className="text-4xl font-bold text-foreground mt-1">
               ₱{generatedBillAmount.toLocaleString('en-PH', {
                 minimumFractionDigits: 2,
               })}
@@ -124,15 +124,15 @@ export default function RecordMeterReadingPage() {
       <div className="flex items-center gap-4 mb-6">
         <Link
           href="/meter-reader/consumers"
-          className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+          className="p-2 text-muted-foreground hover:text-muted-foreground transition-colors rounded-lg hover:bg-muted"
         >
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-xl font-semibold text-foreground">
             Record Meter Reading
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Input meter reading data to generate a bill
           </p>
         </div>
@@ -144,8 +144,8 @@ export default function RecordMeterReadingPage() {
       >
 
         {/* Consumer Search */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-4">
-          <h2 className="text-sm font-semibold text-gray-900">
+        <div className="bg-card rounded-xl border border-border p-6 flex flex-col gap-4">
+          <h2 className="text-sm font-semibold text-foreground">
             Select Consumer
           </h2>
 
@@ -157,7 +157,7 @@ export default function RecordMeterReadingPage() {
 
           {/* Search Results */}
           {consumers && consumers.length > 0 && !selectedConsumer && (
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="border border-border rounded-lg overflow-hidden">
               {consumers.map((consumer) => (
                 <button
                   key={consumer.consumerId}
@@ -167,17 +167,17 @@ export default function RecordMeterReadingPage() {
                     setValue('consumerId', consumer.consumerId)
                     setSearch(`${consumer.firstName} ${consumer.lastName}`)
                   }}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-primary-50 transition-colors text-left border-b border-gray-100 last:border-0"
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-primary-50 transition-colors text-left border-b border-border/50 last:border-0"
                 >
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-foreground">
                       {consumer.firstName} {consumer.lastName}
                     </p>
-                    <p className="text-xs text-gray-500 font-mono">
+                    <p className="text-xs text-muted-foreground font-mono">
                       {consumer.consumerId} — {consumer.areaName}
                     </p>
                   </div>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-muted-foreground">
                     {consumer.meterSerialNo}
                   </span>
                 </button>
@@ -216,8 +216,8 @@ export default function RecordMeterReadingPage() {
         </div>
 
         {/* Reading Details */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-4">
-          <h2 className="text-sm font-semibold text-gray-900">
+        <div className="bg-card rounded-xl border border-border p-6 flex flex-col gap-4">
+          <h2 className="text-sm font-semibold text-foreground">
             Reading Details
           </h2>
 

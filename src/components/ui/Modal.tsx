@@ -47,7 +47,7 @@ export default function Modal({
       {/* Modal Box */}
       <div
         className={clsx(
-          'relative bg-white rounded-xl shadow-lg z-10 w-full flex flex-col max-h-full',
+          'relative bg-card rounded-xl shadow-lg z-10 w-full flex flex-col max-h-full',
           {
             'max-w-sm': size === 'sm',
             'max-w-lg': size === 'md',
@@ -56,11 +56,11 @@ export default function Modal({
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
-          <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+          <h3 className="text-base font-semibold text-foreground">{title}</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+            className="text-muted-foreground hover:text-muted-foreground transition-colors p-1"
           >
             <X size={20} />
           </button>

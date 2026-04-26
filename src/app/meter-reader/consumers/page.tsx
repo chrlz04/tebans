@@ -90,7 +90,7 @@ export default function MeterReaderConsumersPage() {
               `&meterSerialNo=${encodeURIComponent(row.meterSerialNo)}`
             )
           }
-          className="p-1.5 text-gray-400 hover:text-primary-600 transition-colors"
+          className="p-1.5 text-muted-foreground hover:text-primary-600 transition-colors"
           title="Record Reading"
         >
           <Zap size={16} />
@@ -102,7 +102,7 @@ export default function MeterReaderConsumersPage() {
             setSelectedConsumer(row)
             setIsBillModalOpen(true)
           }}
-          className="p-1.5 text-gray-400 hover:text-primary-600 transition-colors"
+          className="p-1.5 text-muted-foreground hover:text-primary-600 transition-colors"
           title="View Bill"
         >
           <Eye size={16} />
@@ -114,7 +114,7 @@ export default function MeterReaderConsumersPage() {
             setSelectedConsumer(row)
             setIsEditModalOpen(true)
           }}
-          className="p-1.5 text-gray-400 hover:text-primary-600 transition-colors"
+          className="p-1.5 text-muted-foreground hover:text-primary-600 transition-colors"
           title="Edit Consumer"
         >
           <Edit size={16} />
@@ -132,8 +132,8 @@ export default function MeterReaderConsumersPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">View Consumers</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">View Consumers</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Browse and search assigned consumer accounts
           </p>
         </div>
@@ -148,7 +148,7 @@ export default function MeterReaderConsumersPage() {
       </div>
 
       {/* Main Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-card rounded-xl border border-border p-6">
         <div className="mb-4">
           <SearchBar
             value={search}

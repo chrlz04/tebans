@@ -13,11 +13,11 @@ interface Props {
 export default function PaymentCollectionProgress({ progress, isLoading }: Props) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-8 flex flex-col gap-6 animate-pulse">
+      <div className="bg-card rounded-xl border border-border p-8 flex flex-col gap-6 animate-pulse">
         <div className="h-6 bg-gray-200 rounded w-1/3 mb-2" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-28 bg-gray-100 rounded-xl" />
+            <div key={i} className="h-28 bg-muted rounded-xl" />
           ))}
         </div>
       </div>
@@ -29,12 +29,12 @@ export default function PaymentCollectionProgress({ progress, isLoading }: Props
   const currentMonthYear = new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila', month: 'long', year: 'numeric' })
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-8 flex flex-col gap-8">
+    <div className="bg-card rounded-xl border border-border p-8 flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Payment collection progress</h2>
-          <p className="text-sm text-gray-500 mt-1">{currentMonthYear} — all routes</p>
+          <h2 className="text-xl font-semibold text-foreground">Payment collection progress</h2>
+          <p className="text-sm text-muted-foreground mt-1">{currentMonthYear} — all routes</p>
         </div>
         <DueDateBadge />
       </div>
@@ -42,39 +42,39 @@ export default function PaymentCollectionProgress({ progress, isLoading }: Props
       {/* Summary Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-[#f8f9f6] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
-          <p className="text-sm text-gray-500 text-center">Total consumers</p>
-          <p className="text-4xl font-bold text-gray-900">{progress.totalConsumers}</p>
+          <p className="text-sm text-muted-foreground text-center">Total consumers</p>
+          <p className="text-4xl font-bold text-foreground">{progress.totalConsumers}</p>
         </div>
         <div className="bg-[#f8f9f6] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
-          <p className="text-sm text-gray-500 text-center">Paid</p>
+          <p className="text-sm text-muted-foreground text-center">Paid</p>
           <p className="text-4xl font-bold text-[#2d6a4f]">{progress.paidConsumers}</p>
         </div>
         <div className="bg-[#f8f9f6] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
-          <p className="text-sm text-gray-500 text-center">Not yet paid</p>
+          <p className="text-sm text-muted-foreground text-center">Not yet paid</p>
           <p className="text-4xl font-bold text-[#8c6b23]">{progress.notYetPaidConsumers}</p>
         </div>
         <div className="bg-[#f8f9f6] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
-          <p className="text-sm text-gray-500 text-center">Overall</p>
-          <p className="text-4xl font-bold text-gray-900">{progress.overallCompletion}%</p>
+          <p className="text-sm text-muted-foreground text-center">Overall</p>
+          <p className="text-4xl font-bold text-foreground">{progress.overallCompletion}%</p>
         </div>
       </div>
 
       {/* Breakdown per Cashier */}
       <div>
-        <h3 className="text-xs font-semibold text-gray-400 mb-5 tracking-widest uppercase">Per Cashier Breakdown</h3>
+        <h3 className="text-xs font-semibold text-muted-foreground mb-5 tracking-widest uppercase">Per Cashier Breakdown</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {progress.cashierBreakdown.map((cashier) => {
             const isComplete = cashier.notYetPaidConsumers === 0
             const percentage = cashier.totalConsumers > 0 ? Math.round((cashier.paidConsumers / cashier.totalConsumers) * 100) : 0
 
             return (
-              <div key={cashier.cashierId} className="border border-gray-200 rounded-xl p-5 flex flex-col gap-4">
+              <div key={cashier.cashierId} className="border border-border rounded-xl p-5 flex flex-col gap-4">
                 <div className="flex justify-between items-start gap-2">
                   <div className="flex items-center gap-3 min-w-0">
                     <Avatar firstName={cashier.firstName} lastName={cashier.lastName} />
                     <div className="min-w-0">
-                      <h4 className="text-sm font-semibold text-gray-900 truncate">{cashier.firstName} {cashier.lastName}</h4>
-                      <p className="text-xs text-gray-500 mt-0.5 truncate">{cashier.assignedAreaName}</p>
+                      <h4 className="text-sm font-semibold text-foreground truncate">{cashier.firstName} {cashier.lastName}</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{cashier.assignedAreaName}</p>
                     </div>
                   </div>
                   {isComplete ? (
@@ -89,11 +89,11 @@ export default function PaymentCollectionProgress({ progress, isLoading }: Props
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-xs text-gray-500 mb-2">
+                  <div className="flex justify-between text-xs text-muted-foreground mb-2">
                     <span>{cashier.paidConsumers} / {cashier.totalConsumers} paid</span>
-                    <span className="font-medium text-gray-700">{percentage}%</span>
+                    <span className="font-medium text-foreground">{percentage}%</span>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div className="w-full bg-muted rounded-full h-2">
                     <div
                       className="bg-[#d4e1c1] h-2 rounded-full transition-all"
                       style={{ width: `${percentage}%` }}
@@ -104,7 +104,7 @@ export default function PaymentCollectionProgress({ progress, isLoading }: Props
             )
           })}
           {progress.cashierBreakdown.length === 0 && (
-            <div className="text-center text-sm text-gray-500 py-6 col-span-2">
+            <div className="text-center text-sm text-muted-foreground py-6 col-span-2">
               No active cashiers found.
             </div>
           )}

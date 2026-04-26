@@ -93,14 +93,14 @@ export default function MyBillPage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">My Bill</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-xl font-semibold text-foreground">My Bill</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           View your current balance and billing history
         </p>
       </div>
 
       {/* Current Balance Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 relative">
+      <div className="bg-card rounded-xl border border-border p-6 relative">
         {currentBill && currentBill.dueDate && diffDays !== null && (
           <div className="absolute top-4 right-4">
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -110,17 +110,17 @@ export default function MyBillPage() {
         )}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 sm:mt-0">
           <div>
-            <p className="text-sm text-gray-500 font-medium">Current Balance</p>
-            <p className="text-4xl font-bold text-gray-900 mt-1">
+            <p className="text-sm text-muted-foreground font-medium">Current Balance</p>
+            <p className="text-4xl font-bold text-foreground mt-1">
               {currentLoading
                 ? '—'
                 : `₱${(Number(currentBill?.amountDue ?? 0)).toLocaleString('en-PH', {
                     minimumFractionDigits: 2,
                   })}`}
             </p>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Due on{' '}
-              <span className="font-medium text-gray-700">
+              <span className="font-medium text-foreground">
                 {currentLoading
                   ? '—'
                   : currentBill?.dueDate
@@ -145,12 +145,12 @@ export default function MyBillPage() {
       </div>
 
       {/* Billing History */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-card rounded-xl border border-border p-6">
         <div className="mb-4">
-          <h2 className="text-base font-semibold text-gray-900">
+          <h2 className="text-base font-semibold text-foreground">
             Billing History
           </h2>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-muted-foreground mt-0.5">
             Complete record of your electricity bills
           </p>
         </div>

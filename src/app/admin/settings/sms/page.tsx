@@ -10,13 +10,13 @@ export default function AdminSmsSettingsPage() {
         <div className="flex items-center gap-4">
           <Link
             href="/admin/settings"
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+            className="p-2 text-muted-foreground hover:text-muted-foreground transition-colors rounded-lg hover:bg-muted"
           >
             <ArrowLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">SMS Configuration</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-xl font-semibold text-foreground">SMS Configuration</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Configure your SMS API provider settings
             </p>
           </div>
@@ -24,7 +24,7 @@ export default function AdminSmsSettingsPage() {
       </div>
 
       {/* Main Content */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-card rounded-xl border border-border p-6">
         <SmsSettingsForm />
       </div>
     </div>

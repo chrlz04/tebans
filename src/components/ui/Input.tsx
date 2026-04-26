@@ -17,7 +17,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="flex flex-col gap-1">
         {label && (
-          <label className="text-sm font-medium text-gray-700">
+          <label className="text-sm font-medium text-foreground">
             {label}
             {props.required && (
               <span className="text-red-500 ml-1">*</span>
@@ -33,8 +33,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             'w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
             error
               ? 'border-red-400 bg-red-50 text-red-900 placeholder-red-300'
-              : 'border-gray-300 bg-white text-gray-900 placeholder-gray-400',
-            'disabled:bg-gray-100 disabled:cursor-not-allowed',
+              : 'border-input bg-background text-foreground placeholder-gray-400',
+            'disabled:bg-muted disabled:cursor-not-allowed',
             isPassword ? 'pr-10' : '',
             className
           )}
@@ -44,7 +44,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-muted-foreground focus:outline-none"
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
@@ -54,7 +54,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <p className="text-xs text-red-600">{error}</p>
         )}
         {helperText && !error && (
-          <p className="text-xs text-gray-500">{helperText}</p>
+          <p className="text-xs text-muted-foreground">{helperText}</p>
         )}
       </div>
     )

@@ -47,8 +47,8 @@ export default function AdminDashboardPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Overview of the system's current state
           </p>
         </div>
@@ -81,26 +81,26 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Recent Registrations */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 lg:col-span-1">
+        <div className="bg-card rounded-xl border border-border p-6 lg:col-span-1">
           <div className="mb-4">
-            <h2 className="text-base font-semibold text-gray-900">
+            <h2 className="text-base font-semibold text-foreground">
               Recent Account Registrations
             </h2>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               Latest accounts added to the system
             </p>
           </div>
           <div className="flex flex-col">
             {isLoading ? (
-              <div className="text-center py-8 text-sm text-gray-500">Loading registrations...</div>
+              <div className="text-center py-8 text-sm text-muted-foreground">Loading registrations...</div>
             ) : !data?.recentRegistrations || data.recentRegistrations.length === 0 ? (
-              <div className="text-center py-8 text-sm text-gray-500">No recent registrations found.</div>
+              <div className="text-center py-8 text-sm text-muted-foreground">No recent registrations found.</div>
             ) : (
               data.recentRegistrations.map((user, index) => (
                 <div
                   key={user.userId}
                   className={`flex flex-row items-center justify-between py-3 ${
-                    index !== 0 ? 'border-t border-gray-100' : ''
+                    index !== 0 ? 'border-t border-border/50' : ''
                   }`}
                 >
                   {/* Left Side */}
@@ -109,10 +109,10 @@ export default function AdminDashboardPage() {
                       {getInitials(user.firstName, user.lastName)}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-foreground truncate">
                         {user.firstName} {user.lastName}
                       </p>
-                      <p className="text-xs text-gray-500 truncate mt-0.5">
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">
                         {user.userId} &middot; {capitalize(user.userType)}
                       </p>
                     </div>
@@ -121,7 +121,7 @@ export default function AdminDashboardPage() {
                   {/* Right Side */}
                   <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-4">
                     <Badge status={user.accountStatus} />
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       {formatDate(user.registrationDate)}
                     </span>
                   </div>
