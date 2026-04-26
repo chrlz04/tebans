@@ -2,9 +2,14 @@ import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
 import { handleApiError } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'
-import { queryOne, withTransaction } from '@/lib/db-helpers'
+import { queryOne, query, withTransaction } from '@/lib/db-helpers'
 import { RowDataPacket, PoolConnection } from 'mysql2/promise'
 import { sendSms, buildBillingAlertMessage } from '@/lib/services/sms.service'
+
+interface SettingRow extends RowDataPacket {
+  Setting_Key: string
+  Setting_Value: string
+}
 
 interface ConsumerRow extends RowDataPacket {
   Consumer_ID:     string
@@ -20,26 +25,6 @@ interface LastReadingRow extends RowDataPacket {
 
 interface MeterReaderRow extends RowDataPacket {
   MeterReader_ID: string
-}
-
-// Background pacing function for SMS
-async function processSmsQueue(smsTasks: { to: string, content: string, consumerId: string }[]) {
-  // Typical paced interval, e.g. 1-2 seconds between messages
-  for (const task of smsTasks) {
-    try {
-      const smsResult = await sendSms({ to: task.to, content: task.content })
-      if (!smsResult.success) {
-        logger.warn('Bulk SMS notification failed', {
-          consumerId: task.consumerId,
-          reason: smsResult.message,
-        })
-      }
-    } catch (e) {
-      logger.error('Bulk SMS send error', e)
-    }
-    // Delay between sends (e.g., 2 seconds)
-    await new Promise(resolve => setTimeout(resolve, 2000))
-  }
 }
 
 export async function POST(req: NextRequest) {
@@ -75,9 +60,20 @@ export async function POST(req: NextRequest) {
     const consumerIds = readings.map((r: any) => r.consumerId)
     // Prepare for transaction
 
+    // Fetch SMS settings
+    const settingKeys = ['SMS_MESSAGE_TEMPLATE']
+    const settingsRows = await query<SettingRow>(
+      `SELECT Setting_Key, Setting_Value FROM System_Settings WHERE Setting_Key IN (?)`,
+      [settingKeys[0]]
+    )
+    const settings: Record<string, string> = {}
+    settingsRows.forEach(r => settings[r.Setting_Key] = r.Setting_Value)
+    const smsTemplate = settings['SMS_MESSAGE_TEMPLATE'] || 'Dear {name}, your bill is {amount} for {month}. Due: {due_date}. - TEBANS'
+
+
     // Validate each row
     const validDataToInsert: any[] = []
-    const smsTasks: { to: string, content: string, consumerId: string }[] = []
+    const smsTasks: { to: string, content: string, consumerId: string, consumerName: string, meterReadingId?: string }[] = []
     const seenBillsInCurrentUpload = new Set<string>()
 
     for (let i = 0; i < readings.length; i++) {
@@ -255,29 +251,24 @@ export async function POST(req: NextRequest) {
             smsTasks.push({
                 to: item.consumer.contactNo,
                 consumerId: item.consumerId,
+                consumerName: `${item.consumer.firstName} ${item.consumer.lastName}`,
+                meterReadingId: meterReadingId,
                 content: buildBillingAlertMessage({
+                    template: smsTemplate,
                     consumerName: `${item.consumer.firstName} ${item.consumer.lastName}`,
                     billAmount: item.amountWithTaxEvat,
                     dueDate: item.dueDate,
                     billingMonth: item.billingMonth,
-                    previousReading: item.previousReading,
-                    currentReading: item.currentReading,
+                    accountNo: item.consumerId,
                 })
             })
         }
       }
     })
 
-    // Process SMS asynchronously in background
-    if (smsTasks.length > 0) {
-      processSmsQueue(smsTasks).catch(e => {
-        logger.error('Unhandled error in processSmsQueue', e)
-      })
-    }
-
     return ok({
         successCount: validDataToInsert.length,
-        smsQueued: smsTasks.length
+        smsTasks: smsTasks
     }, 'Batch bills generated successfully')
 
   } catch (error) {
