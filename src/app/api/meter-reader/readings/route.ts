@@ -189,7 +189,7 @@ export async function POST(req: NextRequest) {
     )
     const settings: Record<string, string> = {}
     rows.forEach(r => settings[r.Setting_Key] = r.Setting_Value)
-    const smsTemplate = settings['SMS_MESSAGE_TEMPLATE'] || 'Dear {name}, your bill is {amount} for {month}. Due: {due_date}. - TEBANS'
+    const smsTemplate = settings['SMS_MESSAGE_TEMPLATE'] || 'Dear {name}, your electricity bill for {month} is P{amount} (Previous: {previous_reading} kWh, Present: {current_reading} kWh) with a total of {usage} kWh used this month. Please pay on or before {due_date}. - TEBANS'
     const autoMarkSent = settings['SMS_AUTO_MARK_SENT'] === '1'
 
     // ── Bill/Disconnection/Payment is saved here ──────────────
@@ -207,6 +207,8 @@ export async function POST(req: NextRequest) {
         dueDate:       dueDateStr,
         billingMonth,
         accountNo:     consumerId,
+        previousReading: previousReading,
+        currentReading:  currentReading,
       })
 
       // Send SMS without blocking or failing the main operation
