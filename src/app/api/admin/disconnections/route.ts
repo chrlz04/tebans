@@ -46,8 +46,8 @@ export async function GET(req: NextRequest) {
        FROM DisconnectionRequest dr
        JOIN Consumer c ON c.Consumer_ID = dr.Consumer_ID
        JOIN User cu ON cu.User_ID = c.User_ID
-       JOIN MeterReader mr ON mr.MeterReader_ID = dr.MeterReader_ID
-       JOIN User mu ON mu.User_ID = mr.User_ID
+       LEFT JOIN MeterReader mr ON mr.MeterReader_ID = dr.MeterReader_ID
+       LEFT JOIN User mu ON mu.User_ID = mr.User_ID
        ORDER BY dr.Date_Requested DESC`
     )
 
@@ -58,8 +58,8 @@ export async function GET(req: NextRequest) {
       consumerLastName:       d.Consumer_Last_Name,
       consumerAddress:        d.Consumer_Address,
       amountDue:              d.Amount_Due,
-      meterReaderFirstName:   d.MeterReader_First_Name,
-      meterReaderLastName:    d.MeterReader_Last_Name,
+      meterReaderFirstName:   d.MeterReader_First_Name || 'Unknown',
+      meterReaderLastName:    d.MeterReader_Last_Name || 'Meter Reader',
       reasonForDisconnection: d.Reason_for_Disconnection,
       scheduledDate:          d.Scheduled_Date,
       requestStatus:          d.Request_Status,
