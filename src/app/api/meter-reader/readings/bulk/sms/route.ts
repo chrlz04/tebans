@@ -14,46 +14,29 @@ interface SettingRow extends RowDataPacket {
 async function processSmsQueue(smsTasks: { to: string, content: string, consumerId: string, meterReadingId: string }[], delaySeconds: number) {
   for (const task of smsTasks) {
     try {
-      const highestNotification = await queryOne<{ Notification_ID: string } & RowDataPacket>(
-        `SELECT Notification_ID FROM Notification WHERE Notification_ID LIKE 'notif-%' ORDER BY LENGTH(Notification_ID) DESC, Notification_ID DESC LIMIT 1`
+      // Find the pending notification that was generated during the bulk reading
+      const notification = await queryOne<{ Notification_ID: string } & RowDataPacket>(
+        `SELECT Notification_ID FROM Notification WHERE Consumer_ID = ? AND MeterReading_ID = ? AND Alert_Type = 'Billing' ORDER BY Date_Sent DESC LIMIT 1`,
+        [task.consumerId, task.meterReadingId]
       )
-      let nextNotifSeq = 1
-      if (highestNotification && highestNotification.Notification_ID) {
-        const match = highestNotification.Notification_ID.match(/^notif-(\d+)$/)
-        if (match && match[1]) {
-          nextNotifSeq = parseInt(match[1], 10) + 1
-        }
-      }
-      const notifId = `notif-${nextNotifSeq.toString().padStart(3, '0')}`
-
-      await execute(
-        `INSERT INTO Notification (
-          Notification_ID,
-          Consumer_ID,
-          MeterReading_ID,
-          Alert_Type,
-          Message_Content,
-          Reference_Type,
-          Status
-        ) VALUES (?, ?, ?, 'Billing', ?, 'MeterReading', 'Pending')`,
-        [
-          notifId,
-          task.consumerId,
-          task.meterReadingId,
-          task.content
-        ]
-      ).catch(e => logger.error('Failed to auto mark SMS sent in batch', e))
 
       const smsResult = await sendSms({ to: task.to, content: task.content })
 
-      if (!smsResult.success) {
-        logger.warn('Bulk SMS notification failed', {
-          consumerId: task.consumerId,
-          reason: smsResult.message,
-        })
-        await execute(`UPDATE Notification SET Status = 'Failed' WHERE Notification_ID = ?`, [notifId])
+      if (notification) {
+        if (!smsResult.success) {
+          logger.warn('Bulk SMS notification failed', {
+            consumerId: task.consumerId,
+            reason: smsResult.message,
+          })
+          await execute(`UPDATE Notification SET Status = 'Failed' WHERE Notification_ID = ?`, [notification.Notification_ID])
+        } else {
+          await execute(`UPDATE Notification SET Status = 'Sent' WHERE Notification_ID = ?`, [notification.Notification_ID])
+        }
       } else {
-        await execute(`UPDATE Notification SET Status = 'Sent' WHERE Notification_ID = ?`, [notifId])
+         // In case the notification wasn't found (which shouldn't happen, but just log it)
+         if (!smsResult.success) {
+            logger.warn('Bulk SMS notification failed, and no Notification record found to update', { consumerId: task.consumerId })
+         }
       }
     } catch (e) {
       logger.error('Bulk SMS send error', e)
