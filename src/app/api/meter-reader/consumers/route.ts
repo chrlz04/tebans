@@ -165,7 +165,7 @@ export async function POST(req: NextRequest) {
 
     // Insert Login record
     await execute(
-      'INSERT INTO Login (Login_ID, User_name, Password) VALUES (?, ?, ?)',
+      'INSERT INTO Login (Login_ID, User_name, Password, Must_Change_Password) VALUES (?, ?, ?, TRUE)',
       [loginId, username, hashedPassword]
     )
 
