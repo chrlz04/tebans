@@ -59,7 +59,7 @@ export default function AdminDisconnectionsPage() {
     (d) =>
       d.consumerFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       d.consumerLastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      d.consumerId.toLowerCase().includes(searchTerm.toLowerCase())
+      (d.consumerId || '').toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const columns = [

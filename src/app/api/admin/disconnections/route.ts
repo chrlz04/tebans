@@ -28,14 +28,14 @@ export async function GET(req: NextRequest) {
     const disconnections = await query<AdminDisconnectionRow>(
       `SELECT
         dr.DisconnectionRequest_ID,
-        c.Consumer_ID,
+        dr.Consumer_ID,
         cu.First_Name AS Consumer_First_Name,
         cu.Last_Name AS Consumer_Last_Name,
         c.Address AS Consumer_Address,
         (
           SELECT COALESCE(SUM(b.Amount), 0)
           FROM Bill b
-          WHERE b.Consumer_ID = c.Consumer_ID AND b.Payment_Status != 'Paid'
+          WHERE b.Consumer_ID = dr.Consumer_ID AND b.Payment_Status != 'Paid'
         ) AS Amount_Due,
         mu.First_Name AS MeterReader_First_Name,
         mu.Last_Name AS MeterReader_Last_Name,
@@ -44,22 +44,22 @@ export async function GET(req: NextRequest) {
         dr.Request_Status,
         dr.Date_Requested
        FROM DisconnectionRequest dr
-       JOIN Consumer c ON c.Consumer_ID = dr.Consumer_ID
-       JOIN User cu ON cu.User_ID = c.User_ID
-       JOIN MeterReader mr ON mr.MeterReader_ID = dr.MeterReader_ID
-       JOIN User mu ON mu.User_ID = mr.User_ID
+       LEFT JOIN Consumer c ON c.Consumer_ID = dr.Consumer_ID
+       LEFT JOIN User cu ON cu.User_ID = c.User_ID
+       LEFT JOIN MeterReader mr ON mr.MeterReader_ID = dr.MeterReader_ID
+       LEFT JOIN User mu ON mu.User_ID = mr.User_ID
        ORDER BY dr.Date_Requested DESC`
     )
 
     return ok(disconnections.map((d) => ({
       disconnectionId:        d.DisconnectionRequest_ID,
       consumerId:             d.Consumer_ID,
-      consumerFirstName:      d.Consumer_First_Name,
-      consumerLastName:       d.Consumer_Last_Name,
-      consumerAddress:        d.Consumer_Address,
-      amountDue:              d.Amount_Due,
-      meterReaderFirstName:   d.MeterReader_First_Name,
-      meterReaderLastName:    d.MeterReader_Last_Name,
+      consumerFirstName:      d.Consumer_First_Name || 'Unknown',
+      consumerLastName:       d.Consumer_Last_Name || 'Consumer',
+      consumerAddress:        d.Consumer_Address || 'Unknown Address',
+      amountDue:              d.Amount_Due || 0,
+      meterReaderFirstName:   d.MeterReader_First_Name || 'Unknown',
+      meterReaderLastName:    d.MeterReader_Last_Name || 'Meter Reader',
       reasonForDisconnection: d.Reason_for_Disconnection,
       scheduledDate:          d.Scheduled_Date,
       requestStatus:          d.Request_Status,
