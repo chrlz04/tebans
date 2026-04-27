@@ -29,7 +29,7 @@ type ChangePasswordValues = z.infer<typeof changePasswordSchema>
 
 // ─── Props ───────────────────────────────────────────────
 interface ChangePasswordFormProps {
-  endpoint: string // e.g. '/admin/auth/change-password'
+  endpoint: string
 }
 
 // ─── Component ───────────────────────────────────────────
@@ -67,7 +67,6 @@ export default function ChangePasswordForm({ endpoint }: ChangePasswordFormProps
     }
   }
 
-  // Helper for password fields with show/hide toggle and lock icon
   const PasswordField = ({
     label,
     fieldName,
@@ -84,107 +83,99 @@ export default function ChangePasswordForm({ endpoint }: ChangePasswordFormProps
     error?: string
   }) => (
     <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-bold text-foreground">
+      <label className="text-[12px] font-medium text-muted-foreground uppercase tracking-widest">
         {label}
       </label>
       <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-          <Lock size={16} />
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+          <Lock size={14} />
         </div>
         <input
           type={show ? 'text' : 'password'}
           placeholder={placeholder}
-          className={`w-full min-h-[44px] pl-10 pr-10 py-2.5 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-[#749D47] focus:border-transparent ${
+          className={`w-full min-h-[40px] pl-9 pr-10 py-2 text-[13px] rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-[#749D47]/50 focus:border-[#749D47] ${
             error
-              ? 'border-red-400 bg-red-50 text-red-900'
-              : 'border-border bg-background text-foreground placeholder:text-muted-foreground'
+              ? 'border-red-400 bg-red-50 dark:bg-red-950/30 text-red-900 dark:text-red-300 placeholder:text-red-300'
+              : 'border-border bg-background text-foreground placeholder:text-muted-foreground/60'
           }`}
           {...register(fieldName)}
         />
         <button
           type="button"
           onClick={onToggle}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-muted-foreground focus:outline-none"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none transition-colors"
         >
-          {show ? <EyeOff size={16} /> : <Eye size={16} />}
+          {show ? <EyeOff size={14} /> : <Eye size={14} />}
         </button>
       </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && (
+        <p className="text-[11px] text-red-500 dark:text-red-400">{error}</p>
+      )}
     </div>
   )
 
   return (
-    <div className="w-full max-w-[440px] bg-background border border-border rounded-2xl shadow-sm overflow-hidden">
-      {/* Header Section */}
-      <div className="bg-[#FAFCF8] p-6 border-b border-border flex items-center gap-4">
-        <div className="w-12 h-12 bg-[#749D47] rounded-xl flex items-center justify-center text-white shrink-0">
-          <ShieldCheck size={24} strokeWidth={2} />
+    // Flat form — no card wrapper; the parent AdminProfilePage card provides the container
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+
+      <PasswordField
+        label="Current Password"
+        fieldName="currentPassword"
+        placeholder="Enter current password"
+        show={showCurrent}
+        onToggle={() => setShowCurrent(!showCurrent)}
+        error={errors.currentPassword?.message}
+      />
+
+      <PasswordField
+        label="New Password"
+        fieldName="newPassword"
+        placeholder="Enter new password"
+        show={showNew}
+        onToggle={() => setShowNew(!showNew)}
+        error={errors.newPassword?.message}
+      />
+
+      <PasswordField
+        label="Confirm Password"
+        fieldName="confirmPassword"
+        placeholder="Re-enter new password"
+        show={showConfirm}
+        onToggle={() => setShowConfirm(!showConfirm)}
+        error={errors.confirmPassword?.message}
+      />
+
+      {/* Password Requirements Note */}
+      <p className="text-[12px] text-muted-foreground/70 leading-relaxed">
+        At least 8 characters — include uppercase letters, numbers, and symbols.
+      </p>
+
+      {/* Success Message */}
+      {successMessage && (
+        <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-[12px] px-3.5 py-2.5 rounded-lg">
+          {successMessage}
         </div>
-        <div>
-          <h2 className="text-lg font-bold text-foreground">Account Security</h2>
-          <p className="text-sm text-muted-foreground">Update your password</p>
+      )}
+
+      {/* Server Error */}
+      {serverError && (
+        <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-[12px] px-3.5 py-2.5 rounded-lg">
+          {serverError}
         </div>
-      </div>
+      )}
 
-      {/* Form Section */}
-      <form onSubmit={handleSubmit(onSubmit)} className="p-6 flex flex-col gap-5">
-        
-        <PasswordField
-          label="Current Password"
-          fieldName="currentPassword"
-          placeholder="Enter current password"
-          show={showCurrent}
-          onToggle={() => setShowCurrent(!showCurrent)}
-          error={errors.currentPassword?.message}
-        />
+  {/* Submit — left-aligned, auto width */}
+  <div className="pt-1 flex">
+    <Button
+      type="submit"
+      isLoading={isSubmitting}
+      className="!w-auto bg-[#749D47] hover:bg-[#62873B] text-white inline-flex items-center gap-2 px-5 py-2 rounded-lg text-[13px] font-medium transition-colors"
+    >
+      <ShieldCheck size={15} />
+      Update Password
+    </Button>
+  </div>
 
-        <PasswordField
-          label="New Password"
-          fieldName="newPassword"
-          placeholder="Enter new password"
-          show={showNew}
-          onToggle={() => setShowNew(!showNew)}
-          error={errors.newPassword?.message}
-        />
-
-        <PasswordField
-          label="Confirm Password"
-          fieldName="confirmPassword"
-          placeholder="Re-enter new password"
-          show={showConfirm}
-          onToggle={() => setShowConfirm(!showConfirm)}
-          error={errors.confirmPassword?.message}
-        />
-
-        {/* Password Requirements Note */}
-        <p className="text-sm text-muted-foreground leading-relaxed mt-1">
-          Password must be at least 8 characters and include uppercase letters, numbers, and symbols for maximum security.
-        </p>
-
-        {/* Success Message */}
-        {successMessage && (
-          <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg">
-            {successMessage}
-          </div>
-        )}
-
-        {/* Server Error */}
-        {serverError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
-            {serverError}
-          </div>
-        )}
-
-        {/* Using your Button component, but overriding classes to match the design */}
-        <Button
-          type="submit"
-          isLoading={isSubmitting}
-          className="w-full sm:w-auto bg-[#749D47] hover:bg-[#62873B] text-white flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium transition-colors mt-2"
-        >
-          <ShieldCheck size={18} />
-          Update Password
-        </Button>
-      </form>
-    </div>
+    </form>
   )
 }

@@ -60,7 +60,6 @@ export default function StaffRegistrationPage() {
     }
   }, [firstName, setValue])
 
-  // Queries
   const { data: areas, isLoading: areasLoading } = useQuery<Area[]>({
     queryKey: ['admin-areas'],
     queryFn: async () => {
@@ -83,10 +82,9 @@ export default function StaffRegistrationPage() {
   if (!hasAccess) return null
 
   return (
-    <div className="max-w-2xl">
-
-      {/* Page Header */}
-      <div className="flex items-center gap-4 mb-6">
+    <div className="flex flex-col gap-6">
+      {/* Page Header - top left, full width */}
+      <div className="flex items-center gap-4">
         <Link
           href="/admin/accounts"
           className="p-2 text-muted-foreground hover:text-muted-foreground transition-colors rounded-lg hover:bg-muted"
@@ -103,145 +101,147 @@ export default function StaffRegistrationPage() {
         </div>
       </div>
 
-      {/* Form Card */}
-      <div className="bg-card rounded-xl border border-border p-6">
-        <form
-          onSubmit={handleSubmit((values) => mutation.mutate(values))}
-          className="flex flex-col gap-5"
-        >
-          {/* Name */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="First Name"
-              placeholder="Enter first name"
-              error={errors.firstName?.message}
-              required
-              {...register('firstName')}
-            />
-            <Input
-              label="Last Name"
-              placeholder="Enter last name"
-              error={errors.lastName?.message}
-              required
-              {...register('lastName')}
-            />
-          </div>
+      {/* Form Card - constrained and centered */}
+      <div className="max-w-3xl w-full mx-auto">
+        <div className="bg-card rounded-xl border border-border p-6">
+          <form
+            onSubmit={handleSubmit((values) => mutation.mutate(values))}
+            className="flex flex-col gap-5"
+          >
+            {/* Name */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="First Name"
+                placeholder="Enter first name"
+                error={errors.firstName?.message}
+                required
+                {...register('firstName')}
+              />
+              <Input
+                label="Last Name"
+                placeholder="Enter last name"
+                error={errors.lastName?.message}
+                required
+                {...register('lastName')}
+              />
+            </div>
 
-          {/* Contact and Username */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="Contact Number"
-              type="text"
-              inputMode="numeric"
-              placeholder="e.g. 09xxxxxxxxx"
-              error={errors.contactNo?.message}
-              required
-              {...register('contactNo')}
-              onChange={(e) => {
-                const val = e.target.value.replace(/\D/g, '').slice(0, 11);
-                setValue('contactNo', val, { shouldValidate: true });
-                e.target.value = val;
-              }}
-            />
-            <Input
-              label="Username"
-              placeholder="Enter username"
-              error={errors.username?.message}
-              required
-              {...register('username')}
-            />
-          </div>
+            {/* Contact and Username */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Contact Number"
+                type="text"
+                inputMode="numeric"
+                placeholder="e.g. 09xxxxxxxxx"
+                error={errors.contactNo?.message}
+                required
+                {...register('contactNo')}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 11)
+                  setValue('contactNo', val, { shouldValidate: true })
+                  e.target.value = val
+                }}
+              />
+              <Input
+                label="Username"
+                placeholder="Enter username"
+                error={errors.username?.message}
+                required
+                {...register('username')}
+              />
+            </div>
 
-          {/* Role and Area */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-foreground">
-                Staff Role <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
-                {...register('userType')}
+            {/* Role and Area */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-foreground">
+                  Staff Role <span className="text-red-500">*</span>
+                </label>
+                <select
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  {...register('userType')}
+                >
+                  <option value="meter_reader">Meter Reader</option>
+                  <option value="cashier">Cashier</option>
+                </select>
+                {errors.userType && (
+                  <p className="text-xs text-red-600">{errors.userType.message}</p>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-foreground">
+                  Service Area
+                </label>
+                <select
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  {...register('assignedAreaId')}
+                  disabled={areasLoading}
+                >
+                  <option value="">Select Area</option>
+                  {areas?.map((area) => (
+                    <option key={area.areaId} value={area.areaId}>
+                      {area.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.assignedAreaId && (
+                  <p className="text-xs text-red-600">{errors.assignedAreaId.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <hr className="border-border" />
+
+            {/* Password */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Initial Password"
+                type="password"
+                placeholder="Enter password"
+                error={errors.password?.message}
+                required
+                {...register('password')}
+              />
+              <Input
+                label="Confirm Password"
+                type="password"
+                placeholder="Confirm password"
+                error={errors.confirmPassword?.message}
+                required
+                {...register('confirmPassword')}
+              />
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Password must be at least 8 characters and include an uppercase letter, a number, and a symbol.
+            </p>
+
+            {/* Error */}
+            {mutation.isError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+                Failed to register staff member. Please try again.
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-2">
+              <Link href="/admin/accounts">
+                <Button type="button" variant="secondary">
+                  Cancel
+                </Button>
+              </Link>
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={isSubmitting || mutation.isPending}
               >
-                <option value="meter_reader">Meter Reader</option>
-                <option value="cashier">Cashier</option>
-              </select>
-              {errors.userType && (
-                <p className="text-xs text-red-600">{errors.userType.message}</p>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-foreground">
-                Service Area
-              </label>
-              <select
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
-                {...register('assignedAreaId')}
-                disabled={areasLoading}
-              >
-                <option value="">Select Area</option>
-                {areas?.map((area) => (
-                  <option key={area.areaId} value={area.areaId}>
-                    {area.name}
-                  </option>
-                ))}
-              </select>
-              {errors.assignedAreaId && (
-                <p className="text-xs text-red-600">{errors.assignedAreaId.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Divider */}
-          <hr className="border-border" />
-
-          {/* Password */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="Initial Password"
-              type="password"
-              placeholder="Enter password"
-              error={errors.password?.message}
-              required
-              {...register('password')}
-            />
-            <Input
-              label="Confirm Password"
-              type="password"
-              placeholder="Confirm password"
-              error={errors.confirmPassword?.message}
-              required
-              {...register('confirmPassword')}
-            />
-          </div>
-
-          <p className="text-xs text-muted-foreground">
-            Password must be at least 8 characters and include an uppercase letter, a number, and a symbol.
-          </p>
-
-          {/* Error */}
-          {mutation.isError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
-              Failed to register staff member. Please try again.
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2">
-            <Link href="/admin/accounts">
-              <Button type="button" variant="secondary">
-                Cancel
+                Register Staff Member
               </Button>
-            </Link>
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting || mutation.isPending}
-            >
-              Register Staff Member
-            </Button>
-          </div>
-        </form>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )

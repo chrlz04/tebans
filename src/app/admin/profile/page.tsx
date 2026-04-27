@@ -33,13 +33,15 @@ export default function AdminProfilePage() {
 
   if (authLoading || !hasAccess) return null
 
-  const fullName = isLoading ? '—' : `${profile?.firstName ?? ''} ${profile?.lastName ?? ''}`.trim()
+  const fullName = isLoading
+    ? '—'
+    : `${profile?.firstName ?? ''} ${profile?.lastName ?? ''}`.trim()
   const initials = getInitials(profile?.firstName, profile?.lastName)
 
   return (
-    <div className="max-w-2xl flex flex-col gap-5">
+    <div className="flex flex-col gap-6 max-w-3xl w-full mx-auto">
 
-      {/* Page Header */}
+      {/* ── Page Header ─────────────────────────────────── */}
       <div>
         <h1 className="text-[15px] font-medium text-foreground">Profile</h1>
         <p className="text-[13px] text-muted-foreground mt-0.5">
@@ -47,87 +49,96 @@ export default function AdminProfilePage() {
         </p>
       </div>
 
-      {/* Identity Card */}
+      {/* ── Identity Card ───────────────────────────────── */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
 
-        {/* Banner */}
-        <div className="bg-muted/40 border-b border-border px-5 pt-5 pb-0 flex items-end gap-4">
-          {/* Avatar */}
-          <div className="relative top-3 size-16 rounded-full bg-blue-50 dark:bg-blue-950 border-2 border-card flex items-center justify-center flex-shrink-0">
-            <span className="font-mono text-[18px] font-medium text-blue-600 dark:text-blue-400 leading-none">
+        {/* Banner row */}
+        <div className="bg-muted/40 border-b border-border px-7 pt-6 pb-0 flex items-end gap-5">
+
+          {/* Avatar — small circle design preserved */}
+          <div className="relative top-3.5 size-[58px] rounded-full bg-blue-50 dark:bg-blue-950 border-2 border-card flex items-center justify-center flex-shrink-0">
+            <span className="font-mono text-[19px] font-medium text-blue-600 dark:text-blue-400 leading-none">
               {isLoading ? '·' : initials}
             </span>
           </div>
 
           {/* Name + role */}
-          <div className="pb-3">
-            <p className="text-[17px] font-medium text-foreground tracking-tight leading-tight">
+          <div className="pb-4">
+            <p className="text-[19px] font-semibold text-foreground tracking-tight leading-tight">
               {fullName || '—'}
             </p>
-            <p className="text-[11px] text-muted-foreground uppercase tracking-widest mt-0.5">
+            <p className="text-[11px] text-muted-foreground uppercase tracking-widest mt-1">
               Administrator
             </p>
           </div>
 
           {/* Clearance badge */}
-          <div className="ml-auto pb-3.5 flex-shrink-0">
-            {!isLoading && profile?.clearanceLevel != null && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium tracking-wide
+          {!isLoading && profile?.clearanceLevel != null && (
+            <div className="ml-auto pb-4 flex-shrink-0">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-medium tracking-wide
                 bg-green-50 border border-green-200 text-green-800
                 dark:bg-green-950 dark:border-green-800 dark:text-green-300">
                 <span className="size-1.5 rounded-full bg-green-500 dark:bg-green-400" />
                 Clearance Level {profile.clearanceLevel}
               </span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Fields grid */}
+        {/* Fields grid — 2 cols, generous cell padding */}
         <div className="grid grid-cols-2 divide-x divide-y divide-border border-t border-border">
-          <Field label="Admin ID" value={profile?.adminId} mono isLoading={isLoading} />
-          <Field label="User ID"  value={profile?.userId}  mono isLoading={isLoading} />
-          <Field label="Contact Number" value={profile?.contactNo} isLoading={isLoading} />
+          <Field label="Admin ID"       value={profile?.adminId}   mono isLoading={isLoading} />
+          <Field label="User ID"        value={profile?.userId}    mono isLoading={isLoading} />
+          <Field label="Contact Number" value={profile?.contactNo}      isLoading={isLoading} />
           <Field
             label="Account Status"
             value="Active"
-            className="text-green-700 dark:text-green-400"
+            className="text-green-600 dark:text-green-400"
             isLoading={isLoading}
           />
         </div>
       </div>
 
-      {/* Change Password Card */}
+      {/* ── Change Password Card ─────────────────────────── */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-border flex items-center gap-2.5">
-          <div className="size-7 rounded-md bg-muted border border-border flex items-center justify-center flex-shrink-0">
-            <Lock size={13} className="text-muted-foreground" />
+
+        {/* Card header */}
+        <div className="px-7 py-4 border-b border-border flex items-center gap-3">
+          <div className="size-8 rounded-md bg-muted border border-border flex items-center justify-center flex-shrink-0">
+            <Lock size={14} className="text-muted-foreground" />
           </div>
-          <h2 className="text-[14px] font-medium text-foreground">Change Password</h2>
+          <div>
+            <h2 className="text-[14px] font-medium text-foreground leading-tight">Change Password</h2>
+            <p className="text-[12px] text-muted-foreground mt-0.5">Update your account credentials</p>
+          </div>
         </div>
-        <div className="p-5">
+
+        {/* Form area — constrained to a readable width */}
+        <div className="px-7 py-6">
           <ChangePasswordForm endpoint="/admin/auth/change-password" />
         </div>
       </div>
+
     </div>
   )
 }
 
 /* ── Field cell ──────────────────────────────────────────── */
 interface FieldProps {
-  label:     string
-  value?:    string
-  mono?:     boolean
+  label:      string
+  value?:     string
+  mono?:      boolean
   className?: string
-  isLoading: boolean
+  isLoading:  boolean
 }
 
 function Field({ label, value, mono, className, isLoading }: FieldProps) {
   return (
-    <div className="px-5 py-3.5">
-      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest mb-1">
+    <div className="px-7 py-5">
+      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest mb-1.5">
         {label}
       </p>
-      <p className={`text-[13px] text-foreground leading-snug ${mono ? 'font-mono' : ''} ${className ?? ''}`}>
+      <p className={`text-[14px] text-foreground leading-snug ${mono ? 'font-mono' : ''} ${className ?? ''}`}>
         {isLoading ? <span className="text-muted-foreground">—</span> : (value || '—')}
       </p>
     </div>
