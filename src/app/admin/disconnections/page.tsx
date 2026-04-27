@@ -1,12 +1,13 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, CheckCircle, Clock } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Clock, Eye } from 'lucide-react'
 import api from '@/lib/api'
 import { useRoleGuard } from '@/lib/use-role-guard'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import DataTable from '@/components/shared/DataTable'
+import Modal from '@/components/ui/Modal'
 import { useState } from 'react'
 
 interface AdminDisconnection {
@@ -26,6 +27,8 @@ export default function AdminDisconnectionsPage() {
   const { hasAccess, isLoading: authLoading } = useRoleGuard('admin')
   const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedDisconnection, setSelectedDisconnection] = useState<AdminDisconnection | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const { data: disconnections, isLoading } = useQuery<AdminDisconnection[]>({
     queryKey: ['admin-disconnections'],
@@ -113,6 +116,17 @@ export default function AdminDisconnectionsPage() {
       label: 'Actions',
       render: (row: AdminDisconnection) => (
         <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              setSelectedDisconnection(row)
+              setIsModalOpen(true)
+            }}
+          >
+            <Eye size={14} className="mr-1.5" />
+            View Details
+          </Button>
           {row.requestStatus === 'Pending' && (
             <Button
               variant="secondary"
@@ -200,6 +214,81 @@ export default function AdminDisconnectionsPage() {
           />
         </div>
       </div>
+
+      {/* View Details Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedDisconnection(null)
+        }}
+        title="Disconnection Details"
+      >
+        {selectedDisconnection && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Consumer Name</p>
+                <p className="text-base text-foreground font-semibold">{selectedDisconnection.consumerName}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Consumer ID</p>
+                <p className="text-base text-foreground font-mono">{selectedDisconnection.consumerId}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-sm font-medium text-muted-foreground">Address</p>
+                <p className="text-base text-foreground">{selectedDisconnection.consumerAddress || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Amount Due</p>
+                <p className="text-base font-semibold text-red-600">
+                  ₱{selectedDisconnection.amountDue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Scheduled Date</p>
+                <p className="text-base text-foreground">
+                  {new Date(selectedDisconnection.scheduledDate).toLocaleDateString('en-PH', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-sm font-medium text-muted-foreground">Reason for Disconnection</p>
+                <p className="text-base text-foreground">{selectedDisconnection.reasonForDisconnection || 'No reason provided'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Requested By</p>
+                <p className="text-base text-foreground">{selectedDisconnection.meterReaderName}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Date Requested</p>
+                <p className="text-base text-foreground">
+                  {new Date(selectedDisconnection.dateRequested).toLocaleDateString('en-PH', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Status</p>
+                <div className="mt-1">
+                  <Badge status={selectedDisconnection.requestStatus} />
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 flex justify-end">
+              <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
