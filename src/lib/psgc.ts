@@ -11,10 +11,13 @@ async function fetchPSGC<T>(path: string): Promise<T> {
 }
 
 export const getProvinces = () =>
-  fetchPSGC<PSGCProvince[]>("/provinces/");
+  fetchPSGC<PSGCProvince[]>("/provinces/")
+    .then(data => data.sort((a, b) => a.name.localeCompare(b.name)));
 
 export const getMunicipalities = (provinceCode: string) =>
-  fetchPSGC<PSGCMunicipality[]>(`/provinces/${provinceCode}/cities-municipalities/`);
+  fetchPSGC<PSGCMunicipality[]>(`/provinces/${provinceCode}/cities-municipalities/`)
+    .then(data => data.sort((a, b) => a.name.localeCompare(b.name)));
 
 export const getBarangays = (municipalityCode: string) =>
-  fetchPSGC<PSGCBarangay[]>(`/cities-municipalities/${municipalityCode}/barangays/`);
+  fetchPSGC<PSGCBarangay[]>(`/cities-municipalities/${municipalityCode}/barangays/`)
+    .then(data => data.sort((a, b) => a.name.localeCompare(b.name)));
