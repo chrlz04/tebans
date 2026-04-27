@@ -38,7 +38,7 @@ export default function BillingCycleProgress({ progress, isLoading }: Props) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Billing cycle progress</h2>
-          <p className="text-sm text-muted-foreground mt-1">{currentMonthYear} — all routes</p>
+          <p className="text-sm text-muted-foreground mt-1">{currentMonthYear} - all routes</p>
         </div>
         <DueDateBadge />
       </div>
