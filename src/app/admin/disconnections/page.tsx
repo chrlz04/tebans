@@ -30,7 +30,7 @@ export default function AdminDisconnectionsPage() {
   const { data: disconnections, isLoading } = useQuery<AdminDisconnection[]>({
     queryKey: ['admin-disconnections'],
     queryFn: async () => {
-      const res = await api.get('/api/admin/disconnections')
+      const res = await api.get('/admin/disconnections')
       return res.data
     },
     enabled: hasAccess,
@@ -38,7 +38,7 @@ export default function AdminDisconnectionsPage() {
 
   const executeMutation = useMutation({
     mutationFn: async (id: string) => {
-      await api.patch(`/api/admin/disconnections/${id}/execute`)
+      await api.patch(`/admin/disconnections/${id}/execute`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-disconnections'] })
