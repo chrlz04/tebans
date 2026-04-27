@@ -40,10 +40,10 @@ export default function DueDateBadge() {
     urgencyClass = 'bg-muted text-foreground'
   } else if (currentDay === targetEndDay) {
     dueDateText = `${baseText} · Due today`
-    urgencyClass = 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300'
+    urgencyClass = 'bg-muted text-primary-600 dark:text-primary-400'
   } else {
     dueDateText = `${baseText} · ${currentDay - targetEndDay} days overdue`
-    urgencyClass = 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
+    urgencyClass = 'bg-muted text-red-700 dark:text-red-400'
   }
 
   return (
