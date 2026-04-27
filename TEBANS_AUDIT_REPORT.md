@@ -69,3 +69,9 @@ The system shall allow the Admin to configure the underlying API connection sett
 
 **Proposed FR-28: Configure Billing Cycle Settings**
 The system shall allow the Admin to modify the global billing cycle boundaries (start and end dates) used for generating dashboard reports and setting automatic due dates. The system shall save these changes in a "pending" state and automatically apply them on the first day of the following cycle to avoid disrupting active reporting periods. (Implemented in `src/app/admin/settings/billing-cycle/page.tsx` and `src/app/api/admin/settings/billing-cycle/route.ts`).
+
+**Proposed FR-29: Manage Disconnection Requests (Admin)**
+The system shall allow the Admin to view a consolidated list of all pending and executed disconnection requests submitted by Meter Readers. The Admin can review the specific details (consumer, amount due, reason, and scheduled date) and manually mark pending requests as "Executed" once the physical disconnection is complete. (Implemented in `src/app/admin/disconnections/page.tsx` and `src/app/api/admin/disconnections/route.ts`).
+
+**Proposed FR-30: View Staff Profiles**
+The system shall allow Staff members (Admin, Cashier, and Meter Reader) to view their personal account profile information. The system retrieves the staff's details from the respective role table and displays their name, contact number, role-specific ID, and assigned area (if applicable). This is a read-only view that allows the staff member to verify that their information on file is accurate. (Implemented in `src/app/admin/profile/page.tsx`, `src/app/cashier/profile/page.tsx`, and `src/app/meter-reader/profile/page.tsx`).
