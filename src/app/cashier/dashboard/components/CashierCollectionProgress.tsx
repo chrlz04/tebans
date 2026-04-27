@@ -37,19 +37,19 @@ export default function CashierCollectionProgress({ progress, isLoading }: Props
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-[#f8f9f6] rounded-xl p-6 flex flex-col items-center justify-center">
+        <div className="bg-[#f8f9f6] dark:bg-[#3E3E3E] rounded-xl p-6 flex flex-col items-center justify-center">
           <p className="text-sm text-muted-foreground mb-2">My consumers</p>
           <p className="text-4xl font-bold text-foreground">{progress.totalConsumers}</p>
         </div>
-        <div className="bg-[#f8f9f6] rounded-xl p-6 flex flex-col items-center justify-center">
+        <div className="bg-[#f8f9f6] dark:bg-[#3E3E3E] rounded-xl p-6 flex flex-col items-center justify-center">
           <p className="text-sm text-muted-foreground mb-2">Paid</p>
-          <p className="text-4xl font-bold text-[#2d6a4f]">{progress.paidConsumers}</p>
+          <p className="text-4xl font-bold text-[#2d6a4f] dark:text-green-400">{progress.paidConsumers}</p>
         </div>
-        <div className="bg-[#f8f9f6] rounded-xl p-6 flex flex-col items-center justify-center">
+        <div className="bg-[#f8f9f6] dark:bg-[#3E3E3E] rounded-xl p-6 flex flex-col items-center justify-center">
           <p className="text-sm text-muted-foreground mb-2">Not yet paid</p>
-          <p className="text-4xl font-bold text-[#8c6b23]">{progress.notYetPaidConsumers}</p>
+          <p className="text-4xl font-bold text-[#8c6b23] dark:text-yellow-400">{progress.notYetPaidConsumers}</p>
         </div>
-        <div className="bg-[#f8f9f6] rounded-xl p-6 flex flex-col items-center justify-center">
+        <div className="bg-[#f8f9f6] dark:bg-[#3E3E3E] rounded-xl p-6 flex flex-col items-center justify-center">
           <p className="text-sm text-muted-foreground mb-2">Completion</p>
           <p className="text-4xl font-bold text-foreground">{progress.completionRate}%</p>
         </div>
@@ -63,7 +63,7 @@ export default function CashierCollectionProgress({ progress, isLoading }: Props
         </div>
         <div className="w-full bg-muted rounded-full h-3">
           <div
-            className="bg-[#d4e1c1] h-3 rounded-full"
+            className="bg-[#d4e1c1] dark:bg-green-700 h-3 rounded-full"
             style={{ width: `${progress.completionRate}%` }}
           ></div>
         </div>
@@ -75,7 +75,7 @@ export default function CashierCollectionProgress({ progress, isLoading }: Props
 
         {isComplete ? (
           <div className="text-center py-8">
-            <div className="bg-green-50 text-green-800 rounded-xl p-6 inline-block">
+            <div className="bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-xl p-6 inline-block">
               <p className="font-semibold text-lg">Great job!</p>
               <p className="text-sm mt-1">You have collected all payments for this cycle.</p>
             </div>
@@ -94,7 +94,7 @@ export default function CashierCollectionProgress({ progress, isLoading }: Props
                       minimumFractionDigits: 2,
                     })}
                   </p>
-                  <span className="bg-[#fdf0e6] text-[#b83d1c] text-xs font-medium px-3 py-1.5 rounded-full whitespace-nowrap inline-block mt-1">
+                  <span className="bg-[#fdf0e6] dark:bg-[#4a1f0f] text-[#b83d1c] dark:text-red-300 text-xs font-medium px-3 py-1.5 rounded-full whitespace-nowrap inline-block mt-1">
                     Unpaid
                   </span>
                 </div>
