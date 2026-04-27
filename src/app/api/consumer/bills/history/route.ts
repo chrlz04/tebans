@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { requireRole, ok, err } from '@/lib/auth-helpers'
+import { requireRole, ok } from '@/lib/auth-helpers'
 import { handleApiError } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'
 import { query } from '@/lib/db-helpers'
@@ -13,6 +13,7 @@ interface BillHistoryRow extends RowDataPacket {
   Billing_Month:   string
   Previous_Reading: number
   Current_Reading:  number
+  Date_Recorded:   string
 }
 
 export async function GET(req: NextRequest) {
@@ -28,7 +29,8 @@ export async function GET(req: NextRequest) {
       b.Payment_Status,
       b.Billing_Month,
       mr.Previous_Reading,
-      mr.Current_Reading
+      mr.Current_Reading,
+      mr.Date_Recorded
       FROM Bill b
       JOIN MeterReading mr ON mr.MeterReading_ID = b.MeterReading_ID
       JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
@@ -45,6 +47,7 @@ export async function GET(req: NextRequest) {
       billingMonth:    b.Billing_Month,
       previousReading: b.Previous_Reading,
       currentReading:  b.Current_Reading,
+      dateRecorded:    b.Date_Recorded,
     })))
 
   } catch (error) {

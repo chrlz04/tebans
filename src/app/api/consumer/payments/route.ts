@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { requireRole, ok, err } from '@/lib/auth-helpers'
+import { requireRole, ok } from '@/lib/auth-helpers'
 import { handleApiError } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'
 import { query } from '@/lib/db-helpers'
@@ -22,6 +22,8 @@ export async function GET(req: NextRequest) {
 
     const search = req.nextUrl.searchParams.get('search') || ''
     const year   = req.nextUrl.searchParams.get('year')   || ''
+    const date   = req.nextUrl.searchParams.get('date')   || ''
+    const billId = req.nextUrl.searchParams.get('billId') || ''
 
     let sql = `
       SELECT
@@ -37,7 +39,7 @@ export async function GET(req: NextRequest) {
        JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
        WHERE c.User_ID = ?`
 
-    const queryParams: any[] = [payload!.userId]
+    const queryParams: (string | number)[] = [payload!.userId]
 
     if (search) {
       sql += ` AND p.Receipt_Number LIKE ?`
@@ -47,6 +49,16 @@ export async function GET(req: NextRequest) {
     if (year) {
       sql += ` AND YEAR(p.Date_Paid) = ?`
       queryParams.push(year)
+    }
+
+    if (date) {
+      sql += ` AND DATE(p.Date_Paid) = ?`
+      queryParams.push(date)
+    }
+
+    if (billId) {
+      sql += ` AND p.Bill_ID LIKE ?`
+      queryParams.push(`%${billId}%`)
     }
 
     sql += ` ORDER BY p.Date_Paid DESC`
