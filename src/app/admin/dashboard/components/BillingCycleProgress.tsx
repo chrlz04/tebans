@@ -41,19 +41,19 @@ export default function BillingCycleProgress({ progress, isLoading }: Props) {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-[#f8f9f6] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
+        <div className="bg-[#f8f9f6] dark:bg-[#3E3E3E] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
           <p className="text-sm text-muted-foreground text-center">Total consumers</p>
           <p className="text-4xl font-bold text-foreground">{progress.totalConsumers}</p>
         </div>
-        <div className="bg-[#f8f9f6] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
+        <div className="bg-[#f8f9f6] dark:bg-[#3E3E3E] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
           <p className="text-sm text-muted-foreground text-center">Billed</p>
-          <p className="text-4xl font-bold text-[#2d6a4f]">{progress.billedConsumers}</p>
+          <p className="text-4xl font-bold text-[#2d6a4f] dark:text-green-400">{progress.billedConsumers}</p>
         </div>
-        <div className="bg-[#f8f9f6] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
+        <div className="bg-[#f8f9f6] dark:bg-[#3E3E3E] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
           <p className="text-sm text-muted-foreground text-center">Not yet billed</p>
-          <p className="text-4xl font-bold text-[#8c6b23]">{progress.unbilledConsumers}</p>
+          <p className="text-4xl font-bold text-[#8c6b23] dark:text-yellow-400">{progress.unbilledConsumers}</p>
         </div>
-        <div className="bg-[#f8f9f6] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
+        <div className="bg-[#f8f9f6] dark:bg-[#3E3E3E] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
           <p className="text-sm text-muted-foreground text-center">Overall</p>
           <p className="text-4xl font-bold text-foreground">{progress.overallCompletion}%</p>
         </div>
@@ -78,11 +78,11 @@ export default function BillingCycleProgress({ progress, isLoading }: Props) {
                     </div>
                   </div>
                   {isComplete ? (
-                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+                    <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0">
                       Complete
                     </span>
                   ) : (
-                    <span className="bg-[#fdf0e6] text-[#b83d1c] text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+                    <span className="bg-[#fdf0e6] dark:bg-[#4a1f0f] text-[#b83d1c] dark:text-red-300 text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0">
                       {mr.unbilledConsumers} unbilled
                     </span>
                   )}
@@ -95,7 +95,7 @@ export default function BillingCycleProgress({ progress, isLoading }: Props) {
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div
-                      className="bg-[#d4e1c1] h-2 rounded-full transition-all"
+                      className="bg-[#d4e1c1] dark:bg-green-700 h-2 rounded-full transition-all"
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
