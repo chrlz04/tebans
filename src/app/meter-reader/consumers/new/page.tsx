@@ -40,6 +40,11 @@ export default function RegisterConsumerPage() {
     formState: { errors, isSubmitting },
   } = useForm<ConsumerFormValues>({
     resolver: zodResolver(consumerSchema),
+    defaultValues: {
+      provinceCode: '071200000',     // Bohol
+      municipalityCode: '071214000', // Clarin
+      barangayCode: '071214023',     // Tubod
+    }
   })
 
   const selectedProvinceCode     = watch('provinceCode')
