@@ -14,7 +14,7 @@ export default function PaymentCollectionProgress({ progress, isLoading }: Props
   if (isLoading) {
     return (
       <div className="bg-card rounded-xl border border-border p-8 flex flex-col gap-6 animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/3 mb-2" />
+        <div className="h-6 bg-muted rounded w-1/3 mb-2" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-28 bg-muted rounded-xl" />
@@ -26,7 +26,11 @@ export default function PaymentCollectionProgress({ progress, isLoading }: Props
 
   if (!progress) return null
 
-  const currentMonthYear = new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila', month: 'long', year: 'numeric' })
+  const currentMonthYear = new Date().toLocaleString('en-US', {
+    timeZone: 'Asia/Manila',
+    month: 'long',
+    year: 'numeric',
+  })
 
   return (
     <div className="bg-card rounded-xl border border-border p-8 flex flex-col gap-8">
@@ -41,19 +45,19 @@ export default function PaymentCollectionProgress({ progress, isLoading }: Props
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-[#f8f9f6] dark:bg-[#3E3E3E] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
+        <div className="bg-muted rounded-xl p-5 flex flex-col items-center justify-center gap-1">
           <p className="text-sm text-muted-foreground text-center">Total consumers</p>
           <p className="text-4xl font-bold text-foreground">{progress.totalConsumers}</p>
         </div>
-        <div className="bg-[#f8f9f6] dark:bg-[#3E3E3E] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
+        <div className="bg-muted rounded-xl p-5 flex flex-col items-center justify-center gap-1">
           <p className="text-sm text-muted-foreground text-center">Paid</p>
           <p className="text-4xl font-bold text-[#2d6a4f] dark:text-green-400">{progress.paidConsumers}</p>
         </div>
-        <div className="bg-[#f8f9f6] dark:bg-[#3E3E3E] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
+        <div className="bg-muted rounded-xl p-5 flex flex-col items-center justify-center gap-1">
           <p className="text-sm text-muted-foreground text-center">Not yet paid</p>
-          <p className="text-4xl font-bold text-[#8c6b23] dark:text-yellow-400">{progress.notYetPaidConsumers}</p>
+          <p className="text-4xl font-bold text-[#8c6b23] dark:text-amber-400">{progress.notYetPaidConsumers}</p>
         </div>
-        <div className="bg-[#f8f9f6] dark:bg-[#3E3E3E] rounded-xl p-5 flex flex-col items-center justify-center gap-1">
+        <div className="bg-muted rounded-xl p-5 flex flex-col items-center justify-center gap-1">
           <p className="text-sm text-muted-foreground text-center">Overall</p>
           <p className="text-4xl font-bold text-foreground">{progress.overallCompletion}%</p>
         </div>
@@ -61,11 +65,16 @@ export default function PaymentCollectionProgress({ progress, isLoading }: Props
 
       {/* Breakdown per Cashier */}
       <div>
-        <h3 className="text-xs font-semibold text-muted-foreground mb-5 tracking-widest uppercase">Per Cashier Breakdown</h3>
+        <h3 className="text-xs font-semibold text-muted-foreground mb-5 tracking-widest uppercase">
+          Per Cashier Breakdown
+        </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {progress.cashierBreakdown.map((cashier) => {
             const isComplete = cashier.notYetPaidConsumers === 0
-            const percentage = cashier.totalConsumers > 0 ? Math.round((cashier.paidConsumers / cashier.totalConsumers) * 100) : 0
+            const percentage =
+              cashier.totalConsumers > 0
+                ? Math.round((cashier.paidConsumers / cashier.totalConsumers) * 100)
+                : 0
 
             return (
               <div key={cashier.cashierId} className="border border-border rounded-xl p-5 flex flex-col gap-4">
@@ -73,7 +82,9 @@ export default function PaymentCollectionProgress({ progress, isLoading }: Props
                   <div className="flex items-center gap-3 min-w-0">
                     <Avatar firstName={cashier.firstName} lastName={cashier.lastName} />
                     <div className="min-w-0">
-                      <h4 className="text-sm font-semibold text-foreground truncate">{cashier.firstName} {cashier.lastName}</h4>
+                      <h4 className="text-sm font-semibold text-foreground truncate">
+                        {cashier.firstName} {cashier.lastName}
+                      </h4>
                       <p className="text-xs text-muted-foreground mt-0.5 truncate">{cashier.assignedAreaName}</p>
                     </div>
                   </div>
@@ -82,7 +93,7 @@ export default function PaymentCollectionProgress({ progress, isLoading }: Props
                       Complete
                     </span>
                   ) : (
-                    <span className="bg-[#fdf0e6] dark:bg-[#4a1f0f] text-[#b83d1c] dark:text-red-300 text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+                    <span className="bg-[#fdf0e6] dark:bg-[#5c2d1e] text-[#b83d1c] dark:text-amber-300 text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0">
                       {cashier.notYetPaidConsumers} unpaid
                     </span>
                   )}
@@ -90,7 +101,9 @@ export default function PaymentCollectionProgress({ progress, isLoading }: Props
 
                 <div>
                   <div className="flex justify-between text-xs text-muted-foreground mb-2">
-                    <span>{cashier.paidConsumers} / {cashier.totalConsumers} paid</span>
+                    <span>
+                      {cashier.paidConsumers} / {cashier.totalConsumers} paid
+                    </span>
                     <span className="font-medium text-foreground">{percentage}%</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
