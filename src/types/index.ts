@@ -74,6 +74,7 @@ export interface Bill {
   billingMonth: string
   previousReading?: number
   currentReading?: number
+  dateRecorded?: string
   consumptionKwh?: number
   proRatedKwhLoss?: number
   totalKwh?: number
