@@ -182,7 +182,7 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className="flex flex-col gap-6">
 
       {/* Page Header */}
       <div className="flex items-center gap-4 mb-6">
@@ -202,6 +202,7 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
         </div>
       </div>
 
+      <div className="max-w-3xl w-full mx-auto">  
       <form
         onSubmit={handleSubmit((values) => mutation.mutate(values))}
         className="flex flex-col gap-5"
@@ -397,6 +398,7 @@ const previousReading = Number(previousReadingData?.previousReading ?? 0)
           </Button>
         </div>
       </form>
+    </div>
     </div>
   )
 }
