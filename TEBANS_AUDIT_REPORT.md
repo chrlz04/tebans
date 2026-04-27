@@ -75,3 +75,6 @@ The system shall allow the Admin to view a consolidated list of all pending and 
 
 **Proposed FR-30: View Staff Profiles**
 The system shall allow Staff members (Admin, Cashier, and Meter Reader) to view their personal account profile information. The system retrieves the staff's details from the respective role table and displays their name, contact number, role-specific ID, and assigned area (if applicable). This is a read-only view that allows the staff member to verify that their information on file is accurate. (Implemented in `src/app/admin/profile/page.tsx`, `src/app/cashier/profile/page.tsx`, and `src/app/meter-reader/profile/page.tsx`).
+
+**Proposed FR-31: View Meter Reader Dashboard**
+The system shall provide the Meter Reader with a dashboard that displays a summary of consumers and activity within their assigned service area. The dashboard shall automatically retrieve and display the percentage of consumers who have paid for the current month (% Consumers Paid), total Payment Collections for the current billing cycle, a Billing Cycle Progress monitor (showing total, billed, and unbilled active consumers), and a list of Overdue Accounts eligible for disconnection. (Implemented in `src/app/meter-reader/dashboard/page.tsx` and `src/app/api/meter-reader/dashboard/route.ts`).
