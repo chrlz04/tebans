@@ -63,6 +63,20 @@ export default function MyBillPage() {
       render: (row) => <span className="whitespace-nowrap">{row.billingMonth}</span>
     },
     {
+      key: 'dateRecorded',
+      label: 'Reading Date',
+      className: 'whitespace-nowrap',
+      render: (row) => row.dateRecorded ? (
+        <span className="whitespace-nowrap">
+          {new Date(row.dateRecorded).toLocaleDateString('en-PH', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })}
+        </span>
+      ) : '—'
+    },
+    {
       key: 'currentReading',
       label: 'Current Reading',
       render: (row) => row.currentReading?.toLocaleString() ?? '—',

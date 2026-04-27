@@ -16,12 +16,14 @@ export default function PaymentHistoryPage() {
   const { hasAccess, isLoading: authLoading } = useRoleGuard('consumer')
   const [search, setSearch] = useState('')
   const [year, setYear] = useState<string>(String(currentYear))
+  const [date, setDate] = useState('')
+  const [billId, setBillId] = useState('')
 
   const { data: payments, isLoading } = useQuery<Payment[]>({
-    queryKey: ['consumer-payments', year],
+    queryKey: ['consumer-payments', year, date, billId],
     queryFn: async () => {
       const res = await api.get('/consumer/payments', {
-        params: { year },
+        params: { year, date, billId },
       })
       return res.data
     },
@@ -96,25 +98,40 @@ export default function PaymentHistoryPage() {
       <div className="bg-card rounded-xl border border-border p-6">
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-5">
-          <div className="flex-1 sm:max-w-sm">
+        <div className="flex flex-col md:flex-row gap-3 mb-5">
+          <div className="flex-1 min-w-[200px]">
             <SearchBar
               value={search}
               onChange={setSearch}
               placeholder="Search by receipt number..."
             />
           </div>
-          <select
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            className="w-full sm:w-auto min-h-[44px] px-3 py-2 text-sm border border-gray-300 rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            {yearOptions.map((y) => (
-              <option key={y} value={String(y)}>
-                {y}
-              </option>
-            ))}
-          </select>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              placeholder="Search by Bill ID..."
+              value={billId}
+              onChange={(e) => setBillId(e.target.value)}
+              className="w-full sm:w-48 min-h-[44px] px-3 py-2 text-sm border border-gray-300 rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full sm:w-48 min-h-[44px] px-3 py-2 text-sm border border-gray-300 rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+            <select
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              className="w-full sm:w-32 min-h-[44px] px-3 py-2 text-sm border border-gray-300 rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              {yearOptions.map((y) => (
+                <option key={y} value={String(y)}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Table */}
