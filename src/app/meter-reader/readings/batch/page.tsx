@@ -17,6 +17,9 @@ interface ParsedReading {
   amountWithTaxEvat: number
   readingDate: string
   dueDate: string
+  consumerName?: string
+  assignedArea?: string
+  meterSerialNo?: string
 }
 
 interface SmsTask {
@@ -39,6 +42,7 @@ export default function BatchRecordMeterReadingPage() {
   const [parsedData, setParsedData] = useState<ParsedReading[]>([])
   const [parseError, setParseError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<{ row: number, errors: string[] }[]>([])
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
   const [successCount, setSuccessCount] = useState(0)
   const [smsQueuedCount, setSmsQueuedCount] = useState(0)
@@ -189,8 +193,8 @@ export default function BatchRecordMeterReadingPage() {
       Papa.parse(selectedFile, {
         header: true,
         skipEmptyLines: true,
-        complete: (results) => {
-          processParsedRows(results.data)
+        complete: async (results) => {
+          await processParsedRows(results.data)
         },
         error: (error) => {
           setParseError(`Failed to parse CSV: ${error.message}`)
@@ -237,7 +241,7 @@ export default function BatchRecordMeterReadingPage() {
             }
           })
 
-          processParsedRows(data)
+          await processParsedRows(data)
         } catch (error: any) {
           setParseError(`Failed to parse Excel file: ${error.message}`)
         }
@@ -248,7 +252,8 @@ export default function BatchRecordMeterReadingPage() {
     }
   }
 
-  const processParsedRows = (rows: any[]) => {
+  const processParsedRows = async (rows: any[]) => {
+    setIsPreviewLoading(true)
     const formattedData: ParsedReading[] = []
     let hasError = false
     const rowErrors: { row: number, errors: string[] }[] = []
@@ -295,10 +300,32 @@ export default function BatchRecordMeterReadingPage() {
     if (hasError) {
       setValidationErrors(rowErrors)
       setParseError('File contains formatting errors. Please fix them and re-upload.')
+      setIsPreviewLoading(false)
+      return
     } else if (formattedData.length === 0) {
       setParseError('The file is empty or missing required columns.')
-    } else {
-      setParsedData(formattedData)
+      setIsPreviewLoading(false)
+      return
+    }
+
+    try {
+      // Fetch consumer details for the preview
+      const consumerIds = formattedData.map(r => r.consumerId)
+      const res = await api.post('/meter-reader/readings/bulk/preview', { consumerIds })
+      const consumersMap = res.data?.consumers || {}
+
+      const enhancedData = formattedData.map(r => ({
+        ...r,
+        consumerName: consumersMap[r.consumerId]?.consumerName || 'Not Found',
+        assignedArea: consumersMap[r.consumerId]?.assignedArea || 'Not Found',
+        meterSerialNo: consumersMap[r.consumerId]?.meterSerialNo || 'Not Found',
+      }))
+
+      setParsedData(enhancedData)
+    } catch (err) {
+      setParseError('Failed to fetch consumer details for preview.')
+    } finally {
+      setIsPreviewLoading(false)
     }
   }
 
@@ -477,6 +504,21 @@ export default function BatchRecordMeterReadingPage() {
       render: (row) => <span className="font-mono text-xs">{row.consumerId}</span>,
     },
     {
+      key: 'consumerName',
+      label: 'Consumer Name',
+      render: (row) => <span className="font-medium text-foreground">{row.consumerName || 'N/A'}</span>,
+    },
+    {
+      key: 'assignedArea',
+      label: 'Assigned Area',
+      render: (row) => <span className="text-muted-foreground text-xs">{row.assignedArea || 'N/A'}</span>,
+    },
+    {
+      key: 'meterSerialNo',
+      label: 'Meter Serial No.',
+      render: (row) => <span className="font-mono text-xs">{row.meterSerialNo || 'N/A'}</span>,
+    },
+    {
       key: 'currentReading',
       label: 'Reading',
       render: (row) => row.currentReading.toFixed(2),
@@ -525,8 +567,17 @@ export default function BatchRecordMeterReadingPage() {
       {/* Main Upload Area */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
 
+        {/* Loading Preview State */}
+        {isPreviewLoading && (
+          <div className="p-12 flex flex-col items-center justify-center m-6">
+            <div className="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <h3 className="text-lg font-medium text-foreground">Processing File...</h3>
+            <p className="text-sm text-muted-foreground mt-1">Extracting readings and fetching consumer details.</p>
+          </div>
+        )}
+
         {/* Upload State */}
-        {!file && (
+        {!file && !isPreviewLoading && (
           <div
             className="p-12 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 m-6 rounded-xl hover:border-primary-400 transition-colors cursor-pointer bg-muted/50"
             onClick={handleUploadClick}
