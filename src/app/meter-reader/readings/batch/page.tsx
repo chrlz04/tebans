@@ -162,8 +162,13 @@ export default function BatchRecordMeterReadingPage() {
       { header: 'Due Date', key: 'dueDate', width: 14 }
     ]
 
-    ws.addRow({ accountNo: 'consumer-001', currentReading: 125.5, amountDue: 1500.00, readingDate: '2024-05-20', dueDate: '2024-06-05' })
-    ws.addRow({ accountNo: 'consumer-002', currentReading: 45.2, amountDue: 800.50, readingDate: '2024-05-20', dueDate: '2024-06-05' })
+    // Sample rows using seeded consumers with no May 2026 readings yet.
+    // Previous readings (from seed): 002→6.00, 003→35.00, 004→28.00, 007→0, 008→0
+    ws.addRow({ accountNo: 'consumer-002', currentReading: 20.00,  amountDue: 350.00, readingDate: '2026-05-05', dueDate: '2026-05-25' })
+    ws.addRow({ accountNo: 'consumer-003', currentReading: 52.00,  amountDue: 620.00, readingDate: '2026-05-05', dueDate: '2026-05-25' })
+    ws.addRow({ accountNo: 'consumer-004', currentReading: 45.00,  amountDue: 550.00, readingDate: '2026-05-05', dueDate: '2026-05-25' })
+    ws.addRow({ accountNo: 'consumer-007', currentReading: 10.50,  amountDue: 200.00, readingDate: '2026-05-05', dueDate: '2026-05-25' })
+    ws.addRow({ accountNo: 'consumer-008', currentReading:  8.20,  amountDue: 155.00, readingDate: '2026-05-05', dueDate: '2026-05-25' })
 
     const buffer = await wb.xlsx.writeBuffer()
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
