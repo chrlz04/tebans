@@ -1,4 +1,4 @@
-import { execute } from '@/lib/db-helpers'
+import { execute, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 
 interface BillRow extends RowDataPacket {
