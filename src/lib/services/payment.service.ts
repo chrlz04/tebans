@@ -1,4 +1,4 @@
-import { queryOne, execute } from '@/lib/db-helpers'
+import { execute } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 
 interface BillRow extends RowDataPacket {
@@ -9,26 +9,19 @@ interface BillRow extends RowDataPacket {
 }
 
 // ── Generate a receipt number ─────────────────────────────
-export async function generateReceiptNumber(): Promise<string> {
-  const year = new Date().getFullYear()
-
-  const last = await queryOne<RowDataPacket & { id: string }>(
-    `SELECT Receipt_Number as id
-     FROM Payment
-     ORDER BY LENGTH(Receipt_Number) DESC, Receipt_Number DESC
-     LIMIT 1`
-  )
-
-  let nextNum = 1
-
-  if (last?.id) {
-    const parts  = last.id.split('-')
-    const parsed = parseInt(parts[parts.length - 1])
-    if (!isNaN(parsed)) nextNum = parsed + 1
-  }
-
-  const paddedNum = String(nextNum).padStart(3, '0')
-  return `RCP-${year}-${paddedNum}`
+// Uses timestamp + random hex to guarantee uniqueness without a DB read,
+// avoiding both race conditions and duplicate-key errors on batch payments.
+export function generateReceiptNumber(): string {
+  const now  = new Date()
+  const YYYY = now.getFullYear()
+  const MM   = String(now.getMonth() + 1).padStart(2, '0')
+  const DD   = String(now.getDate()).padStart(2, '0')
+  const HH   = String(now.getHours()).padStart(2, '0')
+  const mm   = String(now.getMinutes()).padStart(2, '0')
+  const SS   = String(now.getSeconds()).padStart(2, '0')
+  const rand = Math.floor(Math.random() * 0x10000)
+    .toString(16).toUpperCase().padStart(4, '0')
+  return `RCP-${YYYY}${MM}${DD}-${HH}${mm}${SS}-${rand}`
 }
 
 // ── Record a single payment ───────────────────────────────
