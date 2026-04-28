@@ -81,7 +81,7 @@ export default function CashierDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Collection Progress */}
         <div className="lg:col-span-2">
-          <CashierCollectionProgress progress={data?.collectionProgress} isLoading={isLoading} />
+          <CashierCollectionProgress progress={data?.collectionProgress} previousProgress={data?.previousCollectionProgress} isLoading={isLoading} />
         </div>
 
       {/* Recent Transactions */}

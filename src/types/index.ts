@@ -166,7 +166,9 @@ export interface AdminDashboardStats {
   pendingDisconnections: number
   recentRegistrations: User[]
   billingProgress: AdminBillingProgress
+  previousBillingProgress: AdminBillingProgress
   paymentProgress: AdminPaymentProgress
+  previousPaymentProgress: AdminPaymentProgress
 }
 
 export interface NotYetPaidConsumer {
@@ -190,6 +192,7 @@ export interface CashierDashboardStats {
   transactionsProcessed: number
   pendingCashRemittance: number
   collectionProgress: CashierCollectionProgress
+  previousCollectionProgress: CashierCollectionProgress
   recentTransactions: (Payment & { consumerName?: string })[]
 }
 
@@ -243,5 +246,6 @@ export interface MeterReaderDashboardStats {
   consumersPaidPercentage: number
   paymentCollections: number
   billingProgress: MeterReaderBillingProgress
+  previousBillingProgress: MeterReaderBillingProgress
   overdueAccounts: OverdueAccount[]
 }

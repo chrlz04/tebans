@@ -69,11 +69,29 @@ export async function GET(req: NextRequest) {
     const currentMonthDate = new Date(year, month, 1)
     const currentMonthStr = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
 
-    const startDateObj = new Date(year, day > endDay ? month : month - 1, startDay)
-    const endDateObj = new Date(year, day > endDay ? month + 1 : month, endDay)
+    const prevMonthDate = new Date(year, month - 1, 1)
+    const prevMonthStr = prevMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
 
-    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`
-    const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`
+    // For cross-month cycles (startDay > endDay, e.g. 28→27): if today is on or
+    // after startDay the current cycle started this calendar month and ends in the
+    // next; otherwise it started last month and ends this month.
+    const isCrossMonth = startDay > endDay
+    let startDateObj: Date, endDateObj: Date
+    if (isCrossMonth) {
+      if (day >= startDay) {
+        startDateObj = new Date(year, month, startDay)
+        endDateObj   = new Date(year, month + 1, endDay)
+      } else {
+        startDateObj = new Date(year, month - 1, startDay)
+        endDateObj   = new Date(year, month, endDay)
+      }
+    } else {
+      startDateObj = new Date(year, month, startDay)
+      endDateObj   = new Date(year, month, endDay)
+    }
+
+    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`
+    const endDate   = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`
 
     const activeMeterReaders = await query<MeterReaderAreaInfo>(
       `SELECT
@@ -136,6 +154,56 @@ export async function GET(req: NextRequest) {
       unbilledConsumers: Math.max(0, globalTotalConsumers - globalBilledConsumers),
       overallCompletion: globalTotalConsumers > 0 ? Math.round((globalBilledConsumers / globalTotalConsumers) * 100) : 0,
       meterReaderBreakdown,
+    }
+
+    // Previous billing cycle progress
+    const prevMeterReaderBreakdown: MeterReaderProgress[] = []
+    let prevGlobalTotal = 0
+    let prevGlobalBilled = 0
+
+    for (const mr of activeMeterReaders) {
+      const areaTotalRow = await queryOne<CountRow>(
+        `SELECT COUNT(c.Consumer_ID) AS count
+         FROM Consumer c
+         JOIN User u ON u.User_ID = c.User_ID
+         WHERE c.Area_ID = ? AND u.Account_Status = 'Active'`,
+        [mr.Assigned_Area_ID]
+      )
+
+      const areaBilledRow = await queryOne<CountRow>(
+        `SELECT COUNT(DISTINCT b.Consumer_ID) AS count
+         FROM Bill b
+         JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
+         JOIN User u ON u.User_ID = c.User_ID
+         WHERE c.Area_ID = ?
+           AND u.Account_Status = 'Active'
+           AND b.Billing_Month = ?`,
+        [mr.Assigned_Area_ID, prevMonthStr]
+      )
+
+      const total  = areaTotalRow?.count ?? 0
+      const billed = areaBilledRow?.count ?? 0
+
+      prevGlobalTotal  += total
+      prevGlobalBilled += billed
+
+      prevMeterReaderBreakdown.push({
+        meterReaderId:    mr.User_ID,
+        firstName:        mr.First_Name,
+        lastName:         mr.Last_Name,
+        assignedAreaName: mr.Area_Name,
+        totalConsumers:   total,
+        billedConsumers:  billed,
+        unbilledConsumers: Math.max(0, total - billed),
+      })
+    }
+
+    const previousBillingProgress: AdminBillingProgress = {
+      totalConsumers:    prevGlobalTotal,
+      billedConsumers:   prevGlobalBilled,
+      unbilledConsumers: Math.max(0, prevGlobalTotal - prevGlobalBilled),
+      overallCompletion: prevGlobalTotal > 0 ? Math.round((prevGlobalBilled / prevGlobalTotal) * 100) : 0,
+      meterReaderBreakdown: prevMeterReaderBreakdown,
     }
 
     // Calculate Payment Collection Progress for current month
@@ -205,6 +273,61 @@ export async function GET(req: NextRequest) {
       cashierBreakdown,
     }
 
+    // Previous payment cycle — shift the current cycle window back by one billing period
+    const prevCycleStartDate = `${new Date(startDateObj.getFullYear(), startDateObj.getMonth() - 1, startDateObj.getDate()).toISOString().slice(0, 10)}`
+    const prevCycleEndDate   = `${new Date(endDateObj.getFullYear(),   endDateObj.getMonth()   - 1, endDateObj.getDate()).toISOString().slice(0, 10)}`
+
+    const prevCashierBreakdown: CashierProgress[] = []
+    let prevPaymentTotal  = 0
+    let prevPaymentPaid   = 0
+
+    for (const c of activeCashiers) {
+      const areaTotalRow = await queryOne<CountRow>(
+        `SELECT COUNT(co.Consumer_ID) AS count
+         FROM Consumer co
+         JOIN User u ON u.User_ID = co.User_ID
+         WHERE co.Area_ID = ? AND u.Account_Status = 'Active'`,
+        [c.Assigned_Area_ID]
+      )
+
+      const areaPaidRow = await queryOne<CountRow>(
+        `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
+         FROM Payment p
+         JOIN Bill b ON p.Bill_ID = b.Bill_ID
+         JOIN Consumer co ON co.Consumer_ID = p.Consumer_ID
+         JOIN User u ON u.User_ID = co.User_ID
+         WHERE co.Area_ID = ?
+           AND u.Account_Status = 'Active'
+           AND DATE(p.Date_Paid) >= ?
+           AND DATE(p.Date_Paid) <= ?
+           AND b.Billing_Month = ?`,
+        [c.Assigned_Area_ID, prevCycleStartDate, prevCycleEndDate, prevMonthStr]
+      )
+
+      const total  = areaTotalRow?.count ?? 0
+      const paid   = areaPaidRow?.count  ?? 0
+
+      prevPaymentTotal += total
+      prevPaymentPaid  += paid
+
+      prevCashierBreakdown.push({
+        cashierId:        c.User_ID,
+        firstName:        c.First_Name,
+        lastName:         c.Last_Name,
+        assignedAreaName: c.Area_Name,
+        totalConsumers:   total,
+        paidConsumers:    paid,
+        notYetPaidConsumers: Math.max(0, total - paid),
+      })
+    }
+
+    const previousPaymentProgress: AdminPaymentProgress = {
+      totalConsumers:    prevPaymentTotal,
+      paidConsumers:     prevPaymentPaid,
+      notYetPaidConsumers: Math.max(0, prevPaymentTotal - prevPaymentPaid),
+      overallCompletion: prevPaymentTotal > 0 ? Math.round((prevPaymentPaid / prevPaymentTotal) * 100) : 0,
+      cashierBreakdown:  prevCashierBreakdown,
+    }
 
     return ok({
       totalActiveConsumers:  activeConsumers?.count ?? 0,
@@ -218,7 +341,9 @@ export async function GET(req: NextRequest) {
         registrationDate: u.Registration_Date,
       })),
       billingProgress,
+      previousBillingProgress,
       paymentProgress,
+      previousPaymentProgress,
     })
 
   } catch (error) {

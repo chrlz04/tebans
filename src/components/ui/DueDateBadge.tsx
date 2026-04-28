@@ -26,23 +26,35 @@ export default function DueDateBadge() {
   const month = manilaDate.getMonth()
   const currentDay = manilaDate.getDate()
 
-  const targetEndDay = cycle.endDay
+  const { startDay, endDay } = cycle
+  const isCrossMonth = startDay > endDay
 
-  const dueDate = new Date(year, month, targetEndDay)
+  // For cross-month cycles (e.g. 28→27): if today is on or after startDay,
+  // the current cycle just started and its end falls in the next calendar month.
+  const dueDate =
+    isCrossMonth && currentDay >= startDay
+      ? new Date(year, month + 1, endDay)
+      : new Date(year, month, endDay)
+
   const monthName = dueDate.toLocaleString('default', { month: 'long' })
-  const baseText = `Due: ${monthName} ${targetEndDay}`
+  const baseText = `Due: ${monthName} ${endDay}`
+
+  const todayDate = new Date(year, month, currentDay)
+  const diffDays = Math.round(
+    (dueDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24)
+  )
 
   let dueDateText = ''
   let urgencyClass = ''
 
-  if (currentDay < targetEndDay) {
-    dueDateText = `${baseText} · ${targetEndDay - currentDay} days left`
+  if (diffDays > 0) {
+    dueDateText = `${baseText} · ${diffDays} days left`
     urgencyClass = 'bg-muted text-foreground'
-  } else if (currentDay === targetEndDay) {
+  } else if (diffDays === 0) {
     dueDateText = `${baseText} · Due today`
     urgencyClass = 'bg-muted text-primary-600 dark:text-primary-400'
   } else {
-    dueDateText = `${baseText} · ${currentDay - targetEndDay} days overdue`
+    dueDateText = `${baseText} · ${Math.abs(diffDays)} days overdue`
     urgencyClass = 'bg-muted text-red-700 dark:text-red-400'
   }
 
