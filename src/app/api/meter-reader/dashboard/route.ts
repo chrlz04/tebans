@@ -53,11 +53,23 @@ export async function GET(req: NextRequest) {
     const { year, month, day } = getManilaDateParts()
     const { startDay, endDay } = await getBillingCycleSettings()
 
-    const startDateObj = new Date(year, day > endDay ? month : month - 1, startDay)
-    const endDateObj = new Date(year, day > endDay ? month + 1 : month, endDay)
+    const isCrossMonth = startDay > endDay
+    let startDateObj: Date, endDateObj: Date
+    if (isCrossMonth) {
+      if (day >= startDay) {
+        startDateObj = new Date(year, month, startDay)
+        endDateObj   = new Date(year, month + 1, endDay)
+      } else {
+        startDateObj = new Date(year, month - 1, startDay)
+        endDateObj   = new Date(year, month, endDay)
+      }
+    } else {
+      startDateObj = new Date(year, month, startDay)
+      endDateObj   = new Date(year, month, endDay)
+    }
 
-    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`
-    const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`
+    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`
+    const endDate   = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`
 
     // 1. Payment collections in assigned area for current billing cycle
     const paymentCollectionsRow = await queryOne<SummaryRow>(
@@ -72,7 +84,8 @@ export async function GET(req: NextRequest) {
 
     // 2. Consumers Paid Percentage
     const currentMonthDate = new Date(year, month, 1)
-    const currentMonthStr = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+    const currentMonthStr  = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+    const prevMonthStr     = new Date(year, month - 1, 1).toLocaleString('en-PH', { month: 'long', year: 'numeric' })
 
     const paidConsumersRow = await queryOne<SummaryRow>(
       `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
@@ -157,6 +170,52 @@ export async function GET(req: NextRequest) {
       })),
     }
 
+    // Previous billing cycle progress
+    const prevBilledRow = await queryOne<SummaryRow>(
+      `SELECT COUNT(DISTINCT b.Consumer_ID) AS count
+       FROM Bill b
+       JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
+       JOIN User u ON u.User_ID = c.User_ID
+       WHERE c.Area_ID = ?
+         AND u.Account_Status = 'Active'
+         AND b.Billing_Month = ?`,
+      [assignedAreaId, prevMonthStr]
+    )
+    const prevBilled = prevBilledRow?.count ?? 0
+    const prevUnbilled = Math.max(0, totalActiveConsumers - prevBilled)
+
+    const prevUnbilledList = await query<UnbilledConsumerRow>(
+      `SELECT
+        c.Consumer_ID,
+        u.First_Name,
+        u.Last_Name,
+        c.Address
+       FROM Consumer c
+       JOIN User u ON u.User_ID = c.User_ID
+       WHERE c.Area_ID = ?
+         AND u.Account_Status = 'Active'
+         AND NOT EXISTS (
+           SELECT 1 FROM Bill b
+           WHERE b.Consumer_ID = c.Consumer_ID
+           AND b.Billing_Month = ?
+         )
+       ORDER BY u.Last_Name ASC`,
+      [assignedAreaId, prevMonthStr]
+    )
+
+    const previousBillingProgress: MeterReaderBillingProgress = {
+      totalConsumers:   totalActiveConsumers,
+      billedConsumers:  prevBilled,
+      unbilledConsumers: prevUnbilled,
+      completionRate:   totalActiveConsumers > 0 ? Math.round((prevBilled / totalActiveConsumers) * 100) : 0,
+      unbilledList: prevUnbilledList.map((row) => ({
+        consumerId: row.Consumer_ID,
+        firstName:  row.First_Name,
+        lastName:   row.Last_Name,
+        address:    row.Address,
+      })),
+    }
+
     // 4. Overdue Accounts in assigned area
     const today = new Date().toISOString().split('T')[0]
 
@@ -214,6 +273,7 @@ export async function GET(req: NextRequest) {
       consumersPaidPercentage,
       paymentCollections: paymentCollectionsRow?.total ?? 0,
       billingProgress,
+      previousBillingProgress,
       overdueAccounts,
     })
 

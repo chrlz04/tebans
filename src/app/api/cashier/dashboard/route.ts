@@ -65,11 +65,23 @@ export async function GET(req: NextRequest) {
     const { year, month, day } = getManilaDateParts()
     const { startDay, endDay } = await getBillingCycleSettings()
 
-    const startDateObj = new Date(year, day > endDay ? month : month - 1, startDay)
-    const endDateObj = new Date(year, day > endDay ? month + 1 : month, endDay)
+    const isCrossMonth = startDay > endDay
+    let startDateObj: Date, endDateObj: Date
+    if (isCrossMonth) {
+      if (day >= startDay) {
+        startDateObj = new Date(year, month, startDay)
+        endDateObj   = new Date(year, month + 1, endDay)
+      } else {
+        startDateObj = new Date(year, month - 1, startDay)
+        endDateObj   = new Date(year, month, endDay)
+      }
+    } else {
+      startDateObj = new Date(year, month, startDay)
+      endDateObj   = new Date(year, month, endDay)
+    }
 
-    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`
-    const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`
+    const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`
+    const endDate   = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`
 
     const pendingRemittance = await queryOne<SummaryRow>(
       `SELECT COALESCE(SUM(p.Amount_Paid), 0) AS total
@@ -93,8 +105,11 @@ export async function GET(req: NextRequest) {
     const totalConsumers = totalActiveConsumersRow?.count ?? 0
 
     const currentMonthDate = new Date(year, month, 1)
-    const currentMonthStr = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
-    const currentMonthNum = month + 1 // 1-12
+    const currentMonthStr  = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+    const currentMonthNum  = month + 1 // 1-12
+    const prevMonthStr     = new Date(year, month - 1, 1).toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+    const prevCycleStart   = new Date(startDateObj.getFullYear(), startDateObj.getMonth() - 1, startDateObj.getDate()).toISOString().slice(0, 10)
+    const prevCycleEnd     = new Date(endDateObj.getFullYear(),   endDateObj.getMonth()   - 1, endDateObj.getDate()).toISOString().slice(0, 10)
 
     // 2. Paid Consumers (Has a payment record this month <= 27, linked to current month bill)
     //    We check the Payment table for Date_Paid using the 28th to 27th date boundaries
@@ -154,6 +169,65 @@ export async function GET(req: NextRequest) {
       balance: row.Amount,
     }))
 
+    // Previous cycle collection progress
+    const prevPaidRow = await queryOne<SummaryRow>(
+      `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
+       FROM Payment p
+       JOIN Bill b ON b.Bill_ID = p.Bill_ID
+       JOIN Consumer co ON co.Consumer_ID = p.Consumer_ID
+       JOIN User u ON u.User_ID = co.User_ID
+       WHERE co.Area_ID = ?
+         AND u.Account_Status = 'Active'
+         AND b.Billing_Month = ?
+         AND DATE(p.Date_Paid) >= ?
+         AND DATE(p.Date_Paid) <= ?`,
+      [assignedAreaId, prevMonthStr, prevCycleStart, prevCycleEnd]
+    )
+    const prevPaid = prevPaidRow?.count ?? 0
+    const prevNotYetPaid = Math.max(0, totalConsumers - prevPaid)
+
+    const prevNotYetPaidListRow = await query<NotYetPaidConsumerRow>(
+      `SELECT
+        c.Consumer_ID,
+        u.First_Name,
+        u.Last_Name,
+        c.Address,
+        COALESCE((
+          SELECT b.Amount
+          FROM Bill b
+          WHERE b.Consumer_ID = c.Consumer_ID
+            AND b.Billing_Month = ?
+          LIMIT 1
+        ), 0) AS Amount
+       FROM Consumer c
+       JOIN User u ON u.User_ID = c.User_ID
+       WHERE c.Area_ID = ?
+         AND u.Account_Status = 'Active'
+         AND c.Consumer_ID NOT IN (
+           SELECT p.Consumer_ID
+           FROM Payment p
+           JOIN Bill b2 ON b2.Bill_ID = p.Bill_ID
+           WHERE b2.Billing_Month = ?
+             AND DATE(p.Date_Paid) >= ?
+             AND DATE(p.Date_Paid) <= ?
+         )`,
+      [prevMonthStr, assignedAreaId, prevMonthStr, prevCycleStart, prevCycleEnd]
+    )
+
+    const previousCollectionProgress = {
+      totalConsumers,
+      paidConsumers:      prevPaid,
+      notYetPaidConsumers: prevNotYetPaid,
+      completionRate:     totalConsumers > 0 ? Math.round((prevPaid / totalConsumers) * 100) : 0,
+      notYetPaidList:     prevNotYetPaidListRow.map((row) => ({
+        consumerId: row.Consumer_ID,
+        firstName:  row.First_Name,
+        lastName:   row.Last_Name,
+        address:    row.Address,
+        balance:    row.Amount,
+      })),
+    }
+
     // Recent transactions today
     const recentTransactions = await query<RecentTransactionRow>(
       `SELECT
@@ -184,6 +258,7 @@ export async function GET(req: NextRequest) {
         completionRate,
         notYetPaidList,
       },
+      previousCollectionProgress,
       recentTransactions: recentTransactions.map((t) => ({
         paymentId:   t.Payment_ID,
         consumerId:  t.Consumer_ID,

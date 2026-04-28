@@ -18,10 +18,10 @@ INSERT INTO `login` (`Login_ID`, `User_name`, `Password`, `Must_Change_Password`
   ('login-cashier-002',    'cashier-kabugnayan', '$2b$10$ma8tSACCGMMPyL2iisyTneHcAJcom4s3tg1yercQsHGWFLSvmdsUq', 0),
   ('login-consumer-001',   'consumer',           '$2b$10$IFt3l0FVekMFK18NRF22M.D6mOzR98NxmNHkeLj/DM9Nar4G/NbtW', 0),
   ('login-consumer-002',   'lgomez',             '$2b$10$IFt3l0FVekMFK18NRF22M.D6mOzR98NxmNHkeLj/DM9Nar4G/NbtW', 0),
-  ('login-consumer-005',   'daryl',              '$2b$10$kuVcKk.fZxeI258bpdpcf.YGpNiEnn3g5SPZtqs1R6Nr9gIjC2W1W', 0),
-  ('login-consumer-006',   'charles',            '$2b$10$lK0IWBLx/BvsjvNCBkLVye.GmyJ5IBdw0Vqg5EIehZgeDDHLEjCZu', 0),
+  ('login-consumer-005',   'daryl',              '$2b$10$IFt3l0FVekMFK18NRF22M.D6mOzR98NxmNHkeLj/DM9Nar4G/NbtW', 0),
+  ('login-consumer-006',   'charles',            '$2b$10$IFt3l0FVekMFK18NRF22M.D6mOzR98NxmNHkeLj/DM9Nar4G/NbtW', 0),
   ('login-mr-001',         'meterreader',        '$2b$10$IFt3l0FVekMFK18NRF22M.D6mOzR98NxmNHkeLj/DM9Nar4G/NbtW', 0),
-  ('login-mr-002',         'dry',                '$2b$10$OvEoPPrOJ3.wU92lNYc4eur5j9B/J5hTZgR6R0m1yOnAuTLzGCipu', 0),
+  ('login-mr-002',         'dry',                '$2b$10$IFt3l0FVekMFK18NRF22M.D6mOzR98NxmNHkeLj/DM9Nar4G/NbtW', 0),
   ('login-mr-003',         'Krisha',             '$2b$10$69iT.KWnM.wEI36dnmZzCeRA84OxhP1UDZBMvOK0poVUkMkfYxx3a', 0),
   ('login-consumer-007',   'jdcruz',             '$2b$10$IFt3l0FVekMFK18NRF22M.D6mOzR98NxmNHkeLj/DM9Nar4G/NbtW', 0),
   ('login-consumer-008',   'avillanueva',        '$2b$10$IFt3l0FVekMFK18NRF22M.D6mOzR98NxmNHkeLj/DM9Nar4G/NbtW', 0);
