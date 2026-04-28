@@ -23,7 +23,7 @@ export default function ProcessPaymentPage() {
   const [paymentMethod, setPaymentMethod] = useState<'Cash'>('Cash')
   const [isSuccess, setIsSuccess] = useState(false)
   const [receiptData, setReceiptData] = useState<{
-    receiptNumber: string
+    receiptNumbers: string[]
     totalAmount: number
     consumerNames: string[]
   } | null>(null)
@@ -52,7 +52,7 @@ export default function ProcessPaymentPage() {
         selectedBillIds.includes(b.billId)
       )
       setReceiptData({
-        receiptNumber: data.receiptNumber,
+        receiptNumbers: data.receiptNumbers,
         totalAmount: selectedBills?.reduce((sum, b) => sum + Number(b.amount ?? 0), 0) ?? 0,
         consumerNames: selectedBills?.map((b) => b.consumerName) ?? [],
       })
@@ -114,9 +114,11 @@ export default function ProcessPaymentPage() {
           </h3>
           <div className="flex flex-col gap-3">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Receipt No.</span>
-              <span className="font-mono font-medium text-foreground">
-                {receiptData.receiptNumber}
+              <span className="text-muted-foreground">
+                {receiptData.receiptNumbers.length === 1 ? 'Receipt No.' : 'Receipt Nos.'}
+              </span>
+              <span className="font-mono font-medium text-foreground text-right">
+                {receiptData.receiptNumbers.join(', ')}
               </span>
             </div>
             <div className="flex justify-between text-sm">
