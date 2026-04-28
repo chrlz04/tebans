@@ -64,14 +64,15 @@ export async function POST(req: NextRequest) {
       return err('No valid unpaid bills found', 400)
     }
 
-    // Generate receipt number
-    const receiptNumber = await generateReceiptNumber()
-    const paymentIds: string[] = []
+    const paymentIds:     string[] = []
+    const receiptNumbers: string[] = []
 
-    // Record payment for each bill
+    // Record payment for each bill — each gets its own receipt number
     for (const bill of bills) {
-      const paymentId = await generateSequentialId('Payment', 'Payment_ID', 'pay')
+      const paymentId     = await generateSequentialId('Payment', 'Payment_ID', 'pay')
+      const receiptNumber = generateReceiptNumber()
       paymentIds.push(paymentId)
+      receiptNumbers.push(receiptNumber)
 
       await recordPayment({
         paymentId,
@@ -83,15 +84,13 @@ export async function POST(req: NextRequest) {
         receiptNumber,
       })
 
-      // Update bill status
       await updateBillStatus(bill.Bill_ID, bill.Amount)
     }
 
     const totalAmount = bills.reduce((sum, b) => sum + b.Amount, 0)
 
-
     return ok({
-      receiptNumber,
+      receiptNumbers,
       paymentIds,
       totalBills: bills.length,
       totalAmount,
