@@ -169,6 +169,8 @@ export interface AdminDashboardStats {
   previousBillingProgress: AdminBillingProgress
   paymentProgress: AdminPaymentProgress
   previousPaymentProgress: AdminPaymentProgress
+  currentPeriodLabel: string
+  previousPeriodLabel: string
 }
 
 export interface NotYetPaidConsumer {
@@ -194,6 +196,8 @@ export interface CashierDashboardStats {
   collectionProgress: CashierCollectionProgress
   previousCollectionProgress: CashierCollectionProgress
   recentTransactions: (Payment & { consumerName?: string })[]
+  currentPeriodLabel: string
+  previousPeriodLabel: string
 }
 
 // ─── Shared ──────────────────────────────────────────────
@@ -248,4 +252,6 @@ export interface MeterReaderDashboardStats {
   billingProgress: MeterReaderBillingProgress
   previousBillingProgress: MeterReaderBillingProgress
   overdueAccounts: OverdueAccount[]
+  currentPeriodLabel: string
+  previousPeriodLabel: string
 }

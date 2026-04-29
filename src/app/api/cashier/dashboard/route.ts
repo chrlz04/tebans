@@ -30,6 +30,15 @@ interface NotYetPaidConsumerRow extends RowDataPacket {
   Amount: number
 }
 
+function formatCyclePeriod(start: Date, end: Date): string {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const s = `${months[start.getMonth()]} ${start.getDate()}`
+  const e = `${months[end.getMonth()]} ${end.getDate()}`
+  return start.getFullYear() === end.getFullYear()
+    ? `${s} – ${e}, ${end.getFullYear()}`
+    : `${s}, ${start.getFullYear()} – ${e}, ${end.getFullYear()}`
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { error, payload } = requireRole(req, ['cashier'])
@@ -83,6 +92,11 @@ export async function GET(req: NextRequest) {
     const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`
     const endDate   = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`
 
+    const prevStartDateObj = new Date(startDateObj.getFullYear(), startDateObj.getMonth() - 1, startDateObj.getDate())
+    const prevEndDateObj   = new Date(endDateObj.getFullYear(),   endDateObj.getMonth()   - 1, endDateObj.getDate())
+    const prevCycleStart   = prevStartDateObj.toISOString().slice(0, 10)
+    const prevCycleEnd     = prevEndDateObj.toISOString().slice(0, 10)
+
     const pendingRemittance = await queryOne<SummaryRow>(
       `SELECT COALESCE(SUM(p.Amount_Paid), 0) AS total
        FROM Payment p
@@ -104,12 +118,10 @@ export async function GET(req: NextRequest) {
     )
     const totalConsumers = totalActiveConsumersRow?.count ?? 0
 
-    const currentMonthDate = new Date(year, month, 1)
-    const currentMonthStr  = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
-    const currentMonthNum  = month + 1 // 1-12
-    const prevMonthStr     = new Date(year, month - 1, 1).toLocaleString('en-PH', { month: 'long', year: 'numeric' })
-    const prevCycleStart   = new Date(startDateObj.getFullYear(), startDateObj.getMonth() - 1, startDateObj.getDate()).toISOString().slice(0, 10)
-    const prevCycleEnd     = new Date(endDateObj.getFullYear(),   endDateObj.getMonth()   - 1, endDateObj.getDate()).toISOString().slice(0, 10)
+    const currentMonthStr = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), 1)
+      .toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+    const prevMonthStr    = new Date(prevStartDateObj.getFullYear(), prevStartDateObj.getMonth(), 1)
+      .toLocaleString('en-PH', { month: 'long', year: 'numeric' })
 
     // 2. Paid Consumers (Has a payment record this month <= 27, linked to current month bill)
     //    We check the Payment table for Date_Paid using the 28th to 27th date boundaries
@@ -259,6 +271,8 @@ export async function GET(req: NextRequest) {
         notYetPaidList,
       },
       previousCollectionProgress,
+      currentPeriodLabel:  formatCyclePeriod(startDateObj, endDateObj),
+      previousPeriodLabel: formatCyclePeriod(prevStartDateObj, prevEndDateObj),
       recentTransactions: recentTransactions.map((t) => ({
         paymentId:   t.Payment_ID,
         consumerId:  t.Consumer_ID,
