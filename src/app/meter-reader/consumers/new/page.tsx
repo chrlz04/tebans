@@ -13,8 +13,12 @@ import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import ConsumerTabs from '../../components/ConsumerTabs'
 import { getProvinces, getMunicipalities, getBarangays } from '@/lib/psgc'
-import type { Area } from '@/types/area'
 import { CheckCircle } from 'lucide-react'
+
+interface MeterReaderProfile {
+  assignedAreaId: string
+  assignedArea:   string
+}
 
 const consumerSchema = z.object({
   firstName:        z.string().min(1, 'First name is required'),
@@ -24,7 +28,6 @@ const consumerSchema = z.object({
   municipalityCode: z.string().min(1, 'Municipality is required'),
   barangayCode:     z.string().min(1, 'Barangay is required'),
   meterSerialNo:    z.string().min(1, 'Meter serial number is required'),
-  areaId:           z.string().min(1, 'Area is required'),
   contactNo:        z.string().min(1, 'Contact number is required'),
 })
 
@@ -51,10 +54,10 @@ export default function RegisterConsumerPage() {
   const selectedProvinceCode     = watch('provinceCode')
   const selectedMunicipalityCode = watch('municipalityCode')
 
-  const { data: areas, isLoading: areasLoading } = useQuery<Area[]>({
-    queryKey: ['areas'],
+  const { data: profile, isLoading: profileLoading } = useQuery<MeterReaderProfile>({
+    queryKey: ['meter-reader-profile'],
     queryFn: async () => {
-      const res = await api.get('/areas')
+      const res = await api.get('/meter-reader/profile')
       return res.data
     },
     enabled: hasAccess,
@@ -94,7 +97,6 @@ export default function RegisterConsumerPage() {
         municipality,
         barangay,
         meterSerialNo: values.meterSerialNo,
-        areaId:        values.areaId,
         contactNo:     values.contactNo,
       }
 
@@ -259,23 +261,11 @@ export default function RegisterConsumerPage() {
               />
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-foreground">
-                  Area Name <span className="text-red-500">*</span>
+                  Area Name
                 </label>
-                <select
-                  className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-300 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  {...register('areaId')}
-                  disabled={areasLoading}
-                >
-                  <option value="">Select Area</option>
-                  {areas?.map((area) => (
-                    <option key={area.areaId} value={area.areaId}>
-                      {area.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.areaId && (
-                  <p className="text-xs text-red-600">{errors.areaId.message}</p>
-                )}
+                <div className="w-full min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-200 bg-muted text-muted-foreground flex items-center">
+                  {profileLoading ? 'Loading…' : (profile?.assignedArea ?? '—')}
+                </div>
               </div>
             </div>
 
