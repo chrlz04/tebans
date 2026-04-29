@@ -67,7 +67,7 @@ export default function EditStaffModal({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-staff'] })
-      onClose()
+      setTimeout(onClose, 1500)
     },
   })
 
@@ -151,6 +151,11 @@ export default function EditStaffModal({
           </div>
         </div>
 
+        {mutation.isSuccess && (
+          <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg">
+            Staff account updated successfully.
+          </div>
+        )}
         {mutation.isError && (
           <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
             Failed to update staff account. Please try again.
