@@ -17,6 +17,7 @@ interface ConsumerSmsRow extends RowDataPacket {
   Previous_Reading: number
   Current_Reading: number
   Notification_ID: string | null
+  Notification_Status: string | null
 }
 
 export async function GET(req: NextRequest) {
@@ -51,7 +52,8 @@ export async function GET(req: NextRequest) {
         b.MeterReading_ID,
         mr.Previous_Reading,
         mr.Current_Reading,
-        n.Notification_ID
+        n.Notification_ID,
+        n.Status AS Notification_Status
        FROM Bill b
        JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
        JOIN User u ON u.User_ID = c.User_ID
@@ -72,7 +74,7 @@ export async function GET(req: NextRequest) {
       meterReadingId: row.MeterReading_ID,
       previousReading: Number(row.Previous_Reading),
       currentReading: Number(row.Current_Reading),
-      smsStatus: row.Notification_ID ? 'Sent' : 'Unsent'
+      smsStatus: !row.Notification_ID ? 'Unsent' : row.Notification_Status === 'Sent' ? 'Sent' : 'Failed'
     }))
 
     return ok({
