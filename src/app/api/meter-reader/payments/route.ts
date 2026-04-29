@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { requireRole, ok, err } from '@/lib/auth-helpers'
-import { query } from '@/lib/db-helpers'
+import { query, queryOne } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
 
 interface PaymentRow extends RowDataPacket {
@@ -16,8 +16,14 @@ interface PaymentRow extends RowDataPacket {
 
 export async function GET(req: NextRequest) {
   try {
-    const { error } = requireRole(req, ['meter_reader'])
+    const { error, payload } = requireRole(req, ['meter_reader'])
     if (error) return error
+
+    const meterReader = await queryOne<{ Assigned_Area_ID: string } & RowDataPacket>(
+      `SELECT Assigned_Area_ID FROM MeterReader WHERE User_ID = ?`,
+      [payload!.userId]
+    )
+    if (!meterReader) return err('Meter reader profile not found', 404)
 
     const startDate = req.nextUrl.searchParams.get('startDate') || ''
     const endDate   = req.nextUrl.searchParams.get('endDate')   || ''
@@ -36,9 +42,9 @@ export async function GET(req: NextRequest) {
        JOIN Bill b     ON b.Bill_ID      = p.Bill_ID
        JOIN Consumer c ON c.Consumer_ID  = p.Consumer_ID
        JOIN User u     ON u.User_ID      = c.User_ID
-       WHERE 1=1`
+       WHERE c.Area_ID = ?`
 
-    const queryParams: any[] = []
+    const queryParams: any[] = [meterReader.Assigned_Area_ID]
 
     if (startDate) {
       sql += ` AND DATE(p.Date_Paid) >= ?`
