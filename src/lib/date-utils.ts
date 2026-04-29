@@ -1,3 +1,34 @@
+export function getCycleBoundsForDate(
+  dateStr: string,
+  startDay: number,
+  endDay: number
+): { cycleStartDate: string; cycleEndDate: string } {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const m = month - 1 // 0-indexed
+
+  const isCrossMonth = startDay > endDay
+  let startDateObj: Date
+  let endDateObj: Date
+
+  if (isCrossMonth) {
+    if (day >= startDay) {
+      startDateObj = new Date(year, m, startDay)
+      endDateObj   = new Date(year, m + 1, endDay)
+    } else {
+      startDateObj = new Date(year, m - 1, startDay)
+      endDateObj   = new Date(year, m, endDay)
+    }
+  } else {
+    startDateObj = new Date(year, m, startDay)
+    endDateObj   = new Date(year, m, endDay)
+  }
+
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+  return { cycleStartDate: fmt(startDateObj), cycleEndDate: fmt(endDateObj) }
+}
+
 export function getManilaDateParts() {
   const now = new Date();
   const formatter = new Intl.DateTimeFormat('en-US', {

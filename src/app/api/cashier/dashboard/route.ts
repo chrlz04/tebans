@@ -94,8 +94,8 @@ export async function GET(req: NextRequest) {
 
     const prevStartDateObj = new Date(startDateObj.getFullYear(), startDateObj.getMonth() - 1, startDateObj.getDate())
     const prevEndDateObj   = new Date(endDateObj.getFullYear(),   endDateObj.getMonth()   - 1, endDateObj.getDate())
-    const prevCycleStart   = prevStartDateObj.toISOString().slice(0, 10)
-    const prevCycleEnd     = prevEndDateObj.toISOString().slice(0, 10)
+    const prevStart = `${prevStartDateObj.getFullYear()}-${String(prevStartDateObj.getMonth() + 1).padStart(2, '0')}-${String(prevStartDateObj.getDate()).padStart(2, '0')}`
+    const prevEnd   = `${prevEndDateObj.getFullYear()}-${String(prevEndDateObj.getMonth() + 1).padStart(2, '0')}-${String(prevEndDateObj.getDate()).padStart(2, '0')}`
 
     const pendingRemittance = await queryOne<SummaryRow>(
       `SELECT COALESCE(SUM(p.Amount_Paid), 0) AS total
@@ -118,31 +118,25 @@ export async function GET(req: NextRequest) {
     )
     const totalConsumers = totalActiveConsumersRow?.count ?? 0
 
-    const currentMonthStr = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), 1)
-      .toLocaleString('en-PH', { month: 'long', year: 'numeric' })
-    const prevMonthStr    = new Date(prevStartDateObj.getFullYear(), prevStartDateObj.getMonth(), 1)
-      .toLocaleString('en-PH', { month: 'long', year: 'numeric' })
-
-    // 2. Paid Consumers (Has a payment record this month <= 27, linked to current month bill)
-    //    We check the Payment table for Date_Paid using the 28th to 27th date boundaries
-    //    and verify via Bill that it's for the current month.
+    // 2. Paid Consumers (payment made during this cycle for a bill generated this cycle)
     const paidConsumersRow = await queryOne<SummaryRow>(
       `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
        FROM Payment p
        JOIN Bill b ON b.Bill_ID = p.Bill_ID
+       JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
        JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
        JOIN User u ON u.User_ID = c.User_ID
        WHERE c.Area_ID = ?
          AND u.Account_Status = 'Active'
-         AND b.Billing_Month = ?
+         AND DATE(mrd.Date_Recorded) >= ?
+         AND DATE(mrd.Date_Recorded) <= ?
          AND DATE(p.Date_Paid) >= ?
          AND DATE(p.Date_Paid) <= ?`,
-      [assignedAreaId, currentMonthStr, startDate, endDate]
+      [assignedAreaId, startDate, endDate, startDate, endDate]
     )
     const paidConsumers = paidConsumersRow?.count ?? 0
 
-    // 3. Not Yet Paid Consumers (All active consumers minus those who have paid this month)
-    // To get the count and the list
+    // 3. Not Yet Paid Consumers (All active consumers minus those who have paid this cycle)
     const notYetPaidListRow = await query<NotYetPaidConsumerRow>(
       `SELECT
         c.Consumer_ID,
@@ -152,8 +146,10 @@ export async function GET(req: NextRequest) {
         COALESCE((
           SELECT b.Amount
           FROM Bill b
+          JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
           WHERE b.Consumer_ID = c.Consumer_ID
-            AND b.Billing_Month = ?
+            AND DATE(mrd.Date_Recorded) >= ?
+            AND DATE(mrd.Date_Recorded) <= ?
           LIMIT 1
         ), 0) AS Amount
        FROM Consumer c
@@ -164,11 +160,13 @@ export async function GET(req: NextRequest) {
            SELECT p.Consumer_ID
            FROM Payment p
            JOIN Bill b2 ON b2.Bill_ID = p.Bill_ID
-           WHERE b2.Billing_Month = ?
+           JOIN MeterReading mrd2 ON mrd2.MeterReading_ID = b2.MeterReading_ID
+           WHERE DATE(mrd2.Date_Recorded) >= ?
+             AND DATE(mrd2.Date_Recorded) <= ?
              AND DATE(p.Date_Paid) >= ?
              AND DATE(p.Date_Paid) <= ?
          )`,
-      [currentMonthStr, assignedAreaId, currentMonthStr, startDate, endDate]
+      [startDate, endDate, assignedAreaId, startDate, endDate, startDate, endDate]
     )
     const notYetPaidConsumers = totalConsumers - paidConsumers
     const completionRate = totalConsumers > 0 ? Math.round((paidConsumers / totalConsumers) * 100) : 0
@@ -186,14 +184,16 @@ export async function GET(req: NextRequest) {
       `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
        FROM Payment p
        JOIN Bill b ON b.Bill_ID = p.Bill_ID
+       JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
        JOIN Consumer co ON co.Consumer_ID = p.Consumer_ID
        JOIN User u ON u.User_ID = co.User_ID
        WHERE co.Area_ID = ?
          AND u.Account_Status = 'Active'
-         AND b.Billing_Month = ?
+         AND DATE(mrd.Date_Recorded) >= ?
+         AND DATE(mrd.Date_Recorded) <= ?
          AND DATE(p.Date_Paid) >= ?
          AND DATE(p.Date_Paid) <= ?`,
-      [assignedAreaId, prevMonthStr, prevCycleStart, prevCycleEnd]
+      [assignedAreaId, prevStart, prevEnd, prevStart, prevEnd]
     )
     const prevPaid = prevPaidRow?.count ?? 0
     const prevNotYetPaid = Math.max(0, totalConsumers - prevPaid)
@@ -207,8 +207,10 @@ export async function GET(req: NextRequest) {
         COALESCE((
           SELECT b.Amount
           FROM Bill b
+          JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
           WHERE b.Consumer_ID = c.Consumer_ID
-            AND b.Billing_Month = ?
+            AND DATE(mrd.Date_Recorded) >= ?
+            AND DATE(mrd.Date_Recorded) <= ?
           LIMIT 1
         ), 0) AS Amount
        FROM Consumer c
@@ -219,11 +221,13 @@ export async function GET(req: NextRequest) {
            SELECT p.Consumer_ID
            FROM Payment p
            JOIN Bill b2 ON b2.Bill_ID = p.Bill_ID
-           WHERE b2.Billing_Month = ?
+           JOIN MeterReading mrd2 ON mrd2.MeterReading_ID = b2.MeterReading_ID
+           WHERE DATE(mrd2.Date_Recorded) >= ?
+             AND DATE(mrd2.Date_Recorded) <= ?
              AND DATE(p.Date_Paid) >= ?
              AND DATE(p.Date_Paid) <= ?
          )`,
-      [prevMonthStr, assignedAreaId, prevMonthStr, prevCycleStart, prevCycleEnd]
+      [prevStart, prevEnd, assignedAreaId, prevStart, prevEnd, prevStart, prevEnd]
     )
 
     const previousCollectionProgress = {

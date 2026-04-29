@@ -5,6 +5,8 @@ import { validateRequired } from '@/lib/validators'
 import { logger } from '@/lib/logger'
 import { queryOne, query, execute } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
+import { getCycleBoundsForDate } from '@/lib/date-utils'
+import { getBillingCycleSettings } from '@/lib/services/settings.service'
 import { sendSms } from '@/lib/services/sms.service'
 import { buildBillingAlertMessage } from '@/lib/sms-templates'
 
@@ -98,15 +100,23 @@ export async function POST(req: NextRequest) {
       month: 'long',
     })
 
-    // Check if bill already exists for this billing month
+    // Check if bill already exists for this billing cycle (not just calendar month)
+    const { startDay, endDay } = await getBillingCycleSettings()
+    const { cycleStartDate, cycleEndDate } = getCycleBoundsForDate(readingDate, startDay, endDay)
+
     const existingBill = await queryOne(
-      `SELECT Bill_ID FROM Bill WHERE Consumer_ID = ? AND Billing_Month = ? LIMIT 1`,
-      [consumerId, billingMonth]
+      `SELECT b.Bill_ID FROM Bill b
+       JOIN MeterReading mr ON mr.MeterReading_ID = b.MeterReading_ID
+       WHERE b.Consumer_ID = ?
+         AND DATE(mr.Date_Recorded) >= ?
+         AND DATE(mr.Date_Recorded) <= ?
+       LIMIT 1`,
+      [consumerId, cycleStartDate, cycleEndDate]
     )
 
     if (existingBill) {
       const consumerName = `${consumer.First_Name} ${consumer.Last_Name}`
-      return err(`Consumer ${consumerName} (${consumerId}) already has a bill for ${billingMonth}. Duplicate entries are not allowed.`, 400)
+      return err(`Consumer ${consumerName} (${consumerId}) already has a bill for this billing cycle (${cycleStartDate} to ${cycleEndDate}). Duplicate entries are not allowed.`, 400)
     }
 
     // Use the user-provided due date
