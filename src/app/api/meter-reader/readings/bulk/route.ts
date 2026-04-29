@@ -4,6 +4,8 @@ import { handleApiError } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'
 import { queryOne, query, withTransaction } from '@/lib/db-helpers'
 import { RowDataPacket, PoolConnection } from 'mysql2/promise'
+import { getCycleBoundsForDate } from '@/lib/date-utils'
+import { getBillingCycleSettings } from '@/lib/services/settings.service'
 import { sendSms } from '@/lib/services/sms.service'
 import { buildBillingAlertMessage } from '@/lib/sms-templates'
 
@@ -53,6 +55,8 @@ export async function POST(req: NextRequest) {
     const settings: Record<string, string> = {}
     rows.forEach(r => settings[r.Setting_Key] = r.Setting_Value)
     const smsTemplate = settings['SMS_MESSAGE_TEMPLATE'] || 'Dear {name}, your electricity bill for {month} is P{amount} (Previous: {previous_reading} kWh, Present: {current_reading} kWh) with a total of {usage} kWh used this month. Please pay on or before {due_date}. - TEBANS'
+
+    const { startDay, endDay } = await getBillingCycleSettings()
 
     // First validate the whole file
     const validationErrors: { row: number, errors: string[] }[] = []
@@ -144,19 +148,25 @@ export async function POST(req: NextRequest) {
         month: 'long',
       })
 
-      const duplicateKey = `${r.consumerId}_${billingMonth}`
+      const { cycleStartDate, cycleEndDate } = getCycleBoundsForDate(r.readingDate, startDay, endDay)
+      const duplicateKey = `${r.consumerId}_${cycleStartDate}_${cycleEndDate}`
 
-      // Check for duplicate in the database
+      // Check for duplicate in the database (scoped to billing cycle, not calendar month)
       const existingBill = await queryOne(
-        `SELECT Bill_ID FROM Bill WHERE Consumer_ID = ? AND Billing_Month = ? LIMIT 1`,
-        [r.consumerId, billingMonth]
+        `SELECT b.Bill_ID FROM Bill b
+         JOIN MeterReading mr ON mr.MeterReading_ID = b.MeterReading_ID
+         WHERE b.Consumer_ID = ?
+           AND DATE(mr.Date_Recorded) >= ?
+           AND DATE(mr.Date_Recorded) <= ?
+         LIMIT 1`,
+        [r.consumerId, cycleStartDate, cycleEndDate]
       )
 
       if (existingBill || seenBillsInCurrentUpload.has(duplicateKey)) {
         const consumerName = `${consumer.First_Name} ${consumer.Last_Name}`
         validationErrors.push({
           row: rowNum,
-          errors: [`Consumer ${consumerName} (${r.consumerId}) already has a bill for ${billingMonth}. Duplicate entries are not allowed.`]
+          errors: [`Consumer ${consumerName} (${r.consumerId}) already has a bill for this billing cycle (${cycleStartDate} to ${cycleEndDate}). Duplicate entries are not allowed.`]
         })
         continue
       }

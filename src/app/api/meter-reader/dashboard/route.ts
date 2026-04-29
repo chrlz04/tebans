@@ -82,6 +82,8 @@ export async function GET(req: NextRequest) {
 
     const prevStartDateObj = new Date(startDateObj.getFullYear(), startDateObj.getMonth() - 1, startDateObj.getDate())
     const prevEndDateObj   = new Date(endDateObj.getFullYear(),   endDateObj.getMonth()   - 1, endDateObj.getDate())
+    const prevStart = `${prevStartDateObj.getFullYear()}-${String(prevStartDateObj.getMonth() + 1).padStart(2, '0')}-${String(prevStartDateObj.getDate()).padStart(2, '0')}`
+    const prevEnd   = `${prevEndDateObj.getFullYear()}-${String(prevEndDateObj.getMonth() + 1).padStart(2, '0')}-${String(prevEndDateObj.getDate()).padStart(2, '0')}`
 
     // 1. Payment collections in assigned area for current billing cycle
     const paymentCollectionsRow = await queryOne<SummaryRow>(
@@ -95,31 +97,30 @@ export async function GET(req: NextRequest) {
     )
 
     // 2. Consumers Paid Percentage
-    const currentMonthStr = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), 1)
-      .toLocaleString('en-PH', { month: 'long', year: 'numeric' })
-    const prevMonthStr    = new Date(prevStartDateObj.getFullYear(), prevStartDateObj.getMonth(), 1)
-      .toLocaleString('en-PH', { month: 'long', year: 'numeric' })
-
     const paidConsumersRow = await queryOne<SummaryRow>(
       `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
        FROM Payment p
        JOIN Bill b ON b.Bill_ID = p.Bill_ID
+       JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
        JOIN Consumer c ON c.Consumer_ID = p.Consumer_ID
        WHERE c.Area_ID = ?
          AND DATE(p.Date_Paid) >= ?
          AND DATE(p.Date_Paid) <= ?
-         AND b.Billing_Month = ?`,
-      [assignedAreaId, startDate, endDate, currentMonthStr]
+         AND DATE(mrd.Date_Recorded) >= ?
+         AND DATE(mrd.Date_Recorded) <= ?`,
+      [assignedAreaId, startDate, endDate, startDate, endDate]
     )
     const paidConsumersCount = paidConsumersRow?.count ?? 0
 
     const billedConsumersForCurrentMonthRow = await queryOne<SummaryRow>(
       `SELECT COUNT(DISTINCT b.Consumer_ID) AS count
        FROM Bill b
+       JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
        JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
        WHERE c.Area_ID = ?
-         AND b.Billing_Month = ?`,
-      [assignedAreaId, currentMonthStr]
+         AND DATE(mrd.Date_Recorded) >= ?
+         AND DATE(mrd.Date_Recorded) <= ?`,
+      [assignedAreaId, startDate, endDate]
     )
     const billedConsumersForCurrentMonthCount = billedConsumersForCurrentMonthRow?.count ?? 0
 
@@ -142,10 +143,12 @@ export async function GET(req: NextRequest) {
        FROM Bill b
        JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
        JOIN User u ON u.User_ID = c.User_ID
+       JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
        WHERE c.Area_ID = ?
          AND u.Account_Status = 'Active'
-         AND b.Billing_Month = ?`,
-      [assignedAreaId, currentMonthStr]
+         AND DATE(mrd.Date_Recorded) >= ?
+         AND DATE(mrd.Date_Recorded) <= ?`,
+      [assignedAreaId, startDate, endDate]
     )
     const billedConsumers = billedConsumersRow?.count ?? 0
     const unbilledConsumers = Math.max(0, totalActiveConsumers - billedConsumers)
@@ -163,11 +166,13 @@ export async function GET(req: NextRequest) {
          AND u.Account_Status = 'Active'
          AND NOT EXISTS (
            SELECT 1 FROM Bill b
+           JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
            WHERE b.Consumer_ID = c.Consumer_ID
-           AND b.Billing_Month = ?
+             AND DATE(mrd.Date_Recorded) >= ?
+             AND DATE(mrd.Date_Recorded) <= ?
          )
        ORDER BY u.Last_Name ASC`,
-      [assignedAreaId, currentMonthStr]
+      [assignedAreaId, startDate, endDate]
     )
 
     const billingProgress: MeterReaderBillingProgress = {
@@ -189,10 +194,12 @@ export async function GET(req: NextRequest) {
        FROM Bill b
        JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
        JOIN User u ON u.User_ID = c.User_ID
+       JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
        WHERE c.Area_ID = ?
          AND u.Account_Status = 'Active'
-         AND b.Billing_Month = ?`,
-      [assignedAreaId, prevMonthStr]
+         AND DATE(mrd.Date_Recorded) >= ?
+         AND DATE(mrd.Date_Recorded) <= ?`,
+      [assignedAreaId, prevStart, prevEnd]
     )
     const prevBilled = prevBilledRow?.count ?? 0
     const prevUnbilled = Math.max(0, totalActiveConsumers - prevBilled)
@@ -209,11 +216,13 @@ export async function GET(req: NextRequest) {
          AND u.Account_Status = 'Active'
          AND NOT EXISTS (
            SELECT 1 FROM Bill b
+           JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
            WHERE b.Consumer_ID = c.Consumer_ID
-           AND b.Billing_Month = ?
+             AND DATE(mrd.Date_Recorded) >= ?
+             AND DATE(mrd.Date_Recorded) <= ?
          )
        ORDER BY u.Last_Name ASC`,
-      [assignedAreaId, prevMonthStr]
+      [assignedAreaId, prevStart, prevEnd]
     )
 
     const previousBillingProgress: MeterReaderBillingProgress = {

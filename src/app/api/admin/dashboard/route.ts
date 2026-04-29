@@ -96,16 +96,10 @@ export async function GET(req: NextRequest) {
     const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`
     const endDate   = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`
 
-    // Derive billing month labels from cycle start dates, not the current calendar month.
-    // For cross-month cycles (e.g. 28→27), the active payment window (Mar 28–Apr 27)
-    // collects payments for the start month's bills ("March"), not the current calendar
-    // month's bills ("April").
     const prevStartDateObj = new Date(startDateObj.getFullYear(), startDateObj.getMonth() - 1, startDateObj.getDate())
     const prevEndDateObj   = new Date(endDateObj.getFullYear(),   endDateObj.getMonth()   - 1, endDateObj.getDate())
-    const currentMonthStr  = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), 1)
-      .toLocaleString('en-PH', { month: 'long', year: 'numeric' })
-    const prevMonthStr     = new Date(prevStartDateObj.getFullYear(), prevStartDateObj.getMonth(), 1)
-      .toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+    const prevCycleStartDate = `${prevStartDateObj.getFullYear()}-${String(prevStartDateObj.getMonth() + 1).padStart(2, '0')}-${String(prevStartDateObj.getDate()).padStart(2, '0')}`
+    const prevCycleEndDate   = `${prevEndDateObj.getFullYear()}-${String(prevEndDateObj.getMonth() + 1).padStart(2, '0')}-${String(prevEndDateObj.getDate()).padStart(2, '0')}`
 
     const activeMeterReaders = await query<MeterReaderAreaInfo>(
       `SELECT
@@ -138,10 +132,12 @@ export async function GET(req: NextRequest) {
          FROM Bill b
          JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
          JOIN User u ON u.User_ID = c.User_ID
+         JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
          WHERE c.Area_ID = ?
            AND u.Account_Status = 'Active'
-           AND b.Billing_Month = ?`,
-        [mr.Assigned_Area_ID, currentMonthStr]
+           AND DATE(mrd.Date_Recorded) >= ?
+           AND DATE(mrd.Date_Recorded) <= ?`,
+        [mr.Assigned_Area_ID, startDate, endDate]
       )
 
       const totalAreaConsumers = areaTotalRow?.count ?? 0
@@ -189,10 +185,12 @@ export async function GET(req: NextRequest) {
          FROM Bill b
          JOIN Consumer c ON c.Consumer_ID = b.Consumer_ID
          JOIN User u ON u.User_ID = c.User_ID
+         JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
          WHERE c.Area_ID = ?
            AND u.Account_Status = 'Active'
-           AND b.Billing_Month = ?`,
-        [mr.Assigned_Area_ID, prevMonthStr]
+           AND DATE(mrd.Date_Recorded) >= ?
+           AND DATE(mrd.Date_Recorded) <= ?`,
+        [mr.Assigned_Area_ID, prevCycleStartDate, prevCycleEndDate]
       )
 
       const total  = areaTotalRow?.count ?? 0
@@ -251,14 +249,16 @@ export async function GET(req: NextRequest) {
         `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
          FROM Payment p
          JOIN Bill b ON p.Bill_ID = b.Bill_ID
+         JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
          JOIN Consumer co ON co.Consumer_ID = p.Consumer_ID
          JOIN User u ON u.User_ID = co.User_ID
          WHERE co.Area_ID = ?
            AND u.Account_Status = 'Active'
            AND DATE(p.Date_Paid) >= ?
            AND DATE(p.Date_Paid) <= ?
-           AND b.Billing_Month = ?`,
-        [c.Assigned_Area_ID, startDate, endDate, currentMonthStr]
+           AND DATE(mrd.Date_Recorded) >= ?
+           AND DATE(mrd.Date_Recorded) <= ?`,
+        [c.Assigned_Area_ID, startDate, endDate, startDate, endDate]
       )
 
       const totalAreaConsumers = areaTotalRow?.count ?? 0
@@ -287,10 +287,6 @@ export async function GET(req: NextRequest) {
       cashierBreakdown,
     }
 
-    // Previous payment cycle — shift the current cycle window back by one billing period
-    const prevCycleStartDate = prevStartDateObj.toISOString().slice(0, 10)
-    const prevCycleEndDate   = prevEndDateObj.toISOString().slice(0, 10)
-
     const prevCashierBreakdown: CashierProgress[] = []
     let prevPaymentTotal  = 0
     let prevPaymentPaid   = 0
@@ -308,14 +304,16 @@ export async function GET(req: NextRequest) {
         `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
          FROM Payment p
          JOIN Bill b ON p.Bill_ID = b.Bill_ID
+         JOIN MeterReading mrd ON mrd.MeterReading_ID = b.MeterReading_ID
          JOIN Consumer co ON co.Consumer_ID = p.Consumer_ID
          JOIN User u ON u.User_ID = co.User_ID
          WHERE co.Area_ID = ?
            AND u.Account_Status = 'Active'
            AND DATE(p.Date_Paid) >= ?
            AND DATE(p.Date_Paid) <= ?
-           AND b.Billing_Month = ?`,
-        [c.Assigned_Area_ID, prevCycleStartDate, prevCycleEndDate, prevMonthStr]
+           AND DATE(mrd.Date_Recorded) >= ?
+           AND DATE(mrd.Date_Recorded) <= ?`,
+        [c.Assigned_Area_ID, prevCycleStartDate, prevCycleEndDate, prevCycleStartDate, prevCycleEndDate]
       )
 
       const total  = areaTotalRow?.count ?? 0
