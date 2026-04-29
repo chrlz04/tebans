@@ -4,7 +4,6 @@ import { handleApiError } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'
 import { queryOne, query } from '@/lib/db-helpers'
 import { RowDataPacket } from 'mysql2'
-import { getBillingCycleSettings } from '@/lib/services/settings.service'
 import { getManilaDateParts } from '@/lib/date-utils'
 
 interface ConsumerSmsRow extends RowDataPacket {
@@ -37,10 +36,13 @@ export async function GET(req: NextRequest) {
 
     const assignedAreaId = meterReader.Assigned_Area_ID
 
-    // Determine the current billing cycle month string
+    // Determine the billing cycle month string (query param or current month)
     const { year, month } = getManilaDateParts()
     const currentMonthDate = new Date(year, month, 1)
     const currentMonthStr = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+
+    const billingMonthParam = req.nextUrl.searchParams.get('billingMonth')
+    const billingMonthStr = billingMonthParam || currentMonthStr
 
     const consumersResult = await query<ConsumerSmsRow>(
       `SELECT
@@ -61,7 +63,7 @@ export async function GET(req: NextRequest) {
        LEFT JOIN Notification n ON n.MeterReading_ID = b.MeterReading_ID AND n.Alert_Type = 'Billing'
        WHERE c.Area_ID = ? AND b.Billing_Month = ? AND u.Account_Status = 'Active'
        ORDER BY u.First_Name ASC`,
-      [assignedAreaId, currentMonthStr]
+      [assignedAreaId, billingMonthStr]
     )
 
     const consumers = consumersResult.map(row => ({
@@ -70,7 +72,7 @@ export async function GET(req: NextRequest) {
       contactNo: row.Contact_No,
       amount: Number(row.Amount),
       dueDate: row.Due_Date,
-      billingMonth: currentMonthStr,
+      billingMonth: billingMonthStr,
       meterReadingId: row.MeterReading_ID,
       previousReading: Number(row.Previous_Reading),
       currentReading: Number(row.Current_Reading),
@@ -78,7 +80,7 @@ export async function GET(req: NextRequest) {
     }))
 
     return ok({
-      billingMonth: currentMonthStr,
+      billingMonth: billingMonthStr,
       consumers
     })
 

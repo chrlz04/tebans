@@ -1,13 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { Bell, Search, Filter, Send, AlertTriangle, MessageSquare } from 'lucide-react'
+import { Filter, Send, AlertTriangle, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import DataTable, { Column } from '@/components/shared/DataTable'
-import Badge from '@/components/ui/Badge'
-import SearchBar from '@/components/shared/SearchBar'
 
 interface ConsumerSmsData {
   consumerId: string
@@ -30,6 +27,7 @@ interface SmsResponse {
 type FilterStatus = 'Unsent only' | 'Sent' | 'All'
 
 export default function SendSmsPage() {
+  const [cycleIndex, setCycleIndex] = useState(0)
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('Unsent only')
   const [localConsumers, setLocalConsumers] = useState<ConsumerSmsData[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -37,17 +35,37 @@ export default function SendSmsPage() {
   const [alertMsg, setAlertMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const alertTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const { data: smsData, isLoading, refetch } = useQuery<SmsResponse>({
-    queryKey: ['meter-reader', 'sms'],
+  const { data: cyclesData, isLoading: cyclesLoading } = useQuery<{ cycles: string[] }>({
+    queryKey: ['meter-reader', 'sms', 'cycles'],
     queryFn: async () => {
-      const res = await fetch('/api/meter-reader/sms')
-      if (!res.ok) {
-        throw new Error('Failed to fetch SMS data')
-      }
+      const res = await fetch('/api/meter-reader/sms/cycles')
+      if (!res.ok) throw new Error('Failed to fetch billing cycles')
+      const json = await res.json()
+      return json.data as { cycles: string[] }
+    },
+  })
+
+  const cycles = cyclesData?.cycles ?? []
+  const selectedMonthStr = cycles[cycleIndex] ?? ''
+
+  const { data: smsData, isLoading: smsLoading, refetch } = useQuery<SmsResponse>({
+    queryKey: ['meter-reader', 'sms', selectedMonthStr],
+    queryFn: async () => {
+      const res = await fetch(`/api/meter-reader/sms?billingMonth=${encodeURIComponent(selectedMonthStr)}`)
+      if (!res.ok) throw new Error('Failed to fetch SMS data')
       const json = await res.json()
       return json.data as SmsResponse
     },
+    enabled: !!selectedMonthStr,
   })
+
+  const isLoading = cyclesLoading || smsLoading
+
+  // Reset selections when cycle changes
+  useEffect(() => {
+    setSelectedIds(new Set())
+    setLocalConsumers([])
+  }, [cycleIndex])
 
   // Sync state when data is fetched
   useEffect(() => {
@@ -62,7 +80,6 @@ export default function SendSmsPage() {
     alertTimeoutRef.current = setTimeout(() => setAlertMsg(null), 3000)
   }
 
-  // Derived filtered data
   const filteredData = useMemo(() => {
     return localConsumers.filter(c => {
       if (filterStatus === 'Unsent only') return c.smsStatus === 'Unsent' || c.smsStatus === 'Failed'
@@ -71,13 +88,11 @@ export default function SendSmsPage() {
     })
   }, [localConsumers, filterStatus])
 
-  // Count summary
   const unsentCount = localConsumers.filter(c => c.smsStatus === 'Unsent' || c.smsStatus === 'Failed').length
   const sentCount = localConsumers.filter(c => c.smsStatus === 'Sent').length
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      // Select all visible (filtered) unsent/failed rows
       const selectableIds = filteredData
         .filter(c => c.smsStatus !== 'Sent')
         .map(c => c.consumerId)
@@ -105,7 +120,6 @@ export default function SendSmsPage() {
     setIsSendingSms(true)
     setAlertMsg(null)
 
-    // Prepare payload
     const tasks = Array.from(selectedIds).map(id => {
       const c = localConsumers.find(x => x.consumerId === id)
       return {
@@ -128,9 +142,7 @@ export default function SendSmsPage() {
         body: JSON.stringify({ smsTasks: tasks })
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to start SMS stream')
-      }
+      if (!response.ok) throw new Error('Failed to start SMS stream')
 
       const reader = response.body?.getReader()
       if (!reader) throw new Error('No readable stream')
@@ -158,7 +170,6 @@ export default function SendSmsPage() {
                 return c
               }))
 
-              // Automatically deselect if sent
               if (data.status === 'Sent') {
                 setSelectedIds(prev => {
                   const next = new Set(prev)
@@ -174,7 +185,6 @@ export default function SendSmsPage() {
       }
 
       showAlert('success', 'SMS processing complete')
-      // Refetch after completion to ensure sync with DB
       refetch()
     } catch (err: any) {
       console.error(err)
@@ -244,9 +254,28 @@ export default function SendSmsPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground">Send SMS Notifications</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Select consumers to notify &mdash; {smsData?.billingMonth ? `${smsData.billingMonth} billing cycle` : 'Loading...'}
-          </p>
+          <div className="flex items-center gap-1 mt-1">
+            <span className="text-sm text-muted-foreground">Select consumers to notify &mdash;</span>
+            <button
+              onClick={() => setCycleIndex(i => i + 1)}
+              disabled={isSendingSms || cycleIndex >= cycles.length - 1}
+              className="p-0.5 rounded hover:bg-muted disabled:opacity-40 transition-colors"
+              aria-label="Previous billing cycle"
+            >
+              <ChevronLeft size={16} className="text-muted-foreground" />
+            </button>
+            <span className="text-sm font-medium text-foreground min-w-[160px] text-center">
+              {cyclesLoading ? 'Loading...' : selectedMonthStr ? `${selectedMonthStr} billing cycle` : 'No cycles found'}
+            </span>
+            <button
+              onClick={() => setCycleIndex(i => i - 1)}
+              disabled={isSendingSms || cycleIndex <= 0}
+              className="p-0.5 rounded hover:bg-muted disabled:opacity-40 transition-colors"
+              aria-label="Next billing cycle"
+            >
+              <ChevronRight size={16} className="text-muted-foreground" />
+            </button>
+          </div>
         </div>
       </div>
 

@@ -29,6 +29,15 @@ interface MeterReaderAreaInfo extends RowDataPacket {
   Area_Name: string
 }
 
+function formatCyclePeriod(start: Date, end: Date): string {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const s = `${months[start.getMonth()]} ${start.getDate()}`
+  const e = `${months[end.getMonth()]} ${end.getDate()}`
+  return start.getFullYear() === end.getFullYear()
+    ? `${s} – ${e}, ${end.getFullYear()}`
+    : `${s}, ${start.getFullYear()} – ${e}, ${end.getFullYear()}`
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { error } = requireRole(req, ['admin'])
@@ -66,12 +75,6 @@ export async function GET(req: NextRequest) {
     const { year, month, day } = getManilaDateParts()
     const { startDay, endDay } = await getBillingCycleSettings()
 
-    const currentMonthDate = new Date(year, month, 1)
-    const currentMonthStr = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
-
-    const prevMonthDate = new Date(year, month - 1, 1)
-    const prevMonthStr = prevMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
-
     // For cross-month cycles (startDay > endDay, e.g. 28→27): if today is on or
     // after startDay the current cycle started this calendar month and ends in the
     // next; otherwise it started last month and ends this month.
@@ -92,6 +95,17 @@ export async function GET(req: NextRequest) {
 
     const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`
     const endDate   = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`
+
+    // Derive billing month labels from cycle start dates, not the current calendar month.
+    // For cross-month cycles (e.g. 28→27), the active payment window (Mar 28–Apr 27)
+    // collects payments for the start month's bills ("March"), not the current calendar
+    // month's bills ("April").
+    const prevStartDateObj = new Date(startDateObj.getFullYear(), startDateObj.getMonth() - 1, startDateObj.getDate())
+    const prevEndDateObj   = new Date(endDateObj.getFullYear(),   endDateObj.getMonth()   - 1, endDateObj.getDate())
+    const currentMonthStr  = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), 1)
+      .toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+    const prevMonthStr     = new Date(prevStartDateObj.getFullYear(), prevStartDateObj.getMonth(), 1)
+      .toLocaleString('en-PH', { month: 'long', year: 'numeric' })
 
     const activeMeterReaders = await query<MeterReaderAreaInfo>(
       `SELECT
@@ -274,8 +288,8 @@ export async function GET(req: NextRequest) {
     }
 
     // Previous payment cycle — shift the current cycle window back by one billing period
-    const prevCycleStartDate = `${new Date(startDateObj.getFullYear(), startDateObj.getMonth() - 1, startDateObj.getDate()).toISOString().slice(0, 10)}`
-    const prevCycleEndDate   = `${new Date(endDateObj.getFullYear(),   endDateObj.getMonth()   - 1, endDateObj.getDate()).toISOString().slice(0, 10)}`
+    const prevCycleStartDate = prevStartDateObj.toISOString().slice(0, 10)
+    const prevCycleEndDate   = prevEndDateObj.toISOString().slice(0, 10)
 
     const prevCashierBreakdown: CashierProgress[] = []
     let prevPaymentTotal  = 0
@@ -344,6 +358,8 @@ export async function GET(req: NextRequest) {
       previousBillingProgress,
       paymentProgress,
       previousPaymentProgress,
+      currentPeriodLabel:  formatCyclePeriod(startDateObj, endDateObj),
+      previousPeriodLabel: formatCyclePeriod(prevStartDateObj, prevEndDateObj),
     })
 
   } catch (error) {
