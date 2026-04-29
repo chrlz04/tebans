@@ -14,6 +14,7 @@ import Button from '@/components/ui/Button'
 import ConsumerTabs from '../../components/ConsumerTabs'
 import { getProvinces, getMunicipalities, getBarangays } from '@/lib/psgc'
 import type { Area } from '@/types/area'
+import { CheckCircle } from 'lucide-react'
 
 const consumerSchema = z.object({
   firstName:        z.string().min(1, 'First name is required'),
@@ -99,13 +100,45 @@ export default function RegisterConsumerPage() {
 
       await api.post('/meter-reader/consumers', payload)
     },
-    onSuccess: () => {
-      router.push('/meter-reader/consumers')
-    },
   })
 
   if (authLoading) return null
   if (!hasAccess)  return null
+
+  if (mutation.isSuccess && mutation.variables) {
+    const { firstName, lastName } = mutation.variables
+    return (
+      <div className="flex flex-col gap-6">
+        <ConsumerTabs />
+        <div className="max-w-3xl w-full mx-auto">
+          <div className="bg-card rounded-xl border border-border p-10 flex flex-col items-center gap-5 text-center">
+            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+              <CheckCircle size={32} />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">
+                Consumer registered
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {firstName} {lastName} has been registered successfully.
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="secondary"
+                onClick={() => mutation.reset()}
+              >
+                Register Another
+              </Button>
+              <Link href="/meter-reader/consumers">
+                <Button variant="primary">View Consumers</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6">
