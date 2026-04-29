@@ -14,6 +14,7 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { useQuery } from "@tanstack/react-query";
 import type { Area } from "@/types/area";
+import { CheckCircle } from "lucide-react";
 
 const staffSchema = z
   .object({
@@ -90,13 +91,57 @@ export default function StaffRegistrationPage() {
     mutationFn: async (values: StaffFormValues) => {
       await api.post("/admin/staff", values);
     },
-    onSuccess: () => {
-      router.push("/admin/accounts");
-    },
   });
 
   if (authLoading) return null;
   if (!hasAccess) return null;
+
+  if (mutation.isSuccess && mutation.variables) {
+    const { firstName, lastName } = mutation.variables;
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/accounts"
+            className="p-2 text-muted-foreground hover:text-muted-foreground transition-colors rounded-lg hover:bg-muted"
+          >
+            <ArrowLeft size={20} />
+          </Link>
+          <div>
+            <h1 className="text-xl font-semibold text-foreground">
+              Register Staff Member
+            </h1>
+          </div>
+        </div>
+        <div className="max-w-3xl w-full mx-auto">
+          <div className="bg-card rounded-xl border border-border p-10 flex flex-col items-center gap-5 text-center">
+            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+              <CheckCircle size={32} />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">
+                Staff account created
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {firstName} {lastName} has been registered successfully.
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="secondary"
+                onClick={() => mutation.reset()}
+              >
+                Register Another
+              </Button>
+              <Link href="/admin/accounts">
+                <Button variant="primary">View Staff Accounts</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

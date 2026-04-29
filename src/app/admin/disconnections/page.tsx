@@ -29,6 +29,8 @@ export default function AdminDisconnectionsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedDisconnection, setSelectedDisconnection] = useState<AdminDisconnection | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [successMsg, setSuccessMsg] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
 
   const { data: disconnections, isLoading } = useQuery<AdminDisconnection[]>({
     queryKey: ['admin-disconnections'],
@@ -46,10 +48,15 @@ export default function AdminDisconnectionsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-disconnections'] })
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] })
+      setSuccessMsg('Disconnection marked as executed.')
+      setErrorMsg('')
+      setTimeout(() => setSuccessMsg(''), 5000)
     },
     onError: (error: unknown) => {
       const e = error as { response?: { data?: { message?: string } } };
-      alert(e.response?.data?.message || 'Failed to mark as executed.')
+      setErrorMsg(e.response?.data?.message || 'Failed to mark as executed.')
+      setSuccessMsg('')
+      setTimeout(() => setErrorMsg(''), 5000)
     },
   })
 
@@ -186,6 +193,19 @@ export default function AdminDisconnectionsPage() {
           </div>
         </div>
       </div>
+
+      {successMsg && (
+        <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg flex items-center gap-2">
+          <CheckCircle size={16} />
+          {successMsg}
+        </div>
+      )}
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg flex items-center gap-2">
+          <AlertTriangle size={16} />
+          {errorMsg}
+        </div>
+      )}
 
       {/* Main Table Content */}
       <div className="bg-card rounded-xl border border-border overflow-hidden flex flex-col">
