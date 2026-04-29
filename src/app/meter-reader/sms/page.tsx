@@ -44,7 +44,8 @@ export default function SendSmsPage() {
       if (!res.ok) {
         throw new Error('Failed to fetch SMS data')
       }
-      return res.json()
+      const json = await res.json()
+      return json.data as SmsResponse
     },
   })
 
