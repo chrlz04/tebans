@@ -32,6 +32,15 @@ interface OverdueRow extends RowDataPacket {
   Scheduled_Date: string | null
 }
 
+function formatCyclePeriod(start: Date, end: Date): string {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const s = `${months[start.getMonth()]} ${start.getDate()}`
+  const e = `${months[end.getMonth()]} ${end.getDate()}`
+  return start.getFullYear() === end.getFullYear()
+    ? `${s} – ${e}, ${end.getFullYear()}`
+    : `${s}, ${start.getFullYear()} – ${e}, ${end.getFullYear()}`
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { error, payload } = requireRole(req, ['meter_reader'])
@@ -71,6 +80,9 @@ export async function GET(req: NextRequest) {
     const startDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`
     const endDate   = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`
 
+    const prevStartDateObj = new Date(startDateObj.getFullYear(), startDateObj.getMonth() - 1, startDateObj.getDate())
+    const prevEndDateObj   = new Date(endDateObj.getFullYear(),   endDateObj.getMonth()   - 1, endDateObj.getDate())
+
     // 1. Payment collections in assigned area for current billing cycle
     const paymentCollectionsRow = await queryOne<SummaryRow>(
       `SELECT COALESCE(SUM(p.Amount_Paid), 0) AS total
@@ -83,9 +95,10 @@ export async function GET(req: NextRequest) {
     )
 
     // 2. Consumers Paid Percentage
-    const currentMonthDate = new Date(year, month, 1)
-    const currentMonthStr  = currentMonthDate.toLocaleString('en-PH', { month: 'long', year: 'numeric' })
-    const prevMonthStr     = new Date(year, month - 1, 1).toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+    const currentMonthStr = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), 1)
+      .toLocaleString('en-PH', { month: 'long', year: 'numeric' })
+    const prevMonthStr    = new Date(prevStartDateObj.getFullYear(), prevStartDateObj.getMonth(), 1)
+      .toLocaleString('en-PH', { month: 'long', year: 'numeric' })
 
     const paidConsumersRow = await queryOne<SummaryRow>(
       `SELECT COUNT(DISTINCT p.Consumer_ID) AS count
@@ -275,6 +288,8 @@ export async function GET(req: NextRequest) {
       billingProgress,
       previousBillingProgress,
       overdueAccounts,
+      currentPeriodLabel:  formatCyclePeriod(startDateObj, endDateObj),
+      previousPeriodLabel: formatCyclePeriod(prevStartDateObj, prevEndDateObj),
     })
 
   } catch (errError) {

@@ -72,7 +72,7 @@ export default function MeterReaderDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Billing Cycle Progress */}
         <div className="lg:col-span-2">
-          <MeterReaderBillingProgress progress={data?.billingProgress} previousProgress={data?.previousBillingProgress} isLoading={isLoading} />
+          <MeterReaderBillingProgress progress={data?.billingProgress} previousProgress={data?.previousBillingProgress} isLoading={isLoading} currentPeriodLabel={data?.currentPeriodLabel} previousPeriodLabel={data?.previousPeriodLabel} />
         </div>
 
         {/* Overdue Accounts */}

@@ -10,9 +10,11 @@ interface Props {
   progress?: AdminPaymentProgress
   previousProgress?: AdminPaymentProgress
   isLoading: boolean
+  currentPeriodLabel?: string
+  previousPeriodLabel?: string
 }
 
-export default function PaymentCollectionProgress({ progress, previousProgress, isLoading }: Props) {
+export default function PaymentCollectionProgress({ progress, previousProgress, isLoading, currentPeriodLabel, previousPeriodLabel }: Props) {
   const [showingCurrent, setShowingCurrent] = useState(true)
 
   if (isLoading) {
@@ -30,18 +32,8 @@ export default function PaymentCollectionProgress({ progress, previousProgress, 
 
   if (!progress) return null
 
-  const now = new Date()
-  const currentMonthYear = now.toLocaleString('en-US', {
-    timeZone: 'Asia/Manila',
-    month: 'long',
-    year: 'numeric',
-  })
-  const prevDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }))
-  prevDate.setMonth(prevDate.getMonth() - 1)
-  const prevMonthLabel = prevDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })
-
   const displayed = showingCurrent ? progress : previousProgress
-  const monthLabel = showingCurrent ? currentMonthYear : prevMonthLabel
+  const periodLabel = showingCurrent ? currentPeriodLabel : previousPeriodLabel
 
   if (!displayed) return null
 
@@ -73,7 +65,7 @@ export default function PaymentCollectionProgress({ progress, previousProgress, 
           <div>
             <h2 className="text-xl font-semibold text-foreground">Payment collection progress</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {monthLabel} - all routes
+              {periodLabel} - all routes
               {!showingCurrent && (
                 <span className="ml-2 text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                   Previous cycle
