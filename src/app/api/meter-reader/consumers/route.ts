@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
 // ── POST /api/meter-reader/consumers ─────────────────────
 export async function POST(req: NextRequest) {
   try {
-    const { error } = requireRole(req, ["meter_reader"]);
+    const { error, payload } = requireRole(req, ["meter_reader"]);
     if (error) return error;
 
     const {
@@ -108,7 +108,6 @@ export async function POST(req: NextRequest) {
       municipality,
       barangay,
       meterSerialNo,
-      areaId,
       contactNo,
     } = await req.json();
 
@@ -118,7 +117,6 @@ export async function POST(req: NextRequest) {
         lastName,
         address,
         meterSerialNo,
-        areaId,
         contactNo,
       },
       [
@@ -126,7 +124,6 @@ export async function POST(req: NextRequest) {
         "lastName",
         "address",
         "meterSerialNo",
-        "areaId",
         "contactNo",
       ],
     );
@@ -134,6 +131,14 @@ export async function POST(req: NextRequest) {
     if (reqError) {
       return err(reqError, 400);
     }
+
+    // Always use the meter reader's own assigned area — ignore any client-supplied value
+    const meterReaderRow = await queryOne<{ Assigned_Area_ID: string } & RowDataPacket>(
+      `SELECT Assigned_Area_ID FROM MeterReader WHERE User_ID = ?`,
+      [payload!.userId]
+    );
+    if (!meterReaderRow) return err("Meter reader profile not found", 404);
+    const areaId = meterReaderRow.Assigned_Area_ID;
 
     // Check for duplicate meter serial number
     const existing = await queryOne(
