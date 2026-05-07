@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { User, LogOut, Zap } from 'lucide-react'
+import { User, LogOut, Menu } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/navigation'
@@ -43,7 +43,7 @@ export default function TopBar({ onToggleMobileSidebar }: TopBarProps) {
           onClick={onToggleMobileSidebar}
           className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center text-white shrink-0 hover:bg-primary-600 transition-colors focus:outline-none"
         >
-          <Zap size={16} />
+          <Menu size={16} />
         </button>
         <h1 className="text-sm font-bold text-gray-900 leading-none">TEBANS</h1>
       </div>
